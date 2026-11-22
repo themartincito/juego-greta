@@ -83,6 +83,43 @@ html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify S
 #kk .hold.dn{background:#ff4d80;transform:scale(.97)}
 .kkbig{text-align:center;font-size:1.5em;font-weight:700;color:#fff6a8;margin-top:.5em}
 
+/* Ropero */
+#ward{position:absolute;inset:0;display:flex;gap:.5em;padding:.5em;background:repeating-linear-gradient(45deg,#ffe4f2 0 .7em,#ffd6ec .7em 1.4em)}
+#wStage{position:relative;width:36%;border:.18em solid #2a2238;border-radius:.6em;background:radial-gradient(ellipse at 50% 25%,#fff 0,#ffeaf6 40%,#d6b8ff 100%);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+#wStage:before{content:'';position:absolute;bottom:4%;left:20%;right:20%;height:7%;background:rgba(90,40,120,.25);border-radius:50%}
+#wStage:after{content:'✨ Probador ✨';position:absolute;top:.3em;left:0;right:0;text-align:center;font-weight:700;color:#c0307a;font-size:.75em}
+#doll{position:relative;height:86%;image-rendering:pixelated;margin-bottom:3%}
+#doll.hop{animation:hop .35s}
+@keyframes hop{40%{transform:translateY(-6%)}}
+.spark{position:absolute;font-size:1.1em;animation:spark .85s forwards;text-shadow:0 0 .25em #fff;pointer-events:none}
+@keyframes spark{from{opacity:1;transform:translateY(0) scale(.5)}to{opacity:0;transform:translateY(-1.6em) scale(1.4)}}
+#wPanel{flex:1;display:flex;flex-direction:column;gap:.35em;min-width:0}
+#wTitle{font-weight:700;color:#c0307a;font-size:1.05em;text-shadow:.06em .06em #fff}
+#wTabs{display:flex;gap:.25em;flex-wrap:wrap}
+#wTabs button{font:inherit;font-size:.7em;font-weight:700;padding:.15em .45em;border:.12em solid #2a2238;border-radius:.45em;background:#fff;color:#2a2238;cursor:pointer}
+#wTabs button.on{background:#ff6fb0;color:#fff}
+#wOpts{flex:1;min-height:0;display:grid;gap:.35em;overflow:auto;align-content:start;background:rgba(255,255,255,.7);border:.12em solid #2a2238;border-radius:.5em;padding:.4em}
+.wo{display:flex;flex-direction:column;align-items:center;background:#fff;border:.14em solid #e0c8ec;border-radius:.45em;padding:.15em;cursor:pointer;font-size:.6em;font-weight:700;text-align:center;line-height:1.1}
+.wo canvas{height:6.5em;image-rendering:pixelated;pointer-events:none}
+.wo span{pointer-events:none}
+.wo.on{border-color:#ff3a8a;box-shadow:0 0 0 .2em #ffc0dc;background:#fff2f9}
+.sw2{width:2.3em;height:2.3em;border-radius:50%;border:.15em solid #2a2238;justify-self:center;cursor:pointer}
+.sw2.on{box-shadow:0 0 0 .2em #fff,0 0 0 .38em #ff3a8a}
+#wBtns{display:flex;gap:.4em;justify-content:flex-end}
+#wBtns button{font:inherit;font-weight:700;font-size:.78em;padding:.2em .6em;border:.14em solid #2a2238;border-radius:.4em;background:#fff;color:#2a2238;cursor:pointer}
+#wBtns .pri{background:#ffd84a}
+/* Desafío del tío */
+#reto{position:absolute;inset:0;background:rgba(30,20,60,.7);display:flex;align-items:center;justify-content:center}
+#reto .box{background:#fff;border:.18em solid #2a2238;border-radius:.5em;box-shadow:inset 0 0 0 .14em #fff,inset 0 0 0 .32em #6cdc8a;padding:.8em 1em;width:76%;display:flex;flex-direction:column;gap:.45em;text-align:center;align-items:center}
+#reto h3{color:#2f9a4a;font-size:1.15em}
+#reto p{font-size:.85em;font-weight:600}
+#retoBig{font-size:2.6em;font-weight:700;color:#e8505b;line-height:1}
+#reto .kbar{width:90%;height:.8em;background:#e4e4ee;border-radius:.4em;overflow:hidden}#reto .kbar i{display:block;height:100%;background:#6cdc8a;transition:width .9s linear}
+#retoMsg{font-size:.8em;font-weight:700;color:#5a4a8a;min-height:2.4em}
+#reto .row{display:flex;gap:.6em}
+#reto button{font:inherit;font-weight:700;font-size:.9em;padding:.2em .8em;border:.14em solid #2a2238;border-radius:.35em;background:#fff;cursor:pointer}
+#reto .pri{background:#ffd84a}
+
 /* Dibujo con Espe */
 #draw,#view{position:absolute;inset:0;background:rgba(30,20,60,.65);display:flex;align-items:center;justify-content:center}
 #draw .box,#view .box{background:#fff;border:.18em solid #2a2238;border-radius:.5em;box-shadow:inset 0 0 0 .14em #fff,inset 0 0 0 .32em #ff9ccc;padding:.6em 1em;width:80%;max-height:92%;display:flex;flex-direction:column;gap:.45em;text-align:center;align-items:center}
@@ -160,6 +197,11 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
         <div id="keys"></div>
       </div>
       <div id="kk" class="hidden"></div>
+      <div id="ward" class="hidden"><div id="wStage"><canvas id="doll" width="64" height="104"></canvas></div>
+        <div id="wPanel"><div id="wTitle">👗 El ropero de Greta</div><div id="wTabs"></div><div id="wOpts"></div>
+        <div id="wBtns"><button id="wClose">Volver</button><button id="wRandom">🎲 Sorpresa</button><button class="pri" id="wDone">¡Lista para la fiesta! ✨</button></div></div></div>
+      <div id="reto" class="hidden"><div class="box"><h3>💪 Desafío del Tío Martín</h3><p id="retoText"></p><div id="retoBig"></div><div class="kbar"><i id="retoBar"></i></div><div id="retoMsg"></div>
+        <div class="row"><button id="retoBack">Volver</button><button class="pri" id="retoGo">¡Empezar!</button></div></div></div>
       <div id="draw" class="hidden"><div class="box"><h3>🖍️ El dibujo de la fiesta</h3>
         <p>Con Espe, dibujen en un papel la fiesta de cumpleaños. Tiene que tener:<br><span class="need" id="drawNeed"></span></p>
         <p>Cuando terminen, pedile a un grande que le saque una foto.</p>
@@ -167,7 +209,7 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
         <input type="file" id="drawFile" accept="image/*">
         <div class="row"><button id="drawBack">Volver</button><label for="drawFile" id="drawPick">📷 Subir el dibujo</label><button class="pri hidden" id="drawOk">¡Listo! ✔</button></div></div></div>
       <div id="view" class="hidden"><div class="box"><h3>🖼️ ¡Qué lindo dibujo!</h3><img id="viewImg" alt="Dibujo de la fiesta"><div class="row"><button class="pri" id="viewClose">Cerrar</button></div></div></div>
-      <div id="secret" class="hidden"><div class="box"><h3>🔐 Palabra secreta</h3><p>Escribí la palabra que le contestó la abuela a mamá por WhatsApp.</p>
+      <div id="secret" class="hidden"><div class="box"><h3 id="secretTitle">🔐 Palabra secreta</h3><p id="secretText"></p>
         <input id="secretIn" maxlength="30" autocomplete="off" autocapitalize="characters"><div class="msg" id="secretMsg"></div>
         <div class="row"><button id="secretBack">Volver</button><button class="pri" id="secretOk">Listo ✔</button></div></div></div>
       <div id="title">
@@ -205,6 +247,17 @@ const CONFIG = {
   dibujo: "la torta con las velitas, Felipe, Lola y Ginger, y vos con Espe",
   // Misión de WhatsApp: la abuela le contesta a la mamá con esta palabra
   palabraSecreta: "MIGUITA",
+  // Desafío del tío: Greta hace algo físico, mamá graba, el tío contesta con esta palabra
+  palabraTio: "CANGURO",
+  retoTio: { texto: "¡Saltá como un canguro todo lo que puedas!", segundos: 20 },
+  // Clase de alemán: palabra en alemán y qué significa
+  aleman: [
+    { palabra: "Hund",   correcta: "🐶 Perro",  otras: ["🐱 Gato", "🐟 Pez"] },
+    { palabra: "Katze",  correcta: "🐱 Gato",   otras: ["🐶 Perro", "🐦 Pájaro"] },
+    { palabra: "rot",    correcta: "🔴 Rojo",   otras: ["🔵 Azul", "🟢 Verde"] },
+    { palabra: "drei",   correcta: "3️⃣ Tres",  otras: ["1️⃣ Uno", "5️⃣ Cinco"] },
+    { palabra: "Kuchen", correcta: "🎂 Torta",  otras: ["🍎 Manzana", "🍞 Pan"] }
+  ],
   amiga: { correcta: "Espe", otras: ["Pepa", "Ramona"] },
   mayusculas: false,            // true = todo el texto en MAYÚSCULAS
   pelo: "#6b3a1f",              // color de pelo de Greta
@@ -308,9 +361,9 @@ const Snd = (() => {
 const TS = 16, VW = 240, VH = 160;
 const GRASS=0, FLOWER=1, PATH=2, TREE=3, WATER=4, ROOF=5, WALL=6, WIN=7, DOOR=8, FENCE=9, BUSH=10,
       FLOOR=11, WALLI=12, WALLWIN=13, VOID=14, PART=15, RUG=16, MAT=17, FRIDGE=18, COUNTER=19, STOVE=20,
-      SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30;
+      SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30, WARDROBE=31, GRILL=32, SINK=33, WASHER=34, TUB=35, TOILET=36;
 const WALKABLE = new Set([GRASS, FLOWER, PATH, FLOOR, RUG, MAT]);
-const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 7, 8] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
+const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 4, 29] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
 const EXITS = { casa: ['pueblo', 4, 5], abuela: ['pueblo', 11, 5] };
 const MAPS = {};
 let cur = null, M = null, W = 0, H = 0;
@@ -342,17 +395,23 @@ rect(0,0,1,10,VOID); rect(14,0,1,10,VOID); rect(0,9,15,1,VOID);
 rect(6,2,3,1,SOFA); M[2][10]=PIANO; M[2][11]=PIANO; M[2][2]=SHELF; M[2][3]=SHELF; M[2][1]=PLANT; M[2][13]=PLANT;
 rect(5,5,5,3,RUG); M[6][2]=TABLEI; M[6][3]=TABLEI; M[8][7]=MAT;
 
-// --- La casa de Greta por dentro (una pantalla) ---
-makeMap('casa', 15, 10, FLOOR);
-rect(0,0,15,2,WALLI); [3,7,12].forEach(x => M[1][x] = WALLWIN);
-rect(0,0,1,10,VOID); rect(14,0,1,10,VOID); rect(0,9,15,1,VOID);
-rect(5,2,1,7,PART); M[6][5] = FLOOR;                       // cocina | living
-rect(10,2,1,7,PART); M[3][10] = FLOOR; M[7][10] = FLOOR;   // living | cuartos
-rect(11,5,3,1,PART);                                       // cuarto Greta | cuarto Mateo
-M[2][1]=FRIDGE; M[2][2]=COUNTER; M[2][3]=STOVE; M[2][4]=SHELF; M[6][2]=TABLEI; M[6][3]=TABLEI;
-M[2][6]=PLANT; M[2][7]=TV; M[2][9]=PLANT; rect(6,4,3,1,SOFA); rect(6,6,3,2,RUG); M[8][7]=MAT;
-M[2][11]=DESK; M[2][13]=BEDH; M[3][13]=BEDF;
-M[6][11]=DESK; M[6][13]=BEDH; M[7][13]=BEDF;
+// --- La casa de Greta por dentro (según el plano real) ---
+makeMap('casa', 15, 31, FLOOR);
+rect(0,0,15,31,VOID);
+rect(1,1,13,5,GRASS); M[1][1]=GRILL; M[1][2]=GRILL; for (let x = 6; x <= 13; x++) M[1][x] = BUSH;   // patio con parrilla y plantas
+rect(1,6,13,1,WALLI); M[6][2]=FLOOR; M[6][3]=FLOOR; M[6][10]=WALLWIN;                              // pared del fondo
+rect(1,7,13,22,FLOOR);
+rect(1,9,4,1,PART); rect(5,9,1,7,PART); rect(1,15,4,1,PART); M[12][5]=FLOOR;                        // cuarto de Greta
+rect(7,7,1,17,PART); M[8][7]=FLOOR; M[15][7]=FLOOR; M[19][7]=FLOOR;                                // pasillo | cocina, baño, cuarto papás
+M[7][13]=STOVE; M[8][13]=SINK; M[9][13]=FRIDGE; M[10][13]=COUNTER; M[11][13]=WASHER; M[10][9]=TABLEI; M[10][10]=TABLEI;  // cocina
+rect(8,13,6,1,PART); M[14][13]=TUB; M[16][13]=TOILET; M[14][8]=SINK;                               // baño
+rect(8,17,6,1,PART); M[19][12]=BEDH; M[19][13]=BEDH; M[20][12]=BEDF; M[20][13]=BEDF; M[18][8]=PLANT; // cuarto de los papás
+rect(7,23,7,1,PART); rect(7,24,1,5,PART); M[25][7]=FLOOR;                                          // garage
+M[10][1]=WARDROBE; M[10][4]=BEDH; M[11][4]=BEDF; M[14][1]=DESK;                                    // muebles del cuarto de Greta
+M[18][2]=TABLEI; M[18][3]=TABLEI; M[18][4]=TABLEI;                                                 // comedor
+M[24][1]=SOFA; M[25][1]=SOFA; M[26][1]=SOFA; M[26][2]=SOFA; M[26][3]=SOFA; M[24][3]=TABLEI; M[24][6]=TV;  // living: sillón en L, mesita, tele
+for (let x = 1; x <= 6; x++) if (x !== 4) M[28][x] = PLANT;                                         // plantas del frente
+rect(1,29,13,1,FENCE); M[29][4]=MAT;                                                               // rejas y portón
 
 /* ---------------- Dibujo de tiles ---------------- */
 let C = null, OX = 0, OY = 0;
@@ -405,10 +464,16 @@ function drawTile(t, x, y) {
     case SOFA: floorT(x); R(0,2,16,13,'#2a2238'); R(0,3,16,5,'#c84a5a'); R(0,8,16,6,'#e86a7a'); R(0,8,16,1,'#ff9aa8');
       if (tileAt(x - 1, y) !== SOFA) R(0,3,3,11,'#a8323a'); if (tileAt(x + 1, y) !== SOFA) R(13,3,3,11,'#a8323a'); break;
     case TABLEI: floorT(x); R(0,3,16,10,'#2a2238'); R(0,4,16,7,'#c98b4f'); R(0,4,16,1,'#e8b07a'); R(1,11,2,4,'#7a4a24'); R(13,11,2,4,'#7a4a24'); break;
-    case BEDH: { const c = y >= 6 ? '#5b8ee8' : '#f06aa8'; floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,15,'#ffffff'); R(3,2,10,6,'#e4e4f4'); R(2,10,12,6,c); R(2,10,12,1,'#ffffff'); break; }
-    case BEDF: { const c = y >= 6 ? '#5b8ee8' : '#f06aa8'; floorT(x); R(1,0,14,15,'#2a2238'); R(2,0,12,14,c); R(2,13,12,1,'#2a2238'); R(4,4,8,1,'#ffffff'); R(4,8,8,1,'#ffffff'); break; }
+    case BEDH: { const c = x >= 8 ? '#9b8ad8' : '#f06aa8'; floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,15,'#ffffff'); R(3,2,10,6,'#e4e4f4'); R(2,10,12,6,c); R(2,10,12,1,'#ffffff'); break; }
+    case BEDF: { const c = x >= 8 ? '#9b8ad8' : '#f06aa8'; floorT(x); R(1,0,14,15,'#2a2238'); R(2,0,12,14,c); R(2,13,12,1,'#2a2238'); R(4,4,8,1,'#ffffff'); R(4,8,8,1,'#ffffff'); break; }
     case DESK: floorT(x); R(0,3,16,11,'#2a2238'); R(1,4,14,6,'#c98b4f'); R(1,10,14,3,'#a46a35'); R(3,5,5,3,'#ffffff'); R(10,5,2,3,'#e8505b'); break;
     case PIANO: floorT(x); R(0,1,16,14,'#2a2238'); R(1,2,14,6,'#5a2e2e'); R(1,2,14,1,'#7a4a4a'); R(1,8,14,5,'#ffffff'); for (let i = 2; i < 15; i += 3) R(i,8,1,3,'#2a2238'); R(1,13,14,1,'#5a2e2e'); if (tileAt(x - 1, y) !== PIANO) R(3,3,6,3,'#f4e4c1'); break;
+    case WARDROBE: floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,14,'#e8a0c8'); R(2,1,12,2,'#f8c8e0'); R(7,3,1,12,'#2a2238'); R(5,8,1,2,'#ffd84a'); R(9,8,1,2,'#ffd84a'); R(3,13,10,1,'#c070a0'); break;
+    case GRILL: grassT(x, y); R(1,3,14,10,'#2a2238'); R(2,4,12,8,'#6a6a7a'); for (let i = 3; i < 14; i += 2) R(i,5,1,6,'#3a3a48'); R(4,6,3,2,'#c84a3a'); R(9,7,3,2,'#c84a3a'); R(2,13,2,3,'#2a2238'); R(12,13,2,3,'#2a2238'); break;
+    case SINK: floorT(x); R(0,2,16,14,'#2a2238'); R(0,3,16,12,'#e8e0d0'); R(3,5,10,7,'#9ab0c8'); R(4,6,8,5,'#bcd8f0'); R(7,3,2,3,'#8a8aa0'); break;
+    case WASHER: floorT(x); R(1,1,14,15,'#2a2238'); R(2,2,12,13,'#f4f8ff'); R(2,2,12,3,'#d8dce8'); circ(8,10,4,'#2a2238'); circ(8,10,3,'#7ab8e8'); R(11,3,2,1,'#e8505b'); break;
+    case TUB: floorT(x); R(0,1,16,14,'#2a2238'); R(1,2,14,12,'#ffffff'); R(3,4,10,8,'#bfe6ff'); R(12,2,2,2,'#8a8aa0'); break;
+    case TOILET: floorT(x); R(3,1,10,5,'#2a2238'); R(4,2,8,3,'#ffffff'); circ(8,10,5,'#2a2238'); circ(8,10,4,'#ffffff'); circ(8,10,2,'#d8ecf8'); break;
     case PLANT: floorT(x); R(5,9,6,6,'#2a2238'); R(6,10,4,5,'#c8603a'); circ(8,6,5,'#245a26'); circ(8,6,4,'#3f9a3c'); R(6,4,2,2,'#5cbf4e'); break;
   }
 }
@@ -537,17 +602,17 @@ function question(who, text, correct, wrongs, wrongText, name) {
 // Mamá: la torta (buscar 3 cosas por la casa)
 const torta = { state: 0, got: new Set() };
 const ITEMS = [
-  { id: 'huevos',    label: 'los huevos',             x: 1,  y: 2, flavor: 'La heladera. ¡Qué fresquito!' },
-  { id: 'harina',    label: 'la harina',              x: 4,  y: 2, flavor: 'La alacena. Hay frascos de todos los colores.' },
-  { id: 'chispitas', label: 'las chispitas de colores', x: 11, y: 6, flavor: 'El escritorio de Mateo. Está lleno de dibujos.' }
+  { id: 'huevos',    label: 'los huevos',               x: 13, y: 9,  flavor: 'La heladera. ¡Qué fresquito!' },
+  { id: 'harina',    label: 'la harina',                x: 13, y: 10, flavor: 'La mesada de la cocina. Hay frascos de todos los colores.' },
+  { id: 'chispitas', label: 'las chispitas de colores', x: 4,  y: 18, flavor: 'La mesa del comedor. Está llena de cuadernos de Mateo.' }
 ];
 quests.push({ id: 'torta', pista: `${CONFIG.mama} te necesita en la cocina, adentro de casa.` });
-ents.push({ id: 'mama', map: 'casa', x: 3, y: 4, kind: 'person', long: true, quest: 'torta', pal: { h: '#7a4a24', d: '#e86a8a', q: '#5a4a8a' }, talk() {
+ents.push({ id: 'mama', map: 'casa', x: 11, y: 8, kind: 'person', long: true, quest: 'torta', pal: { h: '#7a4a24', d: '#e86a8a', q: '#5a4a8a' }, talk() {
   if (torta.state === 0) {
     return [step('mama', '¡Mi amor! Te estoy preparando una torta de cumpleaños...'),
             step('mama', 'Pero me faltan cosas. ¿Me ayudás a buscarlas por la casa?'),
-            step('mama', 'Necesito los huevos de la heladera, la harina de la alacena...'),
-            step('mama', '...¡y las chispitas de colores! Creo que Mateo se las llevó a su cuarto.'),
+            step('mama', 'Necesito los huevos de la heladera, la harina de la mesada...'),
+            step('mama', '...¡y las chispitas de colores! Creo que Mateo las dejó en la mesa del comedor.'),
             () => { torta.state = 1; }];
   }
   if (torta.state === 1) {
@@ -565,8 +630,8 @@ ITEMS.forEach(it => ents.push({ id: 'item-' + it.id, map: 'casa', x: it.x, y: it
 } }));
 
 // Papá: pregunta sobre la mejor amiga
-quests.push({ id: 'amiga', pista: `${CONFIG.papa} está en el living. ¡Tiene una pregunta para vos!` });
-ents.push({ id: 'papa', map: 'casa', x: 8, y: 7, kind: 'person', quest: 'amiga', pal: { h: '#3a2a1e', d: '#5b8ee8', q: '#2f3d66' }, talk() {
+quests.push({ id: 'amiga', pista: `${CONFIG.papa} está en el patio, haciendo el asado. ¡Tiene una pregunta para vos!` });
+ents.push({ id: 'papa', map: 'casa', x: 3, y: 2, kind: 'person', quest: 'amiga', pal: { h: '#3a2a1e', d: '#5b8ee8', q: '#2f3d66' }, talk() {
   if (done.has('amiga')) return [step('papa', `¡Seguro que ${CONFIG.amiga.correcta} viene a la fiesta!`)];
   return [step('papa', `¡Feliz cumple, ${N}! ¡Qué grande estás!`),
           { ...question('papa', '¿Cómo se llama tu mejor amiga?', { label: CONFIG.amiga.correcta }, CONFIG.amiga.otras.map(l => ({ label: l })), '¡Jaja, no! Esa no es. ¡Probá otra vez!'),
@@ -574,9 +639,9 @@ ents.push({ id: 'papa', map: 'casa', x: 8, y: 7, kind: 'person', quest: 'amiga',
 } });
 
 // Mateo: tarea de matemática en el cuaderno (sin opciones: hay que escribir el número)
-quests.push({ id: 'cuenta', pista: `${CONFIG.hermano} te espera en su cuarto con una tarea de matemática.` });
+quests.push({ id: 'cuenta', pista: `${CONFIG.hermano} está en el comedor haciendo la tarea. ¡Te necesita!` });
 const NB = { probs: CONFIG.tarea.map(t => { const m = t.match(/(\d+)\s*([+\-])\s*(\d+)/); const a = +m[1], b = +m[3]; return { txt: `${a} ${m[2]} ${b}`, ans: m[2] === '+' ? a + b : a - b, ok: false }; }), i: 0, input: '' };
-ents.push({ id: 'mateo', map: 'casa', x: 12, y: 6, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
+ents.push({ id: 'mateo', map: 'casa', x: 2, y: 17, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
   if (done.has('cuenta')) return [step('mateo', '¡Sos una genia de los números, hermanita!')];
   if (NB.i > 0) return [step('mateo', `¿Seguimos con la tarea? Te ${NB.probs.length - NB.i === 1 ? 'falta 1 cuenta' : 'faltan ' + (NB.probs.length - NB.i) + ' cuentas'}.`), () => setTimeout(openNotebook, 0)];
   return [step('mateo', '¡Hola, hermanita! Te tengo una tarea de matemática...'),
@@ -620,9 +685,16 @@ $('nbClose').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPr
 
 /* ======== BARRIO ======== */
 let tioMet = false;
-ents.push({ id: 'tio', map: 'pueblo', x: 5, y: 5, kind: 'person', pal: { h: '#2b1d14', d: '#3c9d6a', q: '#2f3d66' }, talk() {
+ents.push({ id: 'tio', map: 'pueblo', x: 5, y: 5, kind: 'person', quest: 'tio', pal: { h: '#2b1d14', d: '#3c9d6a', q: '#2f3d66' }, talk() {
   const s = [];
   if (!tioMet) { tioMet = true; s.push(step('tio', `¡Feliz cumple, ${N}! ¡Soy el ${CONFIG.tio.toLowerCase()}!`), step('tio', 'Si te perdés, vení a hablar conmigo y te doy una pista.')); }
+  if (!done.has('tio') && tioState === 0) return s.concat([step('tio', '¡Y te tengo un DESAFÍO de deportista! 💪'),
+    step('tio', `${CONFIG.retoTio.texto} Tenés ${CONFIG.retoTio.segundos} segundos.`),
+    step('tio', 'Pedile a mamá que te grabe un video con su celu mientras lo hacés.'),
+    step('tio', 'Después me lo manda por WhatsApp y yo te contesto con una palabra secreta. ¿Lista?'), () => setTimeout(openReto, 0)]);
+  if (!done.has('tio') && tioState === 1) return s.concat([step('tio', '¿Ya te contesté el video con la palabra secreta?'), () => setTimeout(() => openSecret({
+    text: `Escribí la palabra que el ${CONFIG.tio.toLowerCase()} contestó por WhatsApp.`, word: CONFIG.palabraTio, wrong: '¡Esa no es! ¿Seguro que el tío ya contestó?',
+    ok: () => say([step('tio', `¡${CONFIG.palabraTio.toUpperCase()}! ¡Vi tu video, sos una campeona! 🏆`), complete('tio'), ...starMsg()]) }), 0)]);
   if (!left()) return s.concat([step('tio', '¡Ya tenés todas las estrellas! La fiesta es en el parque, abajo de todo. ¡Seguí el caminito!')]);
   const q = quests.find(q => !done.has(q.id));
   return s.concat([step('tio', `¡Vas muy bien! Te ${faltan()}.`), step('tio', 'Una pista: ' + q.pista)]);
@@ -646,7 +718,7 @@ function talkPainter() {
   const c = CONFIG.color;
   return [step('pintora', `¡Hola, ${N}! Estoy pintando un cuadro para tu cumple.`),
           { ...question('pintora', '¿Cuál es tu color preferido?', { label: c.correcta.nombre, color: c.correcta.hex }, c.otras.map(o => ({ label: o.nombre, color: o.hex })), '¡Ese no es! Mirá bien y probá otra vez.'),
-            after: [complete('color'), () => { P.dress = c.correcta.hex; easelColor = c.correcta.hex; }, step('pintora', '¡Qué lindo color! Te lo regalo para tu vestido. ✨'), ...starMsg()] }];
+            after: [complete('color'), () => { P.dress = c.correcta.hex; easelColor = c.correcta.hex; const ci = WARD.colores.indexOf(c.correcta.hex); if (ci >= 0) OUT.colores = ci; }, step('pintora', '¡Qué lindo color! Te lo regalo para tu vestido. ✨'), ...starMsg()] }];
 }
 ents.push({ id: 'pintora', map: 'pueblo', x: 5, y: 9, kind: 'person', long: true, hat: 'beret', quest: 'color', pal: { h: '#e0a830', d: '#e86a5a', q: '#5a4a8a' }, talk: talkPainter });
 ents.push({ id: 'atril', map: 'pueblo', x: 6, y: 9, kind: 'easel', talk: talkPainter });
@@ -662,7 +734,7 @@ ents.push({ id: 'buho', map: 'pueblo', x: 22, y: 11, kind: 'cat', stump: true, p
 
 /* ======== PERROS ======== */
 const DOG_SPOTS = {
-  casa:   { map: 'casa',   x: 6,  y: 3,  dir: 'right', pista: '¡Escuché un ladrido adentro de casa, detrás del sillón del living!' },
+  casa:   { map: 'casa',   x: 13, y: 27, dir: 'left',  pista: '¡Escuché un ladrido adentro de casa, en el garage, atrás del auto!' },
   bosque: { map: 'pueblo', x: 25, y: 2,  dir: 'left',  pista: 'Escuché ladridos entre los árboles, arriba a la derecha del barrio.' },
   lago:   { map: 'pueblo', x: 8,  y: 16, dir: 'left',  pista: '¡Algo se mueve cerca del lago, abajo a la izquierda del barrio!' },
   plaza:  { map: 'pueblo', x: 27, y: 15, dir: 'left',  pista: 'Vi un perrito corriendo abajo a la derecha del barrio.' }
@@ -873,16 +945,17 @@ ents.push({ id: 'tia', map: 'pueblo', x: 25, y: 13, kind: 'person', long: true, 
     step('tia', '...¡y que le mande una foto de un sanguchito de miga! 🥪'),
     step('tia', 'La abuela te va a contestar con una palabra secreta. Cuando la tengas, vení y decímela.'),
     () => { tiaState = 1; }];
-  return [step('tia', '¿Ya tenés la palabra secreta de la abuela?'), () => setTimeout(openSecret, 0)];
+  return [step('tia', '¿Ya tenés la palabra secreta de la abuela?'), () => setTimeout(() => openSecret({
+    text: 'Escribí la palabra que le contestó la abuela a mamá por WhatsApp.', word: CONFIG.palabraSecreta, wrong: 'Mmm... esa no es. ¿Le preguntaste bien a la abuela?',
+    ok: () => say([step('tia', `¡${CONFIG.palabraSecreta.toUpperCase()}! ¡Esa es! ¡Misión secreta cumplida!`), complete('whatsapp'), step('tia', '¡Sos la mejor agente secreta de la familia! 🕵️'), ...starMsg()]) }), 0)];
 } });
-function openSecret() { mode = 'secret'; $('secretIn').value = ''; $('secretMsg').textContent = ''; $('secret').classList.remove('hidden'); setTimeout(() => $('secretIn').focus(), 50); }
+let SEC = null;
+function openSecret(o) { SEC = o; $('secretText').textContent = o.text; mode = 'secret'; $('secretIn').value = ''; $('secretMsg').textContent = ''; $('secret').classList.remove('hidden'); setTimeout(() => $('secretIn').focus(), 50); }
 function closeSecret() { $('secret').classList.add('hidden'); $('secretIn').blur(); mode = 'play'; }
 function checkSecret() {
   const v = $('secretIn').value; if (!v.trim()) return;
-  if (norm(v) === norm(CONFIG.palabraSecreta)) {
-    closeSecret(); Snd.correct();
-    say([step('tia', `¡${CONFIG.palabraSecreta.toUpperCase()}! ¡Esa es! ¡Misión secreta cumplida!`), complete('whatsapp'), step('tia', '¡Sos la mejor agente secreta de la familia! 🕵️'), ...starMsg()]);
-  } else { Snd.wrong(); $('secretMsg').textContent = 'Mmm... esa no es. ¿Le preguntaste bien a la abuela?'; $('secretIn').select(); }
+  if (norm(v) === norm(SEC.word)) { closeSecret(); Snd.correct(); SEC.ok(); }
+  else { Snd.wrong(); $('secretMsg').textContent = SEC.wrong; $('secretIn').select(); }
 }
 $('secretOk').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); checkSecret(); });
 $('secretBack').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeSecret(); });
@@ -923,6 +996,192 @@ $('drawOk').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPro
 $('drawBack').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeDraw(); });
 $('viewClose').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); $('view').classList.add('hidden'); mode = 'play'; });
 ['draw', 'view'].forEach(id => $(id).addEventListener('pointerdown', e => e.stopPropagation()));
+
+/* ======== ROPERO: vestir a Greta ======== */
+const WARD = {
+  ropa:    ['Vestido de princesa', 'Vestido', 'Vestido con volados', 'Remera y pollera', 'Remera y jean'],
+  colores: ['#f06aa8', '#9b59d0', '#4a8ae8', '#3cc0a0', '#7ad04a', '#ffd84a', '#ff8a3a', '#e8505b', '#ffffff', '#3a3256'],
+  diseno:  ['Liso', 'Lunares', 'Rayas', 'Estrellas', 'Corazones'],
+  pelo:    ['Suelto', 'Dos colitas', 'Rodete', 'Trenza'],
+  cabeza:  ['Nada', 'Moño', 'Corona', 'Flores', 'Gorrito de cumple', 'Orejas de gato'],
+  zapatos: ['Zapatillas', 'Botas', 'Chatitas', 'Sandalias'],
+  extra:   ['Nada', 'Alas de mariposa', 'Capa', 'Collar de perlas']
+};
+const TABS = [['ropa', '👗 Ropa'], ['colores', '🎨 Color'], ['diseno', '✨ Diseño'], ['pelo', '💇 Peinado'], ['cabeza', '👑 Cabeza'], ['zapatos', '👟 Zapatos'], ['extra', '🦋 Extra']];
+const OUT = { ropa: 0, colores: 0, diseno: 0, pelo: 0, cabeza: 1, zapatos: 0, extra: 0 };
+try { Object.assign(OUT, JSON.parse(localStorage.getItem('greta-ropa') || '{}')); } catch (e) {}
+const outColor = () => WARD.colores[OUT.colores];
+function shade(hex, a) {
+  const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(a < 0 ? v * (1 + a) : v + (255 - v) * a)));
+  return '#' + ((1 << 24) | (f(n >> 16) << 16) | (f((n >> 8) & 255) << 8) | f(n & 255)).toString(16).slice(1);
+}
+const isLight = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * 0.3 + ((n >> 8) & 255) * 0.59 + (n & 255) * 0.11) > 170; };
+const ACC = ['', '#ff4d6d', '#ffd84a', '#ff6b8b', '#5bc0eb', CONFIG.pelo];
+function applyOutfitToSprite() { P.dress = outColor(); P.acc = OUT.cabeza ? ACC[OUT.cabeza] : null; }
+function drawDoll(c, o, blink) {
+  C = c; OX = 0; OY = 6; c.clearRect(0, 0, 64, 104);
+  const K = '#2a2238', SK = SKIN, H = CONFIG.pelo, base = WARD.colores[o.colores], c2 = isLight(base) ? shade(base, -0.28) : shade(base, 0.6);
+  const Ro = (x, y, w, h, col) => { R(x - 1, y - 1, w + 2, h + 2, K); R(x, y, w, h, col); };
+  const cO = (x, y, r, col) => { circ(x, y, r + 1, K); circ(x, y, r, col); };
+  const patPix = (x, y) => {
+    switch (o.diseno) {
+      case 1: return (y % 5 < 2) && ((x + (Math.floor(y / 5) % 2) * 2) % 5 < 2);
+      case 2: return y % 4 < 2;
+      case 3: { const off = (Math.floor(y / 8) % 2) * 4, cx = (x + off) % 8, cy = y % 8; return (cx === 3 && cy >= 2 && cy <= 4) || (cy === 3 && cx >= 2 && cx <= 4); }
+      case 4: { const off = (Math.floor(y / 7) % 2) * 4, cx = (x + off) % 8, cy = y % 7; return (cy === 2 && (cx === 2 || cx === 4)) || (cy === 2 && cx === 3 && false) || (cy === 3 && cx >= 1 && cx <= 5 && cx !== 0) && false || (cy === 3 && cx >= 2 && cx <= 4) || (cy === 2 && (cx === 1 || cx === 5)) || (cy === 4 && cx === 3); }
+    } return false;
+  };
+  const pc = o.diseno === 3 ? '#fff6a8' : o.diseno === 4 ? (isLight(base) ? '#e8505b' : '#ffd6e4') : c2;
+  // filas: [y, x0, x1]; garment con contorno + estampado
+  const garment = (rows, col, plain) => {
+    rows.forEach(([y, a, b], i) => { R(a - 1, y, b - a + 2, 1, K); if (i === 0) R(a, y - 1, b - a, 1, K); if (i === rows.length - 1) R(a, y + 1, b - a, 1, K); });
+    rows.forEach(([y, a, b]) => { R(a, y, b - a, 1, col); if (!plain && o.diseno) for (let x = a; x < b; x++) if (patPix(x, y)) R(x, y, 1, 1, pc); });
+  };
+  const trap = (y0, y1, w0, w1) => { const r = []; for (let y = y0; y <= y1; y++) { const w = Math.round(w0 + (w1 - w0) * (y - y0) / Math.max(1, y1 - y0)); r.push([y, 32 - w, 32 + w]); } return r; };
+  // extra detrás
+  if (o.extra === 1) { const wc = '#bfe6ff'; [[15, 40, 11], [49, 40, 11]].forEach(([x, y, r]) => { cO(x, y, r, wc); circ(x, y, r - 4, '#e8f6ff'); }); [[18, 56, 7], [46, 56, 7]].forEach(([x, y, r]) => { cO(x, y, r, '#ffc6ec'); }); R(12, 38, 2, 2, '#ffd84a'); R(50, 38, 2, 2, '#ffd84a'); }
+  if (o.extra === 2) garment(trap(36, 80, 9, 19), '#c83a4a', true);
+  // pelo de atrás
+  if (o.pelo === 0) { Ro(19, 12, 26, 32, H); R(19, 40, 26, 4, shade(H, -0.15)); }
+  if (o.pelo === 1) { cO(16, 26, 6, H); cO(48, 26, 6, H); cO(17, 35, 4, H); cO(47, 35, 4, H); R(19, 22, 3, 3, '#ff6b8b'); R(42, 22, 3, 3, '#ff6b8b'); }
+  if (o.pelo === 2) cO(32, 5, 7, H);
+  if (o.pelo === 3) { Ro(21, 12, 22, 14, H); for (let i = 0; i < 6; i++) cO(44 + (i % 2), 28 + i * 5, 3, i % 2 ? shade(H, -0.12) : H); R(42, 57, 5, 3, '#ff6b8b'); }
+  // piernas
+  const legEnd = 86;
+  if (o.ropa !== 4) { Ro(26, 64, 5, legEnd - 64, SK); Ro(33, 64, 5, legEnd - 64, SK); }
+  // brazos
+  Ro(17, 39, 5, 21, SK); Ro(42, 39, 5, 21, SK); cO(19, 61, 2, SK); cO(44, 61, 2, SK);
+  // ropa
+  const top = trap(36, 49, 8, 9);
+  if (o.ropa === 0) { garment(top, base); garment(trap(50, 74, 10, 20), base); garment([[49, 24, 40]], shade(base, -0.2), true); cO(22, 38, 4, base); cO(42, 38, 4, base); }
+  if (o.ropa === 1) { garment(top, base); garment(trap(50, 66, 10, 14), base); R(28, 37, 8, 1, '#ffffff'); Ro(19, 37, 4, 5, base); Ro(42, 37, 4, 5, base); }
+  if (o.ropa === 2) { garment(top, base); garment(trap(50, 56, 10, 12), base); garment(trap(57, 63, 13, 15), shade(base, 0.25)); garment(trap(64, 71, 16, 18), base);
+    for (let x = 16; x < 49; x += 3) R(x, 72, 2, 1, '#ffffff'); Ro(19, 37, 4, 5, base); Ro(42, 37, 4, 5, base); }
+  if (o.ropa === 3) { garment(top, '#ffffff', true); circ(32, 43, 2, base); garment(trap(50, 62, 10, 15), base); Ro(19, 37, 4, 5, '#ffffff'); Ro(42, 37, 4, 5, '#ffffff'); }
+  if (o.ropa === 4) { garment(top, base); Ro(19, 37, 4, 5, base); Ro(42, 37, 4, 5, base);
+    garment([[50, 23, 41], [51, 23, 41], [52, 23, 41], [53, 23, 41]], '#4a6aa8', true);
+    const L = []; for (let y = 54; y <= legEnd; y++) { L.push([y, 24, 31]); } garment(L, '#4a6aa8', true);
+    const L2 = []; for (let y = 54; y <= legEnd; y++) { L2.push([y, 33, 40]); } garment(L2, '#4a6aa8', true); R(26, 60, 1, 4, '#7a9ad8'); R(37, 60, 1, 4, '#7a9ad8'); }
+  if (o.extra === 3) for (let i = 0; i < 7; i++) R(26 + i * 2, 36 + (i === 0 || i === 6 ? 0 : 1), 1, 1, '#ffffff');
+  // zapatos
+  const sh = [[25, 86], [33, 86]];
+  sh.forEach(([x, y]) => {
+    if (o.zapatos === 0) { Ro(x - 1, y, 8, 5, '#ffffff'); R(x - 1, y + 2, 8, 1, base === '#ffffff' ? '#e8505b' : base); R(x - 1, y + 4, 8, 1, '#c0c0d0'); }
+    if (o.zapatos === 1) { Ro(x, y - 9, 6, 14, '#8a4a2a'); R(x, y - 9, 6, 2, '#b87a4a'); }
+    if (o.zapatos === 2) { Ro(x, y + 1, 7, 4, shade(base, -0.25)); R(x + 3, y + 1, 2, 1, '#ffffff'); }
+    if (o.zapatos === 3) { Ro(x, y + 2, 7, 3, '#c98b4f'); R(x + 1, y, 5, 1, '#c98b4f'); R(x + 2, y + 1, 3, 1, SK); }
+  });
+  // cabeza
+  R(29, 30, 6, 7, SK); R(28, 30, 1, 6, K); R(35, 30, 1, 6, K);
+  cO(32, 20, 11, SK);
+  // pelo de adelante
+  Ro(21, 8, 22, 7, H); R(20, 12, 4, 12, H); R(40, 12, 4, 12, H); R(19, 12, 1, 12, K); R(44, 12, 1, 12, K);
+  R(24, 15, 4, 2, H); R(29, 15, 6, 1, H); R(36, 15, 4, 2, H); R(25, 10, 6, 1, shade(H, 0.3));
+  // cara
+  if (blink) { R(25, 22, 4, 1, K); R(35, 22, 4, 1, K); }
+  else { R(25, 19, 4, 5, K); R(35, 19, 4, 5, K); R(25, 19, 2, 2, '#ffffff'); R(35, 19, 2, 2, '#ffffff'); R(27, 22, 1, 1, '#6a4aa8'); R(37, 22, 1, 1, '#6a4aa8'); }
+  R(22, 24, 3, 2, '#ff9db0'); R(39, 24, 3, 2, '#ff9db0');
+  R(30, 27, 4, 1, '#7a2a3a'); R(29, 26, 1, 1, '#7a2a3a'); R(34, 26, 1, 1, '#7a2a3a');
+  // accesorio
+  if (o.cabeza === 1) { Ro(36, 5, 5, 5, ACC[1]); Ro(43, 5, 5, 5, ACC[1]); Ro(41, 6, 2, 3, shade(ACC[1], -0.3)); }
+  if (o.cabeza === 2) { Ro(23, 3, 18, 5, '#ffd84a'); [23, 29, 35, 40].forEach(x => Ro(x, 0, 1, 3, '#ffd84a')); Ro(31, -1, 2, 3, '#ffd84a'); R(26, 4, 2, 2, '#e8505b'); R(31, 4, 2, 2, '#4a8ae8'); R(36, 4, 2, 2, '#3cc0a0'); }
+  if (o.cabeza === 3) { [[23, '#ff6b8b'], [28, '#ffe14d'], [33, '#b48cff'], [38, '#ff6b8b'], [43, '#ffffff']].forEach(([x, col]) => { cO(x - 1, 8, 2, col); R(x - 1, 8, 1, 1, '#ffb000'); }); }
+  if (o.cabeza === 4) { for (let y = -5; y <= 7; y++) { const w = Math.round((y + 5) * 0.55); R(32 - w - 1, y, w * 2 + 3, 1, K); R(32 - w, y, w * 2 + 1, 1, (Math.floor((y + 5) / 3) % 2) ? '#5bc0eb' : '#ffd84a'); } cO(32, -5, 2, '#ff4d6d'); }
+  if (o.cabeza === 5) { for (let i = 0; i < 6; i++) { R(22 - 0 + i, 2 + i, 7 - i * 1, 1, K); R(36 + i, 2 + i, 7 - i, 1, K); } for (let i = 0; i < 5; i++) { R(23 + i, 3 + i, 5 - i, 1, H); R(37 + i, 3 + i, 5 - i, 1, H); } R(24, 5, 2, 2, '#ff9db0'); R(38, 5, 2, 2, '#ff9db0'); }
+}
+// --- interfaz ---
+let wardTab = 'ropa', wardBlink = null, wardFirst = false;
+const dollCv = $('doll');
+function openWard() {
+  mode = 'ward'; $('ward').classList.remove('hidden'); renderWardTabs(); renderWardOpts(); drawDoll(dollCv.getContext('2d'), OUT, false);
+  wardBlink = setInterval(() => { drawDoll(dollCv.getContext('2d'), OUT, true); setTimeout(() => drawDoll(dollCv.getContext('2d'), OUT, false), 140); }, 3200);
+}
+function closeWard() { clearInterval(wardBlink); $('ward').classList.add('hidden'); mode = 'play'; }
+function renderWardTabs() { $('wTabs').innerHTML = TABS.map(([k, n]) => `<button data-k="${k}" class="${k === wardTab ? 'on' : ''}">${n}</button>`).join(''); }
+function renderWardOpts() {
+  const el = $('wOpts'); el.innerHTML = '';
+  el.style.gridTemplateColumns = wardTab === 'colores' ? 'repeat(5,1fr)' : 'repeat(3,1fr)';
+  WARD[wardTab].forEach((v, i) => {
+    if (wardTab === 'colores') { const d = document.createElement('div'); d.className = 'sw2' + (OUT.colores === i ? ' on' : ''); d.style.background = v; d.dataset.i = i; el.appendChild(d); return; }
+    const d = document.createElement('div'); d.className = 'wo' + (OUT[wardTab] === i ? ' on' : ''); d.dataset.i = i;
+    const cvs = document.createElement('canvas'); cvs.width = 64; cvs.height = 104; drawDoll(cvs.getContext('2d'), { ...OUT, [wardTab]: i }, false);
+    d.appendChild(cvs); const s = document.createElement('span'); s.textContent = v; d.appendChild(s); el.appendChild(d);
+  });
+}
+function sparkleWard() {
+  const st = $('wStage'); dollCv.classList.remove('hop'); void dollCv.offsetWidth; dollCv.classList.add('hop');
+  for (let i = 0; i < 9; i++) { const s = document.createElement('span'); s.className = 'spark'; s.textContent = ['✦', '✧', '★', '♥'][i % 4];
+    s.style.left = (15 + Math.random() * 70) + '%'; s.style.top = (10 + Math.random() * 70) + '%'; s.style.color = ['#ffd84a', '#ff7ab8', '#78b8ff', '#ffffff'][i % 4]; st.appendChild(s); setTimeout(() => s.remove(), 850); }
+}
+function pickWard(k, i) {
+  OUT[k] = i; try { localStorage.setItem('greta-ropa', JSON.stringify(OUT)); } catch (e) {}
+  drawDoll(dollCv.getContext('2d'), OUT, false); renderWardOpts(); sparkleWard(); Snd.item();
+}
+$('ward').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  const tab = e.target.closest('[data-k]'); if (tab) { e.preventDefault(); wardTab = tab.dataset.k; renderWardTabs(); renderWardOpts(); Snd.sel(); return; }
+  const op = e.target.closest('#wOpts [data-i]'); if (op) { e.preventDefault(); pickWard(wardTab, +op.dataset.i); return; }
+  const b = e.target.closest('button'); if (!b) return; e.preventDefault();
+  if (b.id === 'wRandom') { Object.keys(WARD).forEach(k => OUT[k] = Math.floor(Math.random() * WARD[k].length)); pickWard('ropa', OUT.ropa); }
+  if (b.id === 'wClose') closeWard();
+  if (b.id === 'wDone') {
+    applyOutfitToSprite(); closeWard(); Snd.correct();
+    if (!done.has('ropa')) say([step('', '¡Qué linda estás! ¡Lista para la fiesta! ✨'), complete('ropa'), ...starMsg()]);
+    else say([step('', '¡Pilcha nueva! ¡Qué linda! ✨')]);
+  }
+});
+quests.push({ id: 'ropa', pista: 'Tu ropero está en tu cuarto. ¡Elegí qué ponerte para la fiesta!' });
+ents.push({ id: 'ropero', map: 'casa', x: 1, y: 10, kind: 'item', quest: 'ropa', talk() {
+  return [step('', done.has('ropa') ? '¡Tu ropero! ¿Te cambiás de ropa?' : '¡Tu ropero! Elegí qué ponerte para la fiesta.'), () => setTimeout(openWard, 0)];
+} });
+
+ents.push({ id: 'auto', map: 'casa', x: 10, y: 25, w: 2, kind: 'car', talk: () => [step('', 'El auto de la familia. ¡Brum brum! 🚗')] });
+ents.push({ id: 'auto2', map: 'casa', x: 10, y: 26, w: 2, kind: 'none', solid: true, decor: true });
+
+/* ======== ALEMÁN ======== */
+CHARS.profe = { name: 'Profe de alemán', face: { hair: '#d8a040', style: 'bun', shirt: '#4a6aa8', glasses: true, bg: '#e0ecff' } };
+quests.push({ id: 'aleman', pista: 'La profe de alemán está en el barrio, a la derecha del camino del medio.' });
+ents.push({ id: 'profe', map: 'pueblo', x: 21, y: 8, kind: 'person', long: true, quest: 'aleman', pal: { h: '#d8a040', d: '#4a6aa8', q: '#3a3a6a' }, talk() {
+  if (done.has('aleman')) return [step('profe', '¡Sehr gut! Eso significa «¡muy bien!» en alemán.')];
+  let chain = [complete('aleman'), step('profe', `Alles Gute zum Geburtstag, ${N}! ¡Eso quiere decir «feliz cumpleaños» en alemán!`), ...starMsg()];
+  for (let i = CONFIG.aleman.length - 1; i >= 0; i--) {
+    const a = CONFIG.aleman[i];
+    const q = { ...question('profe', `¿Qué significa «${a.palabra}»?`, { label: a.correcta }, a.otras.map(l => ({ label: l })), 'Nein, nein... ¡Probá otra vez!'),
+      after: [step('profe', `Richtig! ¡Correcto! «${a.palabra}» es ${a.correcta.replace(/^\S+\s/, '').toLowerCase()}.`), ...chain] };
+    chain = [q];
+  }
+  return [step('profe', `Hallo, ${N}! ¡Hola! Soy tu profe de alemán.`), step('profe', `Te voy a decir ${CONFIG.aleman.length} palabras en alemán. ¡Elegí qué significa cada una!`), ...chain];
+} });
+
+/* ======== DESAFÍO DEL TÍO ======== */
+let tioState = 0;
+quests.push({ id: 'tio', pista: `El ${CONFIG.tio.toLowerCase()} está en la puerta de tu casa. ¡Tiene un desafío de deportista!` });
+const RT = { t: 0, phase: 'idle', iv: null };
+function openReto() { mode = 'reto'; RT.phase = 'idle'; renderReto(); $('reto').classList.remove('hidden'); }
+function closeReto() { clearInterval(RT.iv); $('reto').classList.add('hidden'); mode = 'play'; }
+function renderReto() {
+  const seg = CONFIG.retoTio.segundos;
+  $('retoText').textContent = CONFIG.retoTio.texto;
+  $('retoBig').textContent = RT.phase === 'idle' ? seg + ' seg' : RT.phase === 'count' ? RT.t : RT.phase === 'run' ? RT.t : '¡TIEMPO! 🎉';
+  $('retoBar').style.width = RT.phase === 'run' ? (RT.t / seg * 100) + '%' : RT.phase === 'end' ? '0%' : '100%';
+  $('retoMsg').textContent = RT.phase === 'idle' ? '¿Mamá ya está grabando con el celu? 📱' : RT.phase === 'count' ? '¡Preparada...!' : RT.phase === 'run' ? '¡Dale, dale, dale! 💪' :
+    `¡Muy bien! Ahora pedile a mamá que le mande el video al ${CONFIG.tio.toLowerCase()} por WhatsApp.`;
+  $('retoGo').textContent = RT.phase === 'end' ? '¡Listo! ✔' : '¡Empezar!';
+  $('retoGo').classList.toggle('hidden', RT.phase === 'count' || RT.phase === 'run');
+}
+function startReto() {
+  if (RT.phase === 'end') { tioState = 1; closeReto(); say([step('tio', '¡Espero tu video! Cuando te conteste, vení a decirme la palabra secreta.')]); return; }
+  RT.phase = 'count'; RT.t = 3; renderReto(); Snd.sel();
+  clearInterval(RT.iv); RT.iv = setInterval(() => {
+    RT.t--;
+    if (RT.phase === 'count') { if (RT.t <= 0) { RT.phase = 'run'; RT.t = CONFIG.retoTio.segundos; Snd.ok(); } else Snd.sel(); }
+    else if (RT.phase === 'run') { if (RT.t <= 3 && RT.t > 0) Snd.sel(); if (RT.t <= 0) { RT.phase = 'end'; clearInterval(RT.iv); Snd.correct(); } }
+    renderReto();
+  }, 1000);
+}
+$('retoGo').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); startReto(); });
+$('retoBack').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeReto(); });
+$('reto').addEventListener('pointerdown', e => e.stopPropagation());
 
 /* ======== Extras opcionales ======== */
 const extraSpots = [[25, 13], [9, 7], [27, 9]];
@@ -1039,6 +1298,7 @@ function pressB() { if (mode === 'dialog') dialogB(); else if (mode === 'noteboo
 const KEYDIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') return;
+  if (mode === 'ward' || mode === 'reto') { if (e.key === 'Escape') { e.preventDefault(); mode === 'ward' ? closeWard() : closeReto(); } return; }
   if (mode === 'draw' || mode === 'view') { if (e.key === 'Escape' || (mode === 'view' && ['Enter','a','A',' '].includes(e.key))) { e.preventDefault(); $(mode).classList.add('hidden'); mode = 'play'; } return; }
   if (mode === 'karaoke') { if (e.key === 'Escape' && KK.step !== 'sing') closeKaraoke(); if (['b','B','x','X'].includes(e.key)) held.B = 1; return; }
   if (mode === 'notebook') {
@@ -1090,7 +1350,7 @@ function updateFade(dt) {
 }
 function startGame() {
   $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); $('snd').classList.remove('hidden');
-  placeAt('casa', 12, 3, 'down'); hud(); Snd.startMusic();
+  placeAt('casa', 2, 12, 'down'); hud(); Snd.startMusic();
   const varios = CONFIG.perros.length > 1;
   say([step('mama', `¡Buen día, ${N}! ¡¡Feliz cumpleaños número ${CONFIG.edad}!! 🎉`),
        step('mama', `¡Uy! Abrimos la puerta y ${listNames} ${varios ? 'se escaparon' : 'se escapó'}...`),
@@ -1188,6 +1448,9 @@ function drawEnt(e, sx, sy) {
       OX = sx; R(4,1,6,3,'#2a2238'); R(5,1,4,2,'#ffd84a');
       OX = sx + 32; R(5,0,7,4,'#2a2238'); R(6,0,5,3,'#78b8ff'); R(8,0,1,3,'#e8505b');
       break;
+    case 'car': {
+      R(1,-1,30,30,'#2a2238'); R(2,0,28,28,'#e8505b'); R(4,4,24,7,'#9fd3ff'); R(4,18,24,6,'#9fd3ff'); R(5,5,6,2,'#ffffff');
+      R(0,3,2,6,'#2a2238'); R(30,3,2,6,'#2a2238'); R(0,19,2,6,'#2a2238'); R(30,19,2,6,'#2a2238'); R(3,0,4,1,'#ffe14d'); R(25,0,4,1,'#ffe14d'); break; }
     case 'balloons': {
       ['#e8505b', '#ffd84a', '#78b8ff'].forEach((c, i) => { const bx = 2 + i * 5, by = -14 + Math.round(Math.sin(time * 2 + i) * 1.5) - (i === 1 ? 3 : 0);
         R(bx + 2, by + 6, 1, 10 - by - 8 + 4, '#ffffff'); circ(bx + 2, by + 2, 3, '#2a2238'); circ(bx + 2, by + 2, 2, c); R(bx + 1, by + 1, 1, 1, '#ffffff'); });
@@ -1195,7 +1458,7 @@ function drawEnt(e, sx, sy) {
   }
 }
 function drawPlayer(sx, sy) {
-  const pal = { k: '#2a2238', h: CONFIG.pelo, s: SKIN, p: '#ff9db0', d: P.dress, w: '#ffffff', b: '#4a3060', r: '#ff4d6d' };
+  const pal = { k: '#2a2238', h: CONFIG.pelo, s: SKIN, p: '#ff9db0', d: P.dress, w: '#ffffff', b: '#4a3060', r: P.acc === undefined ? '#ff4d6d' : (P.acc || CONFIG.pelo) };
   const f = P.moving && P.t > 0.2 && P.t < 0.8 ? (P.steps % 2 ? 1 : 2) : 0;
   const d = P.dir === 'left' || P.dir === 'right' ? 'side' : P.dir;
   ctx.drawImage(spr('g_' + d + f, pal, P.dir === 'left'), sx, sy - 2 - (f ? 1 : 0));
@@ -1217,7 +1480,7 @@ function render() {
     for (let x = Math.floor(camX / TS); x <= Math.floor((camX + VW) / TS) && x < W; x++)
       if (M[y][x] === WATER) { OX = x * TS - camX; OY = y * TS - camY; const o = Math.floor(time * 4 + x * 3 + y * 5) % 8; R(2 + (o % 6), 5, 4, 1, '#9fd3ff'); R(9 - (o % 5), 11, 4, 1, '#9fd3ff'); }
   if (cur.id === 'casa' && dibujo && dibujoImg && dibujoImg.complete) {
-    const fx = 1 * TS - camX + 3, fy = 2 * TS - camY + 2;
+    const fx = 13 * TS - camX + 4, fy = 9 * TS - camY + 4;
     ctx.fillStyle = '#2a2238'; ctx.fillRect(fx - 1, fy - 1, 9, 8); ctx.drawImage(dibujoImg, fx, fy, 7, 6);
     ctx.fillStyle = '#e8505b'; ctx.fillRect(fx + 2, fy - 2, 3, 2);
   }
@@ -1232,7 +1495,7 @@ function render() {
   list.sort((a, b) => a.y - b.y).forEach(o => o.draw());
   if (mode !== 'title') ents.filter(here).forEach(e => {
     const b = Math.round(Math.sin(time * 5) * 1.5), sx = e.x * TS - camX, sy = e.y * TS - camY;
-    if (e.kind === 'item') { if (torta.state === 1 && !torta.got.has(e.item)) bubble(sx, sy - 13 + b, '!', '#2f9a4a'); return; }
+    if (e.kind === 'item') { if (e.id === 'ropero') { if (!done.has('ropa')) bubble(sx, sy - 13 + b, '?', '#e8a000'); return; } if (torta.state === 1 && !torta.got.has(e.item)) bubble(sx, sy - 13 + b, '!', '#2f9a4a'); return; }
     if (!e.quest || done.has(e.quest) || e.following) return;
     if (e.id === 'mama' && torta.state === 1 && torta.got.size < ITEMS.length) return;
     if (e.kind === 'dog') { if ((time + e.x) % 3 < 1.2) bubble(sx, sy - 14 + b, '!', '#e8505b'); }
