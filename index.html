@@ -363,7 +363,7 @@ const GRASS=0, FLOWER=1, PATH=2, TREE=3, WATER=4, ROOF=5, WALL=6, WIN=7, DOOR=8,
       FLOOR=11, WALLI=12, WALLWIN=13, VOID=14, PART=15, RUG=16, MAT=17, FRIDGE=18, COUNTER=19, STOVE=20,
       SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30, WARDROBE=31, GRILL=32, SINK=33, WASHER=34, TUB=35, TOILET=36;
 const WALKABLE = new Set([GRASS, FLOWER, PATH, FLOOR, RUG, MAT]);
-const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 4, 29] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
+const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 4, 20] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
 const EXITS = { casa: ['pueblo', 4, 5], abuela: ['pueblo', 11, 5] };
 const MAPS = {};
 let cur = null, M = null, W = 0, H = 0;
@@ -395,23 +395,23 @@ rect(0,0,1,10,VOID); rect(14,0,1,10,VOID); rect(0,9,15,1,VOID);
 rect(6,2,3,1,SOFA); M[2][10]=PIANO; M[2][11]=PIANO; M[2][2]=SHELF; M[2][3]=SHELF; M[2][1]=PLANT; M[2][13]=PLANT;
 rect(5,5,5,3,RUG); M[6][2]=TABLEI; M[6][3]=TABLEI; M[8][7]=MAT;
 
-// --- La casa de Greta por dentro (según el plano real) ---
-makeMap('casa', 15, 31, FLOOR);
-rect(0,0,15,31,VOID);
-rect(1,1,13,5,GRASS); M[1][1]=GRILL; M[1][2]=GRILL; for (let x = 6; x <= 13; x++) M[1][x] = BUSH;   // patio con parrilla y plantas
-rect(1,6,13,1,WALLI); M[6][2]=FLOOR; M[6][3]=FLOOR; M[6][10]=WALLWIN;                              // pared del fondo
-rect(1,7,13,22,FLOOR);
-rect(1,9,4,1,PART); rect(5,9,1,7,PART); rect(1,15,4,1,PART); M[12][5]=FLOOR;                        // cuarto de Greta
-rect(7,7,1,17,PART); M[8][7]=FLOOR; M[15][7]=FLOOR; M[19][7]=FLOOR;                                // pasillo | cocina, baño, cuarto papás
-M[7][13]=STOVE; M[8][13]=SINK; M[9][13]=FRIDGE; M[10][13]=COUNTER; M[11][13]=WASHER; M[10][9]=TABLEI; M[10][10]=TABLEI;  // cocina
-rect(8,13,6,1,PART); M[14][13]=TUB; M[16][13]=TOILET; M[14][8]=SINK;                               // baño
-rect(8,17,6,1,PART); M[19][12]=BEDH; M[19][13]=BEDH; M[20][12]=BEDF; M[20][13]=BEDF; M[18][8]=PLANT; // cuarto de los papás
-rect(7,23,7,1,PART); rect(7,24,1,5,PART); M[25][7]=FLOOR;                                          // garage
-M[10][1]=WARDROBE; M[10][4]=BEDH; M[11][4]=BEDF; M[14][1]=DESK;                                    // muebles del cuarto de Greta
-M[18][2]=TABLEI; M[18][3]=TABLEI; M[18][4]=TABLEI;                                                 // comedor
-M[24][1]=SOFA; M[25][1]=SOFA; M[26][1]=SOFA; M[26][2]=SOFA; M[26][3]=SOFA; M[24][3]=TABLEI; M[24][6]=TV;  // living: sillón en L, mesita, tele
-for (let x = 1; x <= 6; x++) if (x !== 4) M[28][x] = PLANT;                                         // plantas del frente
-rect(1,29,13,1,FENCE); M[29][4]=MAT;                                                               // rejas y portón
+// --- La casa de Greta por dentro (según el plano real, versión compacta) ---
+makeMap('casa', 15, 22, FLOOR);
+rect(0,0,15,22,VOID);
+rect(1,1,13,3,GRASS); rect(1,4,6,2,GRASS); M[1][1]=GRILL; M[1][2]=GRILL; for (let x = 8; x <= 13; x++) M[1][x] = BUSH;   // patio (con la parte de la izquierda)
+rect(7,4,7,1,WALLI); M[4][10]=WALLWIN;                                                              // pared del fondo de la cocina
+rect(7,5,7,4,FLOOR); M[5][13]=STOVE; M[6][13]=SINK; M[7][13]=FRIDGE; M[8][13]=WASHER; M[5][12]=COUNTER; M[7][9]=TABLEI; M[7][10]=TABLEI;  // cocina abierta
+rect(1,6,4,1,PART); rect(5,6,1,6,PART); M[9][5]=FLOOR; rect(1,7,4,4,FLOOR); rect(1,11,4,1,PART);   // cuarto de Greta
+M[7][1]=WARDROBE; M[7][4]=BEDH; M[8][4]=BEDF; M[10][1]=DESK;
+rect(6,6,1,6,FLOOR);                                                                               // pasillo
+rect(7,9,7,1,PART); rect(7,10,1,10,PART); M[11][7]=FLOOR; M[14][7]=FLOOR; M[18][7]=FLOOR;          // baño, cuarto papás y garage
+rect(8,10,6,2,FLOOR); M[10][13]=TUB; M[11][13]=TOILET; M[10][8]=SINK; rect(8,12,6,1,PART);         // baño
+rect(8,13,6,3,FLOOR); M[13][12]=BEDH; M[13][13]=BEDH; M[14][12]=BEDF; M[14][13]=BEDF; M[13][8]=PLANT; rect(8,16,6,1,PART);  // cuarto de los papás
+rect(8,17,6,3,FLOOR);                                                                              // garage
+rect(1,12,6,7,FLOOR); M[13][2]=TABLEI; M[13][3]=TABLEI; M[13][4]=TABLEI;                           // living-comedor
+M[15][1]=SOFA; M[16][1]=SOFA; M[17][1]=SOFA; M[17][2]=SOFA; M[17][3]=SOFA; M[15][3]=TABLEI; M[16][6]=TV;
+rect(1,19,6,1,FLOOR); for (let x = 1; x <= 6; x++) if (x !== 4) M[19][x] = PLANT;                  // plantas del frente
+rect(1,20,13,1,FENCE); M[20][4]=MAT;                                                               // rejas y portón
 
 /* ---------------- Dibujo de tiles ---------------- */
 let C = null, OX = 0, OY = 0;
@@ -602,12 +602,12 @@ function question(who, text, correct, wrongs, wrongText, name) {
 // Mamá: la torta (buscar 3 cosas por la casa)
 const torta = { state: 0, got: new Set() };
 const ITEMS = [
-  { id: 'huevos',    label: 'los huevos',               x: 13, y: 9,  flavor: 'La heladera. ¡Qué fresquito!' },
-  { id: 'harina',    label: 'la harina',                x: 13, y: 10, flavor: 'La mesada de la cocina. Hay frascos de todos los colores.' },
-  { id: 'chispitas', label: 'las chispitas de colores', x: 4,  y: 18, flavor: 'La mesa del comedor. Está llena de cuadernos de Mateo.' }
+  { id: 'huevos',    label: 'los huevos',               x: 13, y: 7,  flavor: 'La heladera. ¡Qué fresquito!' },
+  { id: 'harina',    label: 'la harina',                x: 12, y: 5,  flavor: 'La mesada de la cocina. Hay frascos de todos los colores.' },
+  { id: 'chispitas', label: 'las chispitas de colores', x: 4,  y: 13, flavor: 'La mesa del comedor. Está llena de cuadernos de Mateo.' }
 ];
 quests.push({ id: 'torta', pista: `${CONFIG.mama} te necesita en la cocina, adentro de casa.` });
-ents.push({ id: 'mama', map: 'casa', x: 11, y: 8, kind: 'person', long: true, quest: 'torta', pal: { h: '#7a4a24', d: '#e86a8a', q: '#5a4a8a' }, talk() {
+ents.push({ id: 'mama', map: 'casa', x: 11, y: 6, kind: 'person', long: true, quest: 'torta', pal: { h: '#7a4a24', d: '#e86a8a', q: '#5a4a8a' }, talk() {
   if (torta.state === 0) {
     return [step('mama', '¡Mi amor! Te estoy preparando una torta de cumpleaños...'),
             step('mama', 'Pero me faltan cosas. ¿Me ayudás a buscarlas por la casa?'),
@@ -641,7 +641,7 @@ ents.push({ id: 'papa', map: 'casa', x: 3, y: 2, kind: 'person', quest: 'amiga',
 // Mateo: tarea de matemática en el cuaderno (sin opciones: hay que escribir el número)
 quests.push({ id: 'cuenta', pista: `${CONFIG.hermano} está en el comedor haciendo la tarea. ¡Te necesita!` });
 const NB = { probs: CONFIG.tarea.map(t => { const m = t.match(/(\d+)\s*([+\-])\s*(\d+)/); const a = +m[1], b = +m[3]; return { txt: `${a} ${m[2]} ${b}`, ans: m[2] === '+' ? a + b : a - b, ok: false }; }), i: 0, input: '' };
-ents.push({ id: 'mateo', map: 'casa', x: 2, y: 17, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
+ents.push({ id: 'mateo', map: 'casa', x: 1, y: 13, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
   if (done.has('cuenta')) return [step('mateo', '¡Sos una genia de los números, hermanita!')];
   if (NB.i > 0) return [step('mateo', `¿Seguimos con la tarea? Te ${NB.probs.length - NB.i === 1 ? 'falta 1 cuenta' : 'faltan ' + (NB.probs.length - NB.i) + ' cuentas'}.`), () => setTimeout(openNotebook, 0)];
   return [step('mateo', '¡Hola, hermanita! Te tengo una tarea de matemática...'),
@@ -734,7 +734,7 @@ ents.push({ id: 'buho', map: 'pueblo', x: 22, y: 11, kind: 'cat', stump: true, p
 
 /* ======== PERROS ======== */
 const DOG_SPOTS = {
-  casa:   { map: 'casa',   x: 13, y: 27, dir: 'left',  pista: '¡Escuché un ladrido adentro de casa, en el garage, atrás del auto!' },
+  casa:   { map: 'casa',   x: 13, y: 18, dir: 'left',  pista: '¡Escuché un ladrido adentro de casa, en el garage, atrás del auto!' },
   bosque: { map: 'pueblo', x: 25, y: 2,  dir: 'left',  pista: 'Escuché ladridos entre los árboles, arriba a la derecha del barrio.' },
   lago:   { map: 'pueblo', x: 8,  y: 16, dir: 'left',  pista: '¡Algo se mueve cerca del lago, abajo a la izquierda del barrio!' },
   plaza:  { map: 'pueblo', x: 27, y: 15, dir: 'left',  pista: 'Vi un perrito corriendo abajo a la derecha del barrio.' }
@@ -1131,12 +1131,12 @@ $('ward').addEventListener('pointerdown', e => {
   }
 });
 quests.push({ id: 'ropa', pista: 'Tu ropero está en tu cuarto. ¡Elegí qué ponerte para la fiesta!' });
-ents.push({ id: 'ropero', map: 'casa', x: 1, y: 10, kind: 'item', quest: 'ropa', talk() {
+ents.push({ id: 'ropero', map: 'casa', x: 1, y: 7, kind: 'item', quest: 'ropa', talk() {
   return [step('', done.has('ropa') ? '¡Tu ropero! ¿Te cambiás de ropa?' : '¡Tu ropero! Elegí qué ponerte para la fiesta.'), () => setTimeout(openWard, 0)];
 } });
 
-ents.push({ id: 'auto', map: 'casa', x: 10, y: 25, w: 2, kind: 'car', talk: () => [step('', 'El auto de la familia. ¡Brum brum! 🚗')] });
-ents.push({ id: 'auto2', map: 'casa', x: 10, y: 26, w: 2, kind: 'none', solid: true, decor: true });
+ents.push({ id: 'auto', map: 'casa', x: 10, y: 17, w: 2, kind: 'car', talk: () => [step('', 'El auto de la familia. ¡Brum brum! 🚗')] });
+ents.push({ id: 'auto2', map: 'casa', x: 10, y: 18, w: 2, kind: 'none', solid: true, decor: true });
 
 /* ======== ALEMÁN ======== */
 CHARS.profe = { name: 'Profe de alemán', face: { hair: '#d8a040', style: 'bun', shirt: '#4a6aa8', glasses: true, bg: '#e0ecff' } };
@@ -1350,7 +1350,7 @@ function updateFade(dt) {
 }
 function startGame() {
   $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); $('snd').classList.remove('hidden');
-  placeAt('casa', 2, 12, 'down'); hud(); Snd.startMusic();
+  placeAt('casa', 2, 9, 'down'); hud(); Snd.startMusic();
   const varios = CONFIG.perros.length > 1;
   say([step('mama', `¡Buen día, ${N}! ¡¡Feliz cumpleaños número ${CONFIG.edad}!! 🎉`),
        step('mama', `¡Uy! Abrimos la puerta y ${listNames} ${varios ? 'se escaparon' : 'se escapó'}...`),
@@ -1480,7 +1480,7 @@ function render() {
     for (let x = Math.floor(camX / TS); x <= Math.floor((camX + VW) / TS) && x < W; x++)
       if (M[y][x] === WATER) { OX = x * TS - camX; OY = y * TS - camY; const o = Math.floor(time * 4 + x * 3 + y * 5) % 8; R(2 + (o % 6), 5, 4, 1, '#9fd3ff'); R(9 - (o % 5), 11, 4, 1, '#9fd3ff'); }
   if (cur.id === 'casa' && dibujo && dibujoImg && dibujoImg.complete) {
-    const fx = 13 * TS - camX + 4, fy = 9 * TS - camY + 4;
+    const fx = 13 * TS - camX + 4, fy = 7 * TS - camY + 4;
     ctx.fillStyle = '#2a2238'; ctx.fillRect(fx - 1, fy - 1, 9, 8); ctx.drawImage(dibujoImg, fx, fy, 7, 6);
     ctx.fillStyle = '#e8505b'; ctx.fillRect(fx + 2, fy - 2, 3, 2);
   }
