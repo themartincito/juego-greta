@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>La aventura de Greta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify Sans',ui-monospace,monospace;color:#2a2238;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+#app{position:fixed;inset:0;display:grid;place-content:center;place-items:center;gap:14px;grid-template-areas:"shell"}
+#shell{grid-area:shell;background:linear-gradient(#a596f5,#7c6bd8);padding:12px;border-radius:20px;box-shadow:0 8px 0 #5a4bb0,0 16px 40px rgba(0,0,0,.5)}
+#screen{position:relative;overflow:hidden;border-radius:6px;background:#000;box-shadow:0 0 0 3px #2b2350;touch-action:none}
+#game{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.hidden{display:none!important}
+
+/* HUD */
+#hud{position:absolute;top:2.5%;left:2.5%;background:rgba(255,255,255,.92);border:.14em solid #2a2238;border-radius:.35em;padding:.1em .45em;font-size:.95em;font-weight:700;display:flex;gap:.1em;align-items:center}
+#hud .st{color:#cfc8dc}
+#hud .st.on{color:#ffb400;text-shadow:0 0 .2em #ffe27a}
+#snd{position:absolute;top:2.5%;right:2.5%;background:rgba(255,255,255,.92);border:.14em solid #2a2238;border-radius:.35em;font:inherit;font-size:.9em;padding:.05em .35em;cursor:pointer}
+
+/* Diálogo estilo GBA */
+#dlg{position:absolute;left:2.5%;right:2.5%;bottom:3%;min-height:31%;display:flex;gap:.7em;align-items:flex-start;background:#fff;border:.18em solid #2a2238;border-radius:.45em;box-shadow:inset 0 0 0 .14em #fff,inset 0 0 0 .32em #78b8ff;padding:.7em 1em .6em;font-size:1.08em;line-height:1.38;font-weight:500;cursor:pointer}
+#face{width:4.1em;height:4.1em;flex:none;image-rendering:pixelated;border:.14em solid #2a2238;border-radius:.3em;margin-top:.1em}
+#dlgText{flex:1}
+#dlgName{position:absolute;top:-1.25em;left:.7em;background:#ffd84a;border:.14em solid #2a2238;border-radius:.3em;padding:0 .5em;font-size:.78em;font-weight:700}
+#dlgNext{position:absolute;right:.6em;bottom:.25em;color:#e8505b;animation:bob .6s infinite alternate;font-size:.8em}
+@keyframes bob{to{transform:translateY(.2em)}}
+#opts{position:absolute;right:2.5%;bottom:37%;max-width:75%;background:#fff;border:.18em solid #2a2238;border-radius:.45em;box-shadow:inset 0 0 0 .14em #fff,inset 0 0 0 .32em #78b8ff;padding:.45em .8em .45em .5em;font-size:1.02em;font-weight:600}
+.opt{display:flex;align-items:center;gap:.35em;padding:.12em .2em;cursor:pointer;border-radius:.25em;white-space:nowrap}
+.opt .cur{width:.8em;color:#e8505b;visibility:hidden}
+.opt.sel{background:#eef5ff}
+.opt.sel .cur{visibility:visible}
+.sw{display:inline-block;width:.95em;height:.95em;border:.12em solid #2a2238;border-radius:.2em;flex:none}
+
+/* Cuaderno de matemática */
+#nb{position:absolute;inset:0;background:rgba(30,20,60,.6);display:flex;gap:3%;align-items:center;justify-content:center;padding:3%}
+#paper{position:relative;width:60%;height:94%;background:#fffdf4;border:.15em solid #2a2238;border-radius:.4em;padding:.5em .8em .5em 2.3em;box-shadow:.25em .25em 0 rgba(0,0,0,.25)}
+#paper:before{content:'';position:absolute;left:1.6em;top:0;bottom:0;width:.12em;background:#f08a8a}
+#nbTitle{font-weight:700;color:#e8505b;font-size:1em;border-bottom:.1em solid #b8d4f0;padding-bottom:.15em;margin-bottom:.1em}
+.nrow{display:flex;align-items:center;gap:.35em;font-size:1.3em;font-weight:600;border-bottom:.07em solid #b8d4f0;padding:.12em 0;color:#3a3a6a}
+.nrow .bx{min-width:1.9em;height:1.15em;line-height:1.15em;border:.1em solid #9a9ab8;border-radius:.2em;background:#fff;text-align:center;color:#2a2238}
+.nrow.cur .bx{border-color:#e8505b;box-shadow:0 0 0 .1em #ffd6dc}
+.nrow.ok{color:#2f9a4a}.nrow.ok .bx{border-color:#2f9a4a;color:#2f9a4a}
+.nrow .tick{color:#2f9a4a;visibility:hidden}.nrow.ok .tick{visibility:visible}
+.nrow.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(.25em)}50%{transform:translateX(-.25em)}75%{transform:translateX(.15em)}}
+#nbMsg{position:absolute;left:2.3em;right:4.5em;bottom:.4em;font-size:.85em;font-weight:700;color:#e8505b;min-height:1.2em}
+#keys{width:32%;display:grid;grid-template-columns:repeat(3,1fr);gap:.35em}
+#keys button{font:inherit;font-size:1.35em;font-weight:700;aspect-ratio:1;border:.12em solid #2a2238;border-radius:.35em;background:#fff;color:#2a2238;box-shadow:0 .15em 0 #2a2238;cursor:pointer;touch-action:manipulation}
+#keys button:active{transform:translateY(.12em);box-shadow:none}
+#keys .del{background:#ffe0e4}#keys .okb{background:#d4f4dc}
+#nbClose{position:absolute;bottom:.35em;right:.5em;font:inherit;font-size:.75em;background:#fff;border:.12em solid #2a2238;border-radius:.3em;cursor:pointer}
+
+/* Karaoke */
+#kk{position:absolute;inset:0;background:radial-gradient(circle at 50% 0,#6a46b0,#1e1438 70%);color:#fff;padding:.6em .9em;display:flex;flex-direction:column;gap:.35em;font-size:.9em}
+#kk h2{font-size:1.2em;color:#ffd84a;text-shadow:.07em .07em #2a2238}
+.kksub{font-size:.72em;opacity:.92;line-height:1.3}
+.kkcols{display:flex;gap:.45em;flex:1;min-height:0}
+.kkcol{flex:1;background:rgba(255,255,255,.1);border-radius:.4em;padding:.35em;display:flex;flex-direction:column;gap:.3em}
+.kkcolh{font-size:.68em;font-weight:700;color:#ffd84a}
+.kkcol input{font:inherit;font-size:.72em;padding:.3em .4em;border-radius:.3em;border:.1em solid #2a2238;width:100%;color:#2a2238}
+.kkbtns{display:flex;gap:.5em;justify-content:flex-end;align-items:center}
+#kk button{font:inherit;font-weight:700;font-size:.8em;padding:.25em .7em;border-radius:.35em;border:.12em solid #2a2238;background:#fff;color:#2a2238;cursor:pointer}
+#kk button.pri{background:#ffd84a}
+.kkerr{font-size:.72em;color:#ffb0b8;min-height:1em;flex:1}
+.kkgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:.4em;flex:1}
+#kk .kkgrid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1em;font-size:.72em;padding:.2em}
+.kkgrid .em{font-size:1.7em}
+#kk .kkgrid button.sel{background:#ffd84a;box-shadow:0 0 0 .18em #fff}
+.kkwho{text-align:center;font-weight:700;color:#ffd84a;font-size:.95em}
+.kkprev,.kknext{text-align:center;opacity:.45;font-size:.85em;min-height:1.25em}
+.kkline{text-align:center;font-size:1.5em;font-weight:700;min-height:2.7em;display:flex;align-items:center;justify-content:center;text-shadow:.06em .06em #2a2238;line-height:1.15}
+.kkline.on{color:#fff6a8}
+.kkm{display:flex;gap:.6em;align-items:center;font-size:.72em}
+.kbar{flex:1;height:.75em;background:rgba(255,255,255,.2);border-radius:.4em;overflow:hidden}.kbar i{display:block;height:100%;width:0;background:#6cdc8a;transition:width .08s}
+.kbar.h i{background:#ff7aa8;transition:width .4s}
+.kkdots{display:flex;gap:.3em;justify-content:center}.kkdots span{width:.7em;height:.7em;border-radius:50%;background:rgba(255,255,255,.25)}.kkdots span.ok{background:#6cdc8a}.kkdots span.no{background:#ff7a8a}.kkdots span.now{box-shadow:0 0 0 .12em #ffd84a}
+#kk .hold{font-size:1em;padding:.5em;background:#ff7aa8;color:#fff;touch-action:none}
+#kk .hold.dn{background:#ff4d80;transform:scale(.97)}
+.kkbig{text-align:center;font-size:1.5em;font-weight:700;color:#fff6a8;margin-top:.5em}
+
+/* Dibujo con Espe */
+#draw,#view{position:absolute;inset:0;background:rgba(30,20,60,.65);display:flex;align-items:center;justify-content:center}
+#draw .box,#view .box{background:#fff;border:.18em solid #2a2238;border-radius:.5em;box-shadow:inset 0 0 0 .14em #fff,inset 0 0 0 .32em #ff9ccc;padding:.6em 1em;width:80%;max-height:92%;display:flex;flex-direction:column;gap:.45em;text-align:center;align-items:center}
+#draw h3,#view h3{font-size:1.1em;color:#e8505b}
+#draw p{font-size:.78em;line-height:1.35}
+#draw .need{font-weight:700;color:#7a3ab0}
+#drawPrev{max-width:60%;max-height:4.8em;border:.15em solid #2a2238;border-radius:.3em;display:none}
+#viewImg{max-width:100%;max-height:12em;border:.35em solid #a0602f;outline:.12em solid #2a2238;border-radius:.2em}
+#draw .row,#view .row{display:flex;gap:.6em;justify-content:center}
+#draw button,#view button,#draw label{font:inherit;font-weight:700;font-size:.85em;padding:.2em .8em;border:.14em solid #2a2238;border-radius:.35em;background:#fff;cursor:pointer;color:#2a2238}
+#draw .pri,#view .pri{background:#ffd84a}
+#draw label{background:#ff9ccc}
+#drawFile{display:none}
+
+/* Palabra secreta */
+#secret{position:absolute;inset:0;background:rgba(30,20,60,.65);display:flex;align-items:center;justify-content:center}
+#secret .box{background:#fff;border:.18em solid #2a2238;border-radius:.5em;box-shadow:inset 0 0 0 .14em #fff,inset 0 0 0 .32em #78b8ff;padding:.9em 1.1em;width:70%;display:flex;flex-direction:column;gap:.5em;text-align:center}
+#secret h3{font-size:1.15em;color:#e8505b}
+#secret p{font-size:.8em}
+#secret input{font:inherit;font-size:1.3em;font-weight:700;text-align:center;text-transform:uppercase;padding:.25em;border:.14em solid #2a2238;border-radius:.35em;letter-spacing:.08em}
+#secret .msg{font-size:.8em;font-weight:700;min-height:1.2em;color:#e8505b}
+#secret .row{display:flex;gap:.6em;justify-content:center}
+#secret button{font:inherit;font-weight:700;font-size:.9em;padding:.2em .8em;border:.14em solid #2a2238;border-radius:.35em;background:#fff;cursor:pointer}
+#secret button.pri{background:#ffd84a}
+
+/* Pantalla de título */
+#title{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4em;background:linear-gradient(rgba(30,20,70,.55),rgba(30,20,70,.75));color:#fff;text-align:center;cursor:pointer}
+#title h1{font-size:2.5em;line-height:1.05;color:#ffd84a;text-shadow:.07em 0 #2a2238,-.07em 0 #2a2238,0 .07em #2a2238,0 -.07em #2a2238,.12em .14em 0 #e8505b}
+#title .sub{font-size:1.05em;color:#ffe9f3;text-shadow:.06em .06em #2a2238}
+#title .start{margin-top:.6em;font-size:1.05em;font-weight:700;animation:blink 1s steps(2) infinite}
+#title .keys{margin-top:.5em;font-size:.68em;line-height:1.5;opacity:.95;background:rgba(0,0,0,.35);padding:.35em .8em;border-radius:.4em}
+@keyframes blink{50%{opacity:0}}
+kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding:0 .3em;font-weight:700}
+
+/* Fiesta final */
+#party{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,#ff9ccc,#7b5cd6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.2em}
+#confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#party .big{position:relative;font-size:2.2em;font-weight:700;line-height:1.05;color:#fff6a8;text-shadow:.07em 0 #2a2238,-.07em 0 #2a2238,0 .07em #2a2238,0 -.07em #2a2238,.1em .12em 0 #e8505b}
+#cake{position:relative;width:7.5em;image-rendering:pixelated}
+#party .msg{position:relative;font-size:.95em;max-width:85%;text-shadow:.06em .06em #2a2238}
+#party .row{position:relative;display:flex;gap:.6em;margin-top:.3em}
+#party button{font:inherit;font-size:.85em;font-weight:700;background:#fff;color:#2a2238;border:.14em solid #2a2238;border-radius:.4em;padding:.15em .6em;cursor:pointer}
+
+/* Controles táctiles */
+#dpad,#ab{display:none;touch-action:none}
+.touch #dpad,.touch #ab{display:block}
+.touch.portrait #app{grid-template-areas:"shell shell" "dpad ab";grid-template-columns:1fr 1fr;column-gap:30px}
+.touch.landscape #app{grid-template-areas:"dpad shell ab";grid-template-columns:auto auto auto;column-gap:18px}
+#dpad{grid-area:dpad;position:relative;width:150px;height:150px}
+#dpad div{position:absolute;background:#3b3456;box-shadow:0 4px 0 #1f1a33}
+#dpad .h{left:0;top:50px;width:150px;height:50px;border-radius:8px}
+#dpad .v{left:50px;top:0;width:50px;height:150px;border-radius:8px}
+#dpad .c{left:50px;top:50px;width:50px;height:50px;background:#4a4268;box-shadow:none}
+#dpad span{position:absolute;color:#a99fd6;font-size:20px;line-height:1}
+#ab{grid-area:ab;position:relative;width:160px;height:130px}
+#ab button{position:absolute;width:66px;height:66px;border-radius:50%;border:none;font:inherit;font-size:28px;font-weight:700;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.35)}
+#ab button:active,#ab button.dn{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+#btnA{right:0;top:10px;background:#e8505b}
+#btnB{left:0;top:54px;background:#5b8ee8}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="dpad"><div class="h"></div><div class="v"></div><div class="c"></div>
+    <span style="left:66px;top:12px">▲</span><span style="left:66px;bottom:12px">▼</span><span style="left:12px;top:64px">◀</span><span style="right:12px;top:64px">▶</span></div>
+  <div id="shell">
+    <div id="screen">
+      <canvas id="game" width="240" height="160"></canvas>
+      <div id="hud" class="hidden"></div>
+      <button id="snd" class="hidden" title="Sonido (M)">🔊</button>
+      <div id="dlg" class="hidden"><div id="dlgName"></div><canvas id="face" width="32" height="32"></canvas><div id="dlgText"></div><div id="dlgNext">▼</div></div>
+      <div id="opts" class="hidden"></div>
+      <div id="nb" class="hidden">
+        <div id="paper"><button id="nbClose">✕ salir</button><div id="nbTitle">📒 Tarea de matemática</div><div id="nbRows"></div><div id="nbMsg"></div></div>
+        <div id="keys"></div>
+      </div>
+      <div id="kk" class="hidden"></div>
+      <div id="draw" class="hidden"><div class="box"><h3>🖍️ El dibujo de la fiesta</h3>
+        <p>Con Espe, dibujen en un papel la fiesta de cumpleaños. Tiene que tener:<br><span class="need" id="drawNeed"></span></p>
+        <p>Cuando terminen, pedile a un grande que le saque una foto.</p>
+        <img id="drawPrev" alt="Tu dibujo">
+        <input type="file" id="drawFile" accept="image/*">
+        <div class="row"><button id="drawBack">Volver</button><label for="drawFile" id="drawPick">📷 Subir el dibujo</label><button class="pri hidden" id="drawOk">¡Listo! ✔</button></div></div></div>
+      <div id="view" class="hidden"><div class="box"><h3>🖼️ ¡Qué lindo dibujo!</h3><img id="viewImg" alt="Dibujo de la fiesta"><div class="row"><button class="pri" id="viewClose">Cerrar</button></div></div></div>
+      <div id="secret" class="hidden"><div class="box"><h3>🔐 Palabra secreta</h3><p>Escribí la palabra que le contestó la abuela a mamá por WhatsApp.</p>
+        <input id="secretIn" maxlength="30" autocomplete="off" autocapitalize="characters"><div class="msg" id="secretMsg"></div>
+        <div class="row"><button id="secretBack">Volver</button><button class="pri" id="secretOk">Listo ✔</button></div></div></div>
+      <div id="title">
+        <h1 id="ttl"></h1>
+        <div class="sub" id="ttlSub"></div>
+        <div class="start">▶ Apretá A para empezar</div>
+        <div class="keys"><kbd>← ↑ → ↓</kbd> caminar &nbsp; <kbd>A</kbd> hablar y aceptar &nbsp; <kbd>B</kbd> volver<br>(mantené <kbd>B</kbd> mientras caminás para correr)</div>
+      </div>
+      <div id="party" class="hidden">
+        <canvas id="confetti"></canvas>
+        <div class="big" id="partyTitle"></div>
+        <canvas id="cake" width="48" height="36"></canvas>
+        <div class="msg" id="partyMsg"></div>
+        <div class="row"><button id="songBtn">🎵 Otra vez la canción</button><button id="contBtn">Seguir jugando (A)</button></div>
+      </div>
+    </div>
+  </div>
+  <div id="ab"><button id="btnB">B</button><button id="btnA">A</button></div>
+</div>
+
+<script>
+/* =====================================================================
+   ✏️  DATOS PARA PERSONALIZAR — cambiá solo lo que está entre comillas
+   ===================================================================== */
+const CONFIG = {
+  nombre: "Greta",
+  edad: 7,
+  tio: "Tío Martín",
+  mama: "Mamá",
+  papa: "Papá",
+  hermano: "Mateo",
+  abuela: "Abuela",
+  tia: "Tía Lara",
+  // Qué tiene que tener el dibujo de la fiesta que hacen con Espe
+  dibujo: "la torta con las velitas, Felipe, Lola y Ginger, y vos con Espe",
+  // Misión de WhatsApp: la abuela le contesta a la mamá con esta palabra
+  palabraSecreta: "MIGUITA",
+  amiga: { correcta: "Espe", otras: ["Pepa", "Ramona"] },
+  mayusculas: false,            // true = todo el texto en MAYÚSCULAS
+  pelo: "#6b3a1f",              // color de pelo de Greta
+  vestido: "#f06aa8",           // color del vestido al empezar
+
+  comida: { correcta: "Milanesa con papas fritas", otras: ["Sopa de brócoli", "Pescado hervido"] },
+  color:  { correcta: { nombre: "Violeta", hex: "#9b59d0" },
+            otras: [ { nombre: "Gris", hex: "#8f8f8f" }, { nombre: "Marrón", hex: "#7a4a26" } ] },
+
+  // donde: "casa" (detrás del sillón), "bosque", "lago" o "plaza"
+  perros: [
+    { nombre: "Felipe", otros: ["Rocky", "Toby"],    pelo: "#b9773f", panza: "#f3dcb4", donde: "bosque" },
+    { nombre: "Lola",   otros: ["Luna", "Coco"],     pelo: "#3a3236", panza: "#9a8a80", donde: "lago" },
+    { nombre: "Ginger", otros: ["Canela", "Pelusa"], pelo: "#e8a050", panza: "#fff1dc", donde: "casa" }
+  ],
+
+  // Tarea de matemática de Mateo (se escribe el número, sin opciones)
+  tarea: ["5 + 3", "2 + 4", "6 + 1", "9 - 2", "4 + 4"],
+
+  // Karaoke de la abuela: true muestra un botón con una canción de ejemplo (útil para probar)
+  cancionEjemplo: true,
+
+  extras: [],                   // preguntas extra con animalitos (opcional)
+  mensajeFinal: "¡Te quiero muchísimo! Que tengas un cumple hermoso."
+};
+/* ===================================================================== */
+
+const $ = id => document.getElementById(id);
+const N = CONFIG.nombre;
+const T = s => CONFIG.mayusculas ? s.toUpperCase() : s;
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ---------------- Sonido (chiptune con WebAudio) ---------------- */
+const Snd = (() => {
+  let ac = null, master = null, music = null, muted = false, timer = null, nextT = 0, step = 0, lastBlip = 0, lastBump = 0;
+  const nf = n => 523.25 * Math.pow(2, n / 12);
+  function init() {
+    if (ac) return;
+    try {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+      music = ac.createGain(); music.gain.value = 1; music.connect(master);
+    } catch (e) { ac = null; }
+  }
+  function tone(f, t0, dur, type = 'square', vol = 0.05, dest = null, slide = 0) {
+    if (!ac) return;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t0);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(dest || master); o.start(t0); o.stop(t0 + dur + 0.03);
+  }
+  const now = () => ac ? ac.currentTime : 0;
+  const LEAD = [0,4,7,4, 9,7,4,null, 5,9,12,9, 7,null,4,null, 2,5,9,5, 7,5,4,2, 0,4,7,12, 7,null,null,null,
+                4,7,12,7, 14,12,9,null, 5,9,14,12, 11,null,7,null, 9,12,9,5, 7,4,2,4, 0,null,7,null, 0,null,null,null];
+  const BASS = [-24,-17,-24,-17, -19,-12,-19,-17, -22,-15,-17,-10, -24,-17,-24,-24,
+                -24,-17,-24,-17, -19,-12,-19,-17, -15,-19,-17,-17, -24,-17,-24,-24];
+  const SD = 0.2;
+  function sched() {
+    while (nextT < ac.currentTime + 0.25) {
+      const i = step % LEAD.length;
+      if (LEAD[i] !== null) tone(nf(LEAD[i]), nextT, SD * 0.9, 'square', 0.03, music);
+      if (i % 2 === 0) tone(nf(BASS[(i / 2) % BASS.length]), nextT, SD * 1.8, 'triangle', 0.07, music);
+      nextT += SD; step++;
+    }
+  }
+  return {
+    init,
+    raw: () => ({ ac, master, tone, nf }),
+    isMuted: () => muted,
+    startMusic() { if (!ac || timer) return; nextT = ac.currentTime + 0.1; step = 0; timer = setInterval(sched, 40); },
+    stopMusic() { clearInterval(timer); timer = null; },
+    toggle() { muted = !muted; if (master) master.gain.value = muted ? 0 : 0.9; return muted; },
+    blip() { if (!ac || now() - lastBlip < 0.05) return; lastBlip = now(); tone(1100, now(), 0.025, 'square', 0.015); },
+    sel() { if (ac) tone(880, now(), 0.05, 'square', 0.04); },
+    ok() { if (ac) tone(1320, now(), 0.06, 'square', 0.04); },
+    door() { if (!ac) return; const t = now(); tone(300, t, 0.08, 'square', 0.04); tone(450, t + 0.09, 0.12, 'square', 0.04); },
+    item() { if (!ac) return; const t = now(); [7,12,16].forEach((n,i) => tone(nf(n), t + i * 0.07, 0.12, 'square', 0.045)); },
+    bump() { if (!ac || now() - lastBump < 0.3) return; lastBump = now(); tone(110, now(), 0.08, 'square', 0.05); },
+    correct() { if (!ac) return; const t = now(); [0,4,7,12].forEach((n,i) => tone(nf(n), t + i * 0.08, 0.14, 'square', 0.05)); tone(nf(16), t + 0.32, 0.35, 'square', 0.05); },
+    wrong() { if (!ac) return; const t = now(); tone(300, t, 0.15, 'square', 0.04, null, 200); tone(200, t + 0.16, 0.25, 'square', 0.04, null, 140); },
+    star() { if (!ac) return; const t = now() + 0.45; [12,16,19,24].forEach((n,i) => tone(nf(n), t + i * 0.06, 0.1, 'triangle', 0.06)); },
+    bark() { if (!ac) return; const t = now(); tone(700, t, 0.08, 'square', 0.04, null, 350); tone(750, t + 0.14, 0.08, 'square', 0.04, null, 380); },
+    birthday() {
+      if (!ac) return 0;
+      const G4=-5,A4=-3,B4=-1,C5=0,D5=2,E5=4,F5=5,G5=7, b = 0.42;
+      const song = [[G4,.75],[G4,.25],[A4,1],[G4,1],[C5,1],[B4,2],
+                    [G4,.75],[G4,.25],[A4,1],[G4,1],[D5,1],[C5,2],
+                    [G4,.75],[G4,.25],[G5,1],[E5,1],[C5,1],[B4,1],[A4,2],
+                    [F5,.75],[F5,.25],[E5,1],[C5,1],[D5,1],[C5,3]];
+      let t = now() + 0.2;
+      song.forEach(([n,d]) => { tone(nf(n), t, d * b * 0.95, 'square', 0.05); tone(nf(n - 12), t, d * b * 0.95, 'triangle', 0.05); t += d * b; });
+      return t - now();
+    }
+  };
+})();
+
+/* ---------------- Mapas ---------------- */
+const TS = 16, VW = 240, VH = 160;
+const GRASS=0, FLOWER=1, PATH=2, TREE=3, WATER=4, ROOF=5, WALL=6, WIN=7, DOOR=8, FENCE=9, BUSH=10,
+      FLOOR=11, WALLI=12, WALLWIN=13, VOID=14, PART=15, RUG=16, MAT=17, FRIDGE=18, COUNTER=19, STOVE=20,
+      SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30;
+const WALKABLE = new Set([GRASS, FLOWER, PATH, FLOOR, RUG, MAT]);
+const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 7, 8] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
+const EXITS = { casa: ['pueblo', 4, 5], abuela: ['pueblo', 11, 5] };
+const MAPS = {};
+let cur = null, M = null, W = 0, H = 0;
+function useMap(id) { cur = MAPS[id]; M = cur.M; W = cur.w; H = cur.h; }
+function makeMap(id, w, h, fill) { MAPS[id] = { id, w, h, M: Array.from({ length: h }, () => Array(w).fill(fill)) }; useMap(id); }
+const rect = (x, y, w, h, t) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) M[j][i] = t; };
+const hash = (x, y) => (((x * 73856093) ^ (y * 19349663)) >>> 0);
+const tileAt = (x, y) => (M[y] && M[y][x] !== undefined) ? M[y][x] : VOID;
+
+// --- El barrio ---
+makeMap('pueblo', 30, 20, GRASS);
+rect(0,0,W,1,TREE); rect(0,H-1,W,1,TREE); rect(0,0,1,H,TREE); rect(W-1,0,1,H,TREE);
+rect(1,1,6,2,ROOF); rect(1,3,6,2,WALL); M[3][2]=WIN; M[3][5]=WIN; M[4][4]=DOOR;
+rect(1,6,28,1,PATH); rect(14,6,1,11,PATH); M[5][4]=PATH; M[5][18]=PATH;
+rect(2,13,6,5,WATER);
+rect(9,1,5,2,ROOF2); rect(9,3,5,2,WALL); M[3][10]=WIN; M[3][12]=WIN; M[4][11]=DOOR; M[5][11]=PATH;   // casa de la abuela
+rect(23,1,6,4,TREE); rect(25,2,3,2,GRASS); M[4][26]=GRASS;
+rect(11,14,7,1,FENCE); M[14][14]=PATH; rect(11,15,1,4,FENCE); rect(17,15,1,4,FENCE);
+[[9,9],[10,12],[19,9],[20,14],[25,8],[27,12],[24,16],[26,17],[21,17],[2,9],[8,2]].forEach(([x,y]) => M[y][x] = TREE);
+[[12,9],[16,9],[12,11],[16,11],[3,11],[19,12],[9,17],[20,4]].forEach(([x,y]) => M[y][x] = BUSH);
+for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++)
+  if (M[y][x] === GRASS && hash(x, y) % 100 < 13) M[y][x] = FLOWER;
+[[12,15],[16,15],[12,18],[16,18]].forEach(([x,y]) => M[y][x] = FLOWER);
+
+// --- Casa de la abuela por dentro ---
+makeMap('abuela', 15, 10, FLOOR);
+rect(0,0,15,2,WALLI); [3,11].forEach(x => M[1][x] = WALLWIN);
+rect(0,0,1,10,VOID); rect(14,0,1,10,VOID); rect(0,9,15,1,VOID);
+rect(6,2,3,1,SOFA); M[2][10]=PIANO; M[2][11]=PIANO; M[2][2]=SHELF; M[2][3]=SHELF; M[2][1]=PLANT; M[2][13]=PLANT;
+rect(5,5,5,3,RUG); M[6][2]=TABLEI; M[6][3]=TABLEI; M[8][7]=MAT;
+
+// --- La casa de Greta por dentro (una pantalla) ---
+makeMap('casa', 15, 10, FLOOR);
+rect(0,0,15,2,WALLI); [3,7,12].forEach(x => M[1][x] = WALLWIN);
+rect(0,0,1,10,VOID); rect(14,0,1,10,VOID); rect(0,9,15,1,VOID);
+rect(5,2,1,7,PART); M[6][5] = FLOOR;                       // cocina | living
+rect(10,2,1,7,PART); M[3][10] = FLOOR; M[7][10] = FLOOR;   // living | cuartos
+rect(11,5,3,1,PART);                                       // cuarto Greta | cuarto Mateo
+M[2][1]=FRIDGE; M[2][2]=COUNTER; M[2][3]=STOVE; M[2][4]=SHELF; M[6][2]=TABLEI; M[6][3]=TABLEI;
+M[2][6]=PLANT; M[2][7]=TV; M[2][9]=PLANT; rect(6,4,3,1,SOFA); rect(6,6,3,2,RUG); M[8][7]=MAT;
+M[2][11]=DESK; M[2][13]=BEDH; M[3][13]=BEDF;
+M[6][11]=DESK; M[6][13]=BEDH; M[7][13]=BEDF;
+
+/* ---------------- Dibujo de tiles ---------------- */
+let C = null, OX = 0, OY = 0;
+const R = (x, y, w, h, c) => { C.fillStyle = c; C.fillRect(OX + x, OY + y, w, h); };
+function circ(cx, cy, r, c) { C.fillStyle = c; for (let dy = -r; dy <= r; dy++) { const w = Math.floor(Math.sqrt(r * r - dy * dy + r * 0.6)); C.fillRect(OX + cx - w, OY + cy + dy, w * 2 + 1, 1); } }
+function grassT(x, y) {
+  R(0,0,16,16,'#82d05e'); const h = hash(x, y);
+  R(h % 12 + 1, (h >> 4) % 12 + 1, 1, 2, '#62b046'); R((h >> 8) % 12 + 2, (h >> 12) % 12 + 2, 1, 2, '#62b046'); R((h >> 8) % 12 + 3, (h >> 12) % 12 + 3, 1, 1, '#62b046');
+}
+function floorT(x) { R(0,0,16,16,'#dca46a'); R(0,7,16,1,'#c08a52'); R(0,15,16,1,'#c08a52'); R((x % 2) * 8 + 3,0,1,7,'#c08a52'); R(((x + 1) % 2) * 8 + 3,8,1,7,'#c08a52'); }
+function wallT(x, y) {
+  R(0,0,16,16,'#f4e4c1'); for (let i = 2; i < 16; i += 5) R(i,0,2,16,'#ecd8ae');
+  if (y === 0) { R(0,0,16,4,'#5a4a6a'); R(0,4,16,1,'#3a2a4a'); }
+  const b = tileAt(x, y + 1); if (b !== WALLI && b !== WALLWIN) { R(0,12,16,4,'#a0602f'); R(0,12,16,1,'#c98b4f'); }
+}
+function drawTile(t, x, y) {
+  switch (t) {
+    case GRASS: grassT(x, y); break;
+    case FLOWER: { grassT(x, y); const h = hash(x, y), cols = ['#ff6b8b','#ffe14d','#ffffff','#b48cff'];
+      [[3,4],[10,10]].forEach(([fx,fy], i) => { const c = cols[(h >> (i * 3)) % 4]; R(fx,fy-1,1,1,c); R(fx-1,fy,3,1,c); R(fx,fy+1,1,1,c); R(fx,fy,1,1,'#ffb000'); }); break; }
+    case PATH: { R(0,0,16,16,'#ecd69c'); const h = hash(x, y); R(h % 13 + 1, (h >> 5) % 13 + 1, 2, 1, '#d6bb7a'); R((h >> 9) % 13 + 1, (h >> 13) % 13 + 1, 1, 1, '#d6bb7a');
+      if (tileAt(x, y - 1) !== PATH) R(0,0,16,1,'#d6bb7a'); if (tileAt(x, y + 1) !== PATH) R(0,15,16,1,'#d6bb7a'); break; }
+    case TREE: grassT(x, y); R(6,10,4,6,'#7a4a24'); R(6,10,1,6,'#5c3518'); circ(8,6,7,'#245a26'); circ(8,6,6,'#3f9a3c'); circ(6,4,3,'#5cbf4e'); R(10,8,2,2,'#2f7d31'); R(4,9,2,1,'#2f7d31'); break;
+    case BUSH: grassT(x, y); circ(8,9,6,'#245a26'); circ(8,9,5,'#3f9a3c'); circ(6,7,2,'#5cbf4e'); R(10,11,1,1,'#ff6b8b'); R(5,11,1,1,'#ff6b8b'); break;
+    case WATER: R(0,0,16,16,'#4aa3f0'); if (tileAt(x, y - 1) !== WATER) R(0,0,16,2,'#c8ecff'); if (tileAt(x - 1, y) !== WATER) R(0,0,2,16,'#c8ecff'); if (tileAt(x + 1, y) !== WATER) R(14,0,2,16,'#3a86cc'); if (tileAt(x, y + 1) !== WATER) R(0,14,16,2,'#3a86cc'); break;
+    case ROOF2: R(0,0,16,16,'#4a7ad8'); for (let j = 3; j < 16; j += 4) R(0,j,16,1,'#2f58a8'); for (let j = 0; j < 16; j += 4) R(((j / 4) % 2) * 8 + 3, j, 1, 3, '#2f58a8'); if (tileAt(x, y + 1) !== ROOF2) R(0,14,16,2,'#1f3a78'); break;
+    case ROOF: R(0,0,16,16,'#d84a3a'); for (let j = 3; j < 16; j += 4) R(0,j,16,1,'#a8322a'); for (let j = 0; j < 16; j += 4) R(((j / 4) % 2) * 8 + 3, j, 1, 3, '#a8322a'); if (tileAt(x, y + 1) !== ROOF) R(0,14,16,2,'#7d2219'); break;
+    case WALL: case WIN: case DOOR:
+      R(0,0,16,16,'#f6e9c8'); R(0,15,16,1,'#b39b6c'); R(0,7,16,1,'#e6d4aa');
+      if (t === WIN) { R(3,2,10,9,'#2a2238'); R(4,3,8,7,'#8fd3ff'); R(4,3,3,2,'#ffffff'); R(7,3,1,7,'#2a2238'); R(4,6,8,1,'#2a2238'); R(2,11,12,2,'#c98b4f'); }
+      if (t === DOOR) { R(3,1,10,15,'#2a2238'); R(4,2,8,14,'#a0602f'); R(5,3,6,5,'#b97a43'); R(5,9,6,6,'#b97a43'); R(10,9,1,1,'#ffd84a'); }
+      break;
+    case FENCE: grassT(x, y); R(0,6,16,2,'#8a8aa0'); R(0,6,16,1,'#ffffff'); R(0,10,16,2,'#8a8aa0'); R(0,10,16,1,'#ffffff');
+      R(2,3,3,12,'#8a8aa0'); R(2,3,2,11,'#ffffff'); R(11,3,3,12,'#8a8aa0'); R(11,3,2,11,'#ffffff'); break;
+    // ---- interior ----
+    case FLOOR: floorT(x); break;
+    case WALLI: wallT(x, y); break;
+    case WALLWIN: wallT(x, y); R(2,2,2,10,'#e86a8a'); R(12,2,2,10,'#e86a8a'); R(4,3,8,8,'#2a2238'); R(5,4,6,6,'#8fd3ff'); R(5,4,2,2,'#ffffff'); R(7,4,1,6,'#2a2238'); break;
+    case VOID: R(0,0,16,16,'#2a2238'); break;
+    case PART: R(0,0,16,16,'#2a2238'); R(1,0,14,16,'#e9d6b0'); R(2,0,12,16,'#f4e4c1'); if (tileAt(x, y - 1) !== PART) R(1,0,14,2,'#fff7e4'); break;
+    case RUG: floorT(x); R(0,0,16,16,'#e86a8a'); if (tileAt(x, y - 1) !== RUG) R(0,0,16,2,'#ffd6e4'); if (tileAt(x, y + 1) !== RUG) R(0,14,16,2,'#ffd6e4');
+      if (tileAt(x - 1, y) !== RUG) R(0,0,2,16,'#ffd6e4'); if (tileAt(x + 1, y) !== RUG) R(14,0,2,16,'#ffd6e4'); R(7,7,2,2,'#ffd6e4'); break;
+    case MAT: floorT(x); R(2,5,12,8,'#2a2238'); R(3,6,10,6,'#7aa84a'); R(3,8,10,1,'#5a8a3a'); R(3,10,10,1,'#5a8a3a'); break;
+    case FRIDGE: floorT(x); R(2,0,12,16,'#2a2238'); R(3,1,10,14,'#f4f8ff'); R(3,6,10,1,'#c0c8d8'); R(11,2,1,3,'#8a8aa0'); R(11,8,1,4,'#8a8aa0'); R(4,9,2,2,'#ff6b8b'); break;
+    case COUNTER: floorT(x); R(0,2,16,14,'#2a2238'); R(0,3,16,4,'#e8e0d0'); R(0,7,16,8,'#b97a43'); R(2,9,5,4,'#a0602f'); R(9,9,5,4,'#a0602f'); R(10,3,4,2,'#78b8ff'); break;
+    case STOVE: floorT(x); R(0,2,16,14,'#2a2238'); R(1,3,14,4,'#d0d0dc'); R(3,4,3,2,'#2a2238'); R(10,4,3,2,'#2a2238'); R(1,7,14,8,'#e8e8f0'); R(3,9,10,4,'#2a2238'); R(4,10,8,2,'#5a5a70'); break;
+    case SHELF: floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,14,'#a0602f'); R(2,5,12,1,'#7a4a24'); R(2,10,12,1,'#7a4a24');
+      R(3,2,3,3,'#ffe14d'); R(8,2,3,3,'#ff6b6b'); R(3,6,5,4,'#ffffff'); R(10,6,3,4,'#6cc35a'); R(3,11,3,4,'#78b8ff'); R(9,11,4,4,'#e8b07a'); break;
+    case TV: floorT(x); R(1,9,14,7,'#2a2238'); R(2,10,12,5,'#8a5a30'); R(2,1,12,9,'#2a2238'); R(3,2,10,6,'#4a6aa8'); R(4,3,3,1,'#9fd3ff'); break;
+    case SOFA: floorT(x); R(0,2,16,13,'#2a2238'); R(0,3,16,5,'#c84a5a'); R(0,8,16,6,'#e86a7a'); R(0,8,16,1,'#ff9aa8');
+      if (tileAt(x - 1, y) !== SOFA) R(0,3,3,11,'#a8323a'); if (tileAt(x + 1, y) !== SOFA) R(13,3,3,11,'#a8323a'); break;
+    case TABLEI: floorT(x); R(0,3,16,10,'#2a2238'); R(0,4,16,7,'#c98b4f'); R(0,4,16,1,'#e8b07a'); R(1,11,2,4,'#7a4a24'); R(13,11,2,4,'#7a4a24'); break;
+    case BEDH: { const c = y >= 6 ? '#5b8ee8' : '#f06aa8'; floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,15,'#ffffff'); R(3,2,10,6,'#e4e4f4'); R(2,10,12,6,c); R(2,10,12,1,'#ffffff'); break; }
+    case BEDF: { const c = y >= 6 ? '#5b8ee8' : '#f06aa8'; floorT(x); R(1,0,14,15,'#2a2238'); R(2,0,12,14,c); R(2,13,12,1,'#2a2238'); R(4,4,8,1,'#ffffff'); R(4,8,8,1,'#ffffff'); break; }
+    case DESK: floorT(x); R(0,3,16,11,'#2a2238'); R(1,4,14,6,'#c98b4f'); R(1,10,14,3,'#a46a35'); R(3,5,5,3,'#ffffff'); R(10,5,2,3,'#e8505b'); break;
+    case PIANO: floorT(x); R(0,1,16,14,'#2a2238'); R(1,2,14,6,'#5a2e2e'); R(1,2,14,1,'#7a4a4a'); R(1,8,14,5,'#ffffff'); for (let i = 2; i < 15; i += 3) R(i,8,1,3,'#2a2238'); R(1,13,14,1,'#5a2e2e'); if (tileAt(x - 1, y) !== PIANO) R(3,3,6,3,'#f4e4c1'); break;
+    case PLANT: floorT(x); R(5,9,6,6,'#2a2238'); R(6,10,4,5,'#c8603a'); circ(8,6,5,'#245a26'); circ(8,6,4,'#3f9a3c'); R(6,4,2,2,'#5cbf4e'); break;
+  }
+}
+for (const id in MAPS) {
+  useMap(id); const cv = document.createElement('canvas'); cv.width = W * TS; cv.height = H * TS; cur.cv = cv;
+  C = cv.getContext('2d'); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { OX = x * TS; OY = y * TS; drawTile(M[y][x], x, y); }
+}
+useMap('pueblo');
+
+/* ---------------- Sprites ---------------- */
+const SPR = {};
+const gHead = {
+  down: ["................","...rrkkkkkk.....","...rkhhhhhhk....","...khhhhhhhhk...","..khhhhhhhhhhk..","..khhsssssshhk..","..khsksssskshk..","..khspsssspshk..","..khhsssssshhk..","...khhkkkkhhk...","....kddddddk....","...ksddwwddsk...","...ksddddddsk...","...kddddddddk..."],
+  up:   ["................","...rrkkkkkk.....","...rkhhhhhhk....","...khhhhhhhhk...","..khhhhhhhhhhk..","..khhhhhhhhhhk..","..khhhhhhhhhhk..","..khhhhhhhhhhk..","..khhhhhhhhhhk..","...khhhhhhhhk...","....kddddddk....","...ksddddddsk...","...ksddddddsk...","...kddddddddk..."],
+  side: ["................","....rrkkkkk.....","....rkhhhhhk....","....khhhhhhhk...","...khhhhhhhhhk..","...khhhhsssshk..","...khhhhssksk...","...khhhhsspsk...","...khhhhssssk...","....khhhkkkk....",".....kddddk.....",".....kdddsk.....",".....kddddk.....","....kddddddk...."]
+};
+const gLegs = {
+  fb: [["....kssk.kssk...","....kbbk.kbbk..."],["....kssk.kssk...","....kbbk..kk...."],["....kssk.kssk...",".....kk..kbbk..."]],
+  side: [[".....kssk.......",".....kbbk......."],["....ksk.ksk.....","...kbk...kbk...."],["....ksk.ksk.....","...kbk...kbk...."]]
+};
+['down','up','side'].forEach(d => [0,1,2].forEach(f => SPR['g_' + d + f] = gHead[d].concat(gLegs[d === 'side' ? 'side' : 'fb'][f])));
+SPR.person = ["................","................",".....kkkkkk.....","....khhhhhhk....","...khhhhhhhhk...","...khsssssshk...","...kskssssksk...","...kssssssssk...","...ksssmmsssk...","....kssssssk....","...kkddddddkk...","..ksddddddddsk..","..ksddddddddsk..","...kddddddddk...","...kqqqqqqqqk...","...kbbk..kbbk..."];
+SPR.personLong = SPR.person.map((row, y) => {
+  if (y < 5 || y > 10) return row; const a = row.split(''); a[1] = 'k'; a[2] = 'h'; a[13] = 'h'; a[14] = 'k'; return a.join('');
+});
+const dogBody = ["................","................","................","..........kk.kk.",".........kcckcck","........kcccccck","........kcckccnk",".k......kccccppk",".kc....kccccckk.","..kckkkkcccccck.","...kcccccccccck.","...kcllllllcck..","...kccccccccck.."];
+SPR.dog0 = dogBody.concat(["...kck.kck.kck..","...kk..kk..kk...","................"]);
+SPR.dog1 = dogBody.concat(["....kck.kck.kck.","....kk..kk..kk..","................"]);
+const cache = new Map();
+function spr(name, pal, flip) {
+  const key = name + JSON.stringify(pal) + (flip ? 'f' : '');
+  let c = cache.get(key);
+  if (!c) {
+    c = document.createElement('canvas'); c.width = 16; c.height = 16; const x = c.getContext('2d');
+    SPR[name].forEach((row, y) => { for (let i = 0; i < 16; i++) { const col = pal[row[i]]; if (!col) continue; x.fillStyle = col; x.fillRect(flip ? 15 - i : i, y, 1, 1); } });
+    cache.set(key, c);
+  }
+  return c;
+}
+
+/* ---------------- Personajes y retratos ---------------- */
+const SKIN = '#ffd7b5';
+const CHARS = {
+  tio:     { name: CONFIG.tio,     face: { hair: '#2b1d14', style: 'short', shirt: '#3c9d6a', beard: true, bg: '#d4f0dc' } },
+  mama:    { name: CONFIG.mama,    face: { hair: '#7a4a24', style: 'long',  shirt: '#e86a8a', bg: '#ffe0ea' } },
+  papa:    { name: CONFIG.papa,    face: { hair: '#3a2a1e', style: 'short', shirt: '#5b8ee8', bg: '#dce8ff' } },
+  mateo:   { name: CONFIG.hermano, face: { hair: '#5a341a', style: 'spiky', shirt: '#f0a030', bg: '#fff0cc' } },
+  chef:    { name: 'Cocinero',     face: { hair: '#5a341a', style: 'short', shirt: '#ffffff', hat: 'chef', bg: '#fff3d6' } },
+  pintora: { name: 'Pintora',      face: { hair: '#e0a830', style: 'long',  shirt: '#e86a5a', hat: 'beret', bg: '#ffe6d6' } },
+  abuela:  { name: CONFIG.abuela,  face: { hair: '#d4d4e0', style: 'bun', shirt: '#9b6ad0', glasses: true, bg: '#efe4ff' } },
+  tia:     { name: CONFIG.tia,     face: { hair: '#3a2418', style: 'long', shirt: '#2fb59a', bg: '#d6f5ee' } },
+  espe:    { name: CONFIG.amiga.correcta, face: { hair: '#c8862a', style: 'long', shirt: '#5bc0eb', bg: '#dff4ff' } },
+  buho:    { name: 'Gatito sabio', face: { type: 'cat', fur: '#f0a050', belly: '#fff1dc', bg: '#ffeedd' } },
+  gato:    { name: 'Gatito',       face: { type: 'cat', fur: '#f0a050', belly: '#fff1dc', bg: '#ffeedd' } }
+};
+const faceCv = $('face'), fctx = faceCv.getContext('2d');
+function drawFace(f, open, blink) {
+  C = fctx; OX = 0; OY = 0; fctx.clearRect(0, 0, 32, 32);
+  const K = '#2a2238';
+  R(0,0,32,32,f.bg || '#e6eeff');
+  if (f.type === 'owl') {
+    R(7,3,3,5,K); R(22,3,3,5,K); circ(16,18,12,K); circ(16,18,11,'#8a6440'); circ(16,22,6,'#c8a47a');
+    circ(11,14,4,K); circ(21,14,4,K); circ(11,14,3,'#fff'); circ(21,14,3,'#fff');
+    if (blink) { R(8,14,7,1,K); R(18,14,7,1,K); } else { R(10,13,3,3,K); R(20,13,3,3,K); R(10,13,1,1,'#fff'); R(20,13,1,1,'#fff'); }
+    R(14,18,4,2,'#ffb000'); if (open) { R(14,20,4,2,'#d07000'); R(15,20,2,1,'#5a2a00'); } else R(15,20,2,1,'#ffb000');
+    return;
+  }
+  if (f.type === 'dog' || f.type === 'cat') {
+    const fur = f.fur, belly = f.belly;
+    if (f.type === 'dog') { R(3,7,7,14,K); R(4,8,5,12,fur); R(22,7,7,14,K); R(23,8,5,12,fur); }
+    else { R(5,3,6,9,K); R(6,5,4,6,fur); R(21,3,6,9,K); R(22,5,4,6,fur); R(7,7,2,3,'#ff9db0'); R(23,7,2,3,'#ff9db0'); }
+    circ(16,17,11,K); circ(16,17,10,fur); circ(16,23,6,belly);
+    if (f.type === 'dog') { R(4,8,5,12,fur); R(23,8,5,12,fur); R(3,7,1,14,K); R(28,7,1,14,K); }
+    if (blink) { R(10,14,4,1,K); R(18,14,4,1,K); } else { R(11,12,3,4,K); R(19,12,3,4,K); R(11,12,1,1,'#fff'); R(19,12,1,1,'#fff'); }
+    R(14,19,4,3,f.type === 'dog' ? '#1a1a1a' : '#ff7a9a');
+    if (open) { R(13,23,6,3,K); R(14,24,4,3,'#ff7a9a'); } else { R(13,23,2,1,K); R(17,23,2,1,K); }
+    return;
+  }
+  const hair = f.hair;
+  if (f.style === 'long') { R(5,8,22,20,K); R(6,9,20,19,hair); }
+  R(3,26,26,6,K); R(4,27,24,5,f.shirt);
+  R(13,22,6,5,'#f0bf98');
+  R(8,7,16,17,K); R(9,8,14,15,SKIN); R(8,7,1,1,f.bg); R(23,7,1,1,f.bg);
+  R(8,4,16,7,K); R(9,5,14,5,hair); R(9,10,5,2,hair); R(18,10,5,2,hair);
+  if (f.style === 'long') { R(6,8,3,16,hair); R(23,8,3,16,hair); }
+  if (f.style === 'bun') { circ(16,3,4,K); circ(16,3,3,hair); R(6,9,3,10,hair); R(23,9,3,10,hair); }
+  if (f.style === 'spiky') { R(10,2,3,3,K); R(11,3,1,2,hair); R(15,1,3,4,K); R(16,2,1,3,hair); R(20,2,3,3,K); R(21,3,1,2,hair); }
+  if (blink) { R(11,15,4,1,K); R(18,15,4,1,K); } else { R(12,13,3,4,K); R(18,13,3,4,K); R(12,13,1,1,'#fff'); R(18,13,1,1,'#fff'); }
+  R(10,18,2,1,'#ff9db0'); R(21,18,2,1,'#ff9db0');
+  if (f.beard) { R(10,18,13,5,hair); R(11,23,11,1,hair); }
+  if (open) { R(14,19,5,3,'#7a2a3a'); R(15,21,3,1,'#ff7a9a'); } else R(14,20,5,1,'#7a2a3a');
+  if (f.glasses) { R(10,12,6,5,K); R(17,12,6,5,K); R(11,13,4,3,'#dff2ff'); R(18,13,4,3,'#dff2ff'); R(16,14,1,1,K); if (!blink) { R(12,14,2,2,K); R(19,14,2,2,K); } }
+  if (f.hat === 'chef') { R(8,0,16,7,K); R(9,0,14,6,'#ffffff'); R(7,5,18,3,K); R(8,6,16,1,'#ffffff'); R(18,1,1,4,'#e2e2ee'); }
+  if (f.hat === 'beret') { R(6,3,20,5,K); R(7,3,18,4,'#e8505b'); R(15,1,2,2,K); }
+}
+
+/* ---------------- Estado del juego ---------------- */
+const cv = $('game'), ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+let mode = 'title', time = 0;
+const done = new Set();
+const DIRS = { up: [0,-1], down: [0,1], left: [-1,0], right: [1,0] };
+const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
+const P = { x: 12, y: 3, fx: 12, fy: 3, dir: 'down', moving: false, t: 0, steps: 0, turn: 0, dress: CONFIG.vestido };
+const followers = [];
+const particles = [];
+let easelColor = null;
+const quests = [];
+const ents = [];
+const step = (who, text, name) => ({ who, text, name });
+const starMsg = () => [step('', '⭐ ¡Ganaste una estrella!')];
+const left = () => quests.length - done.size;
+const faltan = () => left() === 1 ? 'falta 1 estrella' : 'faltan ' + left() + ' estrellas';
+
+function complete(id) {
+  return () => {
+    if (done.has(id)) return;
+    done.add(id); hud(); Snd.star(); sparkle();
+    if (done.size === quests.length) D.queue.splice(1, 0, step('tio', `¡${N}, ya tenés TODAS las estrellas! Andá a la fiesta: está en el parque, abajo de todo. ¡Seguí el caminito!`));
+  };
+}
+function question(who, text, correct, wrongs, wrongText, name) {
+  return { who, name, text, options: [{ ...correct, ok: true }, ...wrongs.map(w => ({ ...w, ok: false }))], wrong: wrongText };
+}
+
+/* ======== CASA: misiones de la familia ======== */
+// Mamá: la torta (buscar 3 cosas por la casa)
+const torta = { state: 0, got: new Set() };
+const ITEMS = [
+  { id: 'huevos',    label: 'los huevos',             x: 1,  y: 2, flavor: 'La heladera. ¡Qué fresquito!' },
+  { id: 'harina',    label: 'la harina',              x: 4,  y: 2, flavor: 'La alacena. Hay frascos de todos los colores.' },
+  { id: 'chispitas', label: 'las chispitas de colores', x: 11, y: 6, flavor: 'El escritorio de Mateo. Está lleno de dibujos.' }
+];
+quests.push({ id: 'torta', pista: `${CONFIG.mama} te necesita en la cocina, adentro de casa.` });
+ents.push({ id: 'mama', map: 'casa', x: 3, y: 4, kind: 'person', long: true, quest: 'torta', pal: { h: '#7a4a24', d: '#e86a8a', q: '#5a4a8a' }, talk() {
+  if (torta.state === 0) {
+    return [step('mama', '¡Mi amor! Te estoy preparando una torta de cumpleaños...'),
+            step('mama', 'Pero me faltan cosas. ¿Me ayudás a buscarlas por la casa?'),
+            step('mama', 'Necesito los huevos de la heladera, la harina de la alacena...'),
+            step('mama', '...¡y las chispitas de colores! Creo que Mateo se las llevó a su cuarto.'),
+            () => { torta.state = 1; }];
+  }
+  if (torta.state === 1) {
+    const missing = ITEMS.filter(i => !torta.got.has(i.id));
+    if (missing.length) return [step('mama', 'Todavía me falta: ' + missing.map(i => i.label).join(', ') + '.')];
+    return [step('mama', '¡Trajiste todo! ¡Gracias, Greta!'), complete('torta'), () => { torta.state = 2; },
+            step('mama', '¡Con esto la torta va a quedar riquísima!'), ...starMsg()];
+  }
+  return [step('mama', 'La torta ya está en el horno. ¡Mmm, qué olorcito!')];
+} });
+ITEMS.forEach(it => ents.push({ id: 'item-' + it.id, map: 'casa', x: it.x, y: it.y, kind: 'item', item: it.id, talk() {
+  if (torta.state === 1 && !torta.got.has(it.id)) return [() => { torta.got.add(it.id); Snd.item(); }, step('', `¡Encontraste ${it.label}! Llevalos a la cocina.`)];
+  if (it.id === 'huevos' && dibujo) return [step('', '¡En la heladera está pegado el dibujo de la fiesta!'), () => setTimeout(viewDibujo, 0)];
+  return [step('', it.flavor)];
+} }));
+
+// Papá: pregunta sobre la mejor amiga
+quests.push({ id: 'amiga', pista: `${CONFIG.papa} está en el living. ¡Tiene una pregunta para vos!` });
+ents.push({ id: 'papa', map: 'casa', x: 8, y: 7, kind: 'person', quest: 'amiga', pal: { h: '#3a2a1e', d: '#5b8ee8', q: '#2f3d66' }, talk() {
+  if (done.has('amiga')) return [step('papa', `¡Seguro que ${CONFIG.amiga.correcta} viene a la fiesta!`)];
+  return [step('papa', `¡Feliz cumple, ${N}! ¡Qué grande estás!`),
+          { ...question('papa', '¿Cómo se llama tu mejor amiga?', { label: CONFIG.amiga.correcta }, CONFIG.amiga.otras.map(l => ({ label: l })), '¡Jaja, no! Esa no es. ¡Probá otra vez!'),
+            after: [complete('amiga'), step('papa', `¡Claro! ¡${CONFIG.amiga.correcta}! Son súper amigas.`), ...starMsg()] }];
+} });
+
+// Mateo: tarea de matemática en el cuaderno (sin opciones: hay que escribir el número)
+quests.push({ id: 'cuenta', pista: `${CONFIG.hermano} te espera en su cuarto con una tarea de matemática.` });
+const NB = { probs: CONFIG.tarea.map(t => { const m = t.match(/(\d+)\s*([+\-])\s*(\d+)/); const a = +m[1], b = +m[3]; return { txt: `${a} ${m[2]} ${b}`, ans: m[2] === '+' ? a + b : a - b, ok: false }; }), i: 0, input: '' };
+ents.push({ id: 'mateo', map: 'casa', x: 12, y: 6, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
+  if (done.has('cuenta')) return [step('mateo', '¡Sos una genia de los números, hermanita!')];
+  if (NB.i > 0) return [step('mateo', `¿Seguimos con la tarea? Te ${NB.probs.length - NB.i === 1 ? 'falta 1 cuenta' : 'faltan ' + (NB.probs.length - NB.i) + ' cuentas'}.`), () => setTimeout(openNotebook, 0)];
+  return [step('mateo', '¡Hola, hermanita! Te tengo una tarea de matemática...'),
+          step('mateo', 'Escribí el resultado de cada cuenta en el cuaderno. ¡Vos podés!'),
+          () => setTimeout(openNotebook, 0)];
+} });
+function openNotebook() {
+  mode = 'notebook'; NB.input = ''; $('nbMsg').textContent = ''; renderNotebook(); $('nb').classList.remove('hidden');
+}
+function closeNotebook() { $('nb').classList.add('hidden'); mode = 'play'; }
+function renderNotebook() {
+  $('nbRows').innerHTML = NB.probs.map((p, i) =>
+    `<div class="nrow${p.ok ? ' ok' : ''}${i === NB.i ? ' cur' : ''}" id="nr${i}"><span>${p.txt} =</span><span class="bx">${p.ok ? p.ans : (i === NB.i ? NB.input || '&nbsp;' : '&nbsp;')}</span><span class="tick">✔</span></div>`).join('');
+}
+function nbKey(k) {
+  if (mode !== 'notebook') return;
+  if (/^\d$/.test(k)) { if (NB.input.length < 2) { NB.input += k; Snd.sel(); } $('nbMsg').textContent = ''; }
+  else if (k === 'del') { NB.input = NB.input.slice(0, -1); Snd.sel(); }
+  else if (k === 'ok') {
+    if (!NB.input) return;
+    const p = NB.probs[NB.i];
+    if (+NB.input === p.ans) {
+      p.ok = true; NB.i++; NB.input = ''; Snd.item();
+      $('nbMsg').style.color = '#2f9a4a'; $('nbMsg').textContent = NB.i < NB.probs.length ? '¡Muy bien! ✔' : '¡Terminaste toda la tarea! 🎉';
+      if (NB.i >= NB.probs.length) { renderNotebook(); setTimeout(() => { closeNotebook();
+        say([step('mateo', '¡Guau! ¡Hiciste toda la tarea solita!'), complete('cuenta'), step('mateo', '¡Sos una genia de los números, hermanita!'), ...starMsg()]); }, 1200); return; }
+    } else {
+      Snd.wrong(); NB.input = ''; $('nbMsg').style.color = '#e8505b'; $('nbMsg').textContent = '¡Casi! Contá de nuevo con los dedos 🙂';
+      renderNotebook(); const r = $('nr' + NB.i); r.classList.remove('shake'); void r.offsetWidth; r.classList.add('shake'); return;
+    }
+  }
+  renderNotebook();
+}
+['1','2','3','4','5','6','7','8','9','del','0','ok'].forEach(k => {
+  const b = document.createElement('button'); b.textContent = k === 'del' ? '⌫' : k === 'ok' ? '✔' : k;
+  if (k === 'del') b.className = 'del'; if (k === 'ok') b.className = 'okb';
+  b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); Snd.init(); nbKey(k); });
+  $('keys').appendChild(b);
+});
+$('nbClose').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeNotebook(); });
+
+/* ======== BARRIO ======== */
+let tioMet = false;
+ents.push({ id: 'tio', map: 'pueblo', x: 5, y: 5, kind: 'person', pal: { h: '#2b1d14', d: '#3c9d6a', q: '#2f3d66' }, talk() {
+  const s = [];
+  if (!tioMet) { tioMet = true; s.push(step('tio', `¡Feliz cumple, ${N}! ¡Soy el ${CONFIG.tio.toLowerCase()}!`), step('tio', 'Si te perdés, vení a hablar conmigo y te doy una pista.')); }
+  if (!left()) return s.concat([step('tio', '¡Ya tenés todas las estrellas! La fiesta es en el parque, abajo de todo. ¡Seguí el caminito!')]);
+  const q = quests.find(q => !done.has(q.id));
+  return s.concat([step('tio', `¡Vas muy bien! Te ${faltan()}.`), step('tio', 'Una pista: ' + q.pista)]);
+} });
+ents.push({ id: 'cartel', map: 'pueblo', x: 7, y: 5, kind: 'sign', talk: () => [step('', `"Casa de ${N}". ¡Hoy hay fiesta de cumpleaños!`)] });
+
+quests.push({ id: 'comida', pista: 'El cocinero está arriba, en su puesto de comida del barrio.' });
+function talkChef() {
+  if (done.has('comida')) return [step('chef', `¡Ya estoy cocinando ${CONFIG.comida.correcta.toLowerCase()} para tu fiesta! ¡Mmm!`)];
+  return [step('chef', `¡Hola, ${N}! ¡Feliz cumple! Soy el cocinero del barrio.`),
+          step('chef', 'Quiero cocinarte algo riquísimo para la fiesta...'),
+          { ...question('chef', '¿Cuál es tu comida preferida?', { label: CONFIG.comida.correcta }, CONFIG.comida.otras.map(l => ({ label: l })), '¿Eso? ¡Mmm... no creo! Probá otra vez.'),
+            after: [complete('comida'), step('chef', '¡Sííí! ¡Qué rico! Ya mismo la empiezo a cocinar.'), ...starMsg()] }];
+}
+ents.push({ id: 'chef', map: 'pueblo', x: 18, y: 3, kind: 'person', hat: 'chef', quest: 'comida', pal: { h: '#5a341a', d: '#ffffff', q: '#454560' }, talk: talkChef });
+ents.push({ id: 'puesto', map: 'pueblo', x: 17, y: 4, w: 3, kind: 'stall', talk: talkChef });
+
+quests.push({ id: 'color', pista: 'La pintora está en el barrio, a la izquierda, al lado de su cuadro.' });
+function talkPainter() {
+  if (done.has('color')) return [step('pintora', `¡Qué lindo te queda el ${CONFIG.color.correcta.nombre.toLowerCase()}!`)];
+  const c = CONFIG.color;
+  return [step('pintora', `¡Hola, ${N}! Estoy pintando un cuadro para tu cumple.`),
+          { ...question('pintora', '¿Cuál es tu color preferido?', { label: c.correcta.nombre, color: c.correcta.hex }, c.otras.map(o => ({ label: o.nombre, color: o.hex })), '¡Ese no es! Mirá bien y probá otra vez.'),
+            after: [complete('color'), () => { P.dress = c.correcta.hex; easelColor = c.correcta.hex; }, step('pintora', '¡Qué lindo color! Te lo regalo para tu vestido. ✨'), ...starMsg()] }];
+}
+ents.push({ id: 'pintora', map: 'pueblo', x: 5, y: 9, kind: 'person', long: true, hat: 'beret', quest: 'color', pal: { h: '#e0a830', d: '#e86a5a', q: '#5a4a8a' }, talk: talkPainter });
+ents.push({ id: 'atril', map: 'pueblo', x: 6, y: 9, kind: 'easel', talk: talkPainter });
+
+quests.push({ id: 'edad', pista: 'El gatito sabio está en el barrio, a la derecha, arriba de un tronco.' });
+ents.push({ id: 'buho', map: 'pueblo', x: 22, y: 11, kind: 'cat', stump: true, pal: { k: '#2a2238', c: '#f0a050', l: '#fff1dc', n: '#ff7a9a', p: '#ff7a9a' }, quest: 'edad', talk() {
+  const e = CONFIG.edad;
+  if (done.has('edad')) return [step('buho', `¡Miau! ¡${e} años! ¡Qué grande estás!`)];
+  return [step('buho', 'Miau... Soy el gatito sabio. Sé muchas cosas...'),
+          { ...question('buho', '¿Cuántos años cumplís hoy?', { label: e + ' años' }, [{ label: (e - 1) + ' años' }, { label: (e + 1) + ' años' }], '¡Miau! Mmm... no. ¡Pensá bien!'),
+            after: [complete('edad'), step('buho', `¡Miau miau! ¡Sí! ¡${e} años! ¡Feliz cumpleaños!`), ...starMsg()] }];
+} });
+
+/* ======== PERROS ======== */
+const DOG_SPOTS = {
+  casa:   { map: 'casa',   x: 6,  y: 3,  dir: 'right', pista: '¡Escuché un ladrido adentro de casa, detrás del sillón del living!' },
+  bosque: { map: 'pueblo', x: 25, y: 2,  dir: 'left',  pista: 'Escuché ladridos entre los árboles, arriba a la derecha del barrio.' },
+  lago:   { map: 'pueblo', x: 8,  y: 16, dir: 'left',  pista: '¡Algo se mueve cerca del lago, abajo a la izquierda del barrio!' },
+  plaza:  { map: 'pueblo', x: 27, y: 15, dir: 'left',  pista: 'Vi un perrito corriendo abajo a la derecha del barrio.' }
+};
+const dogNames = CONFIG.perros.map(p => p.nombre);
+const listNames = dogNames.length > 1 ? dogNames.slice(0, -1).join(', ') + ' y ' + dogNames[dogNames.length - 1] : dogNames[0];
+CONFIG.perros.slice(0, 4).forEach((p, i) => {
+  const id = 'perro' + i, sp = DOG_SPOTS[p.donde] || DOG_SPOTS.plaza;
+  CHARS[id] = { name: p.nombre, face: { type: 'dog', fur: p.pelo, belly: p.panza, bg: '#fff3d6' } };
+  quests.push({ id, pista: sp.pista });
+  const dog = { id, map: sp.map, x: sp.x, y: sp.y, fx: sp.x, fy: sp.y, kind: 'dog', dir: sp.dir, quest: id,
+    pal: { k: '#2a2238', c: p.pelo, l: p.panza, n: '#1a1a1a', p: '#ff7a9a' },
+    talk() {
+      if (dog.following) return [step(id, '¡Guau guau! (mueve la cola feliz)')];
+      Snd.bark();
+      return [step(id, '¡Guau! ¡Guau!', '¿?'), step('', '¡Encontraste a un perrito!'),
+              { ...question(id, '¿Cómo se llama?', { label: p.nombre }, p.otros.map(l => ({ label: l })), '¡Guau! (te mira raro... ¡ese no es su nombre!)', '¿?'),
+                after: [complete(id), () => { dog.following = true; followers.push(dog); Snd.bark(); },
+                        step(id, `¡Guau guau! (¡Sí! ¡Es ${p.nombre}! Ahora te va a seguir a todos lados.)`), ...starMsg()] }];
+    } };
+  ents.push(dog);
+});
+
+/* ======== KARAOKE con la abuela ======== */
+const KK = { step: 'write', lines: Array(9).fill(''), track: 0, preview: null, play: null, mic: null, res: null };
+try { const sv = JSON.parse(localStorage.getItem('greta-cancion') || 'null'); if (sv && sv.length === 9) KK.lines = sv; } catch (e) {}
+const WHO = () => [N, CONFIG.amiga.correcta, '¡Las dos juntas!'];
+const EJEMPLO = ['Abuela linda, abuela de verdad', 'me das abrazos y mucha felicidad', 'hoy te canto con todo el corazón',
+                 'Tus comidas son lo más rico', 'cuando te veo me pongo a saltar', 'y con mi amiga venimos a cantar',
+                 'Abuela, abuela, te quiero un montón', 'sos la más linda, la más genial', '¡esta canción es tu regalo especial!'];
+const TRACKS = [
+  { name: 'Pop alegre',   em: '🎉', bpm: 118, steps: 8, prog: [[0,'M'],[7,'M'],[9,'m'],[5,'M']], drums: ['kh','h','sh','h','kh','kh','sh','h'], bass: [0,null,0,null,0,null,2,null] },
+  { name: 'Rock',         em: '🎸', bpm: 128, steps: 8, prog: [[0,'M'],[5,'M'],[7,'M'],[5,'M']], drums: ['kh','h','sh','h','kh','kh','sh','h'], bass: [0,0,0,0,0,0,0,0] },
+  { name: 'Balada',       em: '💖', bpm: 80,  steps: 8, prog: [[0,'M'],[9,'m'],[5,'M'],[7,'M']], drums: ['k','','h','','s','','h',''], bass: [0,null,null,null,2,null,null,null], arp: true },
+  { name: 'Cumbia',       em: '💃', bpm: 100, steps: 8, prog: [[0,'M'],[7,'M'],[0,'M'],[7,'M']], drums: ['kh','h','sh','h','kh','h','sh','hh'], bass: [0,null,2,null,0,null,2,null] },
+  { name: 'Disco',        em: '🪩', bpm: 116, steps: 8, prog: [[9,'m'],[5,'M'],[0,'M'],[7,'M']], drums: ['k','h','ks','h','k','h','ks','h'], bass: [0,3,0,3,0,3,0,3] },
+  { name: 'Reggaetón',    em: '🔥', bpm: 92,  steps: 8, prog: [[9,'m'],[5,'M'],[0,'M'],[7,'M']], drums: ['kh','h','h','sh','kh','h','sh','h'], bass: [0,null,null,0,null,null,0,null] },
+  { name: 'Vals',         em: '🩰', bpm: 150, steps: 6, prog: [[0,'M'],[7,'M'],[7,'M'],[0,'M']], drums: ['k','','h','','h',''], bass: [0,null,null,null,null,null], waltz: true, lineBars: 3 },
+  { name: 'Marcha',       em: '🥁', bpm: 112, steps: 8, prog: [[0,'M'],[5,'M'],[0,'M'],[7,'M']], drums: ['ks','','s','s','ks','','s',''], bass: [0,null,2,null,0,null,2,null] },
+  { name: 'Electrónica',  em: '🤖', bpm: 124, steps: 8, prog: [[9,'m'],[5,'M'],[0,'M'],[7,'M']], drums: ['kh','h','ksh','h','kh','h','ksh','h'], bass: [0,0,3,0,0,0,3,0], arp: true },
+  { name: 'Canción de cuna', em: '🌙', bpm: 72, steps: 8, prog: [[0,'M'],[5,'M'],[0,'M'],[7,'M']], drums: ['','','','','','','',''], bass: [0,null,null,null,null,null,null,null], arp: true }
+];
+let noiseBuf = null;
+function drum(type, t, out) {
+  const { ac } = Snd.raw();
+  if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate * 0.3, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  if (type === 'k') { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+    g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.15); o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.16); return; }
+  const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = noiseBuf;
+  f.type = 'highpass'; f.frequency.value = type === 's' ? 1200 : 7000; const dur = type === 's' ? 0.12 : 0.04;
+  g.gain.setValueAtTime(type === 's' ? 0.16 : 0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(f); f.connect(g); g.connect(out); src.start(t); src.stop(t + dur + 0.01);
+}
+function startBacking(tr, bars) {
+  const { ac, master, tone, nf } = Snd.raw(); if (!ac) return null;
+  const out = ac.createGain(); out.gain.value = 0.8; out.connect(master);
+  const sd = 60 / tr.bpm / 2, total = bars * tr.steps, t0 = ac.currentTime + 0.15;
+  let k = 0, nextT = t0;
+  const iv = setInterval(() => {
+    while (nextT < ac.currentTime + 0.25 && k < total) {
+      const st = k % tr.steps, bar = Math.floor(k / tr.steps), [root, q] = tr.prog[bar % tr.prog.length];
+      const ch = [0, q === 'M' ? 4 : 3, 7, 12];
+      (tr.drums[st] || '').split('').forEach(c => drum(c, nextT, out));
+      const b = tr.bass[st]; if (b !== null && b !== undefined) tone(nf(root - 24 + ch[b]), nextT, sd * 1.6, 'triangle', 0.09, out);
+      const padOn = tr.waltz ? (st === 2 || st === 4) : (st === 0 || st === 4);
+      if (padOn) [0, 1, 2].forEach(i => tone(nf(root - 12 + ch[i]), nextT, sd * (tr.waltz ? 1.5 : 3.5), 'square', 0.012, out));
+      if (tr.arp) tone(nf(root + ch[[0, 1, 2, 1][st % 4]]), nextT, sd * 0.9, 'triangle', 0.03, out);
+      nextT += sd; k++;
+    }
+    if (k >= total) clearInterval(iv);
+  }, 30);
+  return { t0, barDur: sd * tr.steps, stop() { clearInterval(iv); try { out.gain.setTargetAtTime(0, ac.currentTime, 0.05); setTimeout(() => out.disconnect(), 300); } catch (e) {} } };
+}
+function stopAllKK() { if (KK.preview) { KK.preview.stop(); KK.preview = null; } if (KK.play) { KK.play.stop(); KK.play = null; } if (KK.mic) { KK.mic.stream.getTracks().forEach(t => t.stop()); KK.mic = null; } }
+const kkEl = $('kk');
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function openKaraoke(stepName) {
+  Snd.init(); Snd.stopMusic(); mode = 'karaoke'; KK.step = stepName || 'write'; kkEl.classList.remove('hidden'); renderKK();
+}
+function closeKaraoke() { stopAllKK(); kkEl.classList.add('hidden'); mode = 'play'; Snd.startMusic(); }
+function renderKK() {
+  stopAllKK();
+  if (KK.step === 'write') {
+    const who = WHO();
+    kkEl.innerHTML = `<h2>📝 La canción para la ${esc(CONFIG.abuela.toLowerCase())}</h2>
+      <div class="kksub">Escribí 3 estrofas de 3 líneas cada una (¡pedile ayuda a un grande!). Si riman, ¡mejor!</div>
+      <div class="kkcols">${[0,1,2].map(e => `<div class="kkcol"><div class="kkcolh">Estrofa ${e + 1} · canta: ${esc(who[e])}</div>
+        ${[0,1,2].map(l => `<input data-i="${e * 3 + l}" maxlength="60" placeholder="Línea ${l + 1}..." autocomplete="off">`).join('')}</div>`).join('')}</div>
+      <div class="kkbtns"><div class="kkerr" id="kkErr"></div><button data-a="close">✕ Salir</button>${CONFIG.cancionEjemplo ? '<button data-a="ej">Canción de ejemplo</button>' : ''}<button class="pri" data-a="toMusic">Elegir la música ▶</button></div>`;
+    kkEl.querySelectorAll('input').forEach(inp => { inp.value = KK.lines[+inp.dataset.i]; inp.addEventListener('input', () => { KK.lines[+inp.dataset.i] = inp.value; saveSong(); }); });
+  } else if (KK.step === 'music') {
+    kkEl.innerHTML = `<h2>🎵 Elegí la música</h2><div class="kksub">Tocá una para escucharla. Después apretá "¡A cantar!".</div>
+      <div class="kkgrid">${TRACKS.map((t, i) => `<button data-t="${i}" class="${i === KK.track ? 'sel' : ''}"><span class="em">${t.em}</span>${esc(t.name)}</button>`).join('')}</div>
+      <div class="kkbtns"><button data-a="toWrite">◀ La letra</button><button class="pri" data-a="toSing">¡A cantar! 🎤</button></div>`;
+  } else if (KK.step === 'sing') {
+    kkEl.innerHTML = `<div class="kkwho" id="kkWho">Preparando el micrófono...</div>
+      <div class="kkprev" id="kkPrev"></div><div class="kkline" id="kkLine">🎤</div><div class="kknext" id="kkNext"></div>
+      <div class="kkdots" id="kkDots">${KK.lines.map(() => '<span></span>').join('')}</div>
+      <div class="kkm">🎤 <div class="kbar"><i id="kkMicBar"></i></div> ❤️ ${esc(CONFIG.abuela)} <div class="kbar h"><i id="kkLove"></i></div></div>
+      <div class="kkbtns" id="kkHoldWrap"></div>`;
+    startSinging();
+  } else if (KK.step === 'result') {
+    const r = KK.res, ok = r.sung >= 6;
+    kkEl.innerHTML = `<h2>${ok ? '🎉 ¡Qué hermoso!' : '😮 ¡Casi!'}</h2>
+      <div class="kkbig">${ok ? `¡La ${esc(CONFIG.abuela.toLowerCase())} está feliz! ❤️` : `La ${esc(CONFIG.abuela.toLowerCase())} casi no las escuchó...`}</div>
+      <div class="kksub" style="text-align:center;font-size:.9em;margin-top:.4em">Cantaron ${r.sung} de 9 líneas.${ok ? '' : ' ¡Canten más fuerte! Tienen que cantar por lo menos 6.'}</div>
+      <div class="kkdots" style="margin-top:.5em">${r.lines.map(v => `<span class="${v ? 'ok' : 'no'}"></span>`).join('')}</div>
+      <div style="flex:1"></div><div class="kkbtns">${ok ? '<button class="pri" data-a="win">Seguir ▶</button>' : '<button data-a="toMusic">Otra música</button><button class="pri" data-a="toSing">Probar de nuevo 🎤</button>'}</div>`;
+  }
+}
+function saveSong() { try { localStorage.setItem('greta-cancion', JSON.stringify(KK.lines)); } catch (e) {} }
+kkEl.addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.t !== undefined) {
+    KK.track = +b.dataset.t; kkEl.querySelectorAll('.kkgrid button').forEach(x => x.classList.toggle('sel', x === b));
+    if (KK.preview) KK.preview.stop(); KK.preview = startBacking(TRACKS[KK.track], 2); return;
+  }
+  const a = b.dataset.a; if (!a) return;
+  if (a !== 'hold') e.preventDefault();
+  if (a === 'close') closeKaraoke();
+  else if (a === 'ej') { KK.lines = EJEMPLO.slice(); saveSong(); renderKK(); }
+  else if (a === 'toWrite') { KK.step = 'write'; renderKK(); }
+  else if (a === 'toMusic') {
+    if (KK.step === 'write') { const faltan = KK.lines.filter(l => l.trim().length < 2).length;
+      if (faltan) { $('kkErr').textContent = `Faltan ${faltan === 1 ? '1 línea' : faltan + ' líneas'} por escribir.`; Snd.wrong(); return; } }
+    KK.step = 'music'; renderKK();
+  }
+  else if (a === 'toSing') { KK.step = 'sing'; renderKK(); }
+  else if (a === 'win') { closeKaraoke(); winKaraoke(); }
+});
+let holdOn = false;
+async function startSinging() {
+  const tr = TRACKS[KK.track], lineBars = tr.lineBars || 2, COUNT = 2;
+  const st = { lines: KK.lines.map(() => ({ v: 0, n: 0 })), floor: [], thr: 0.03, manual: false, love: 0 };
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    const { ac } = Snd.raw(); const srcN = ac.createMediaStreamSource(stream), an = ac.createAnalyser(); an.fftSize = 1024; srcN.connect(an);
+    KK.mic = { stream, an, buf: new Float32Array(1024) };
+  } catch (e) {
+    st.manual = true;
+    $('kkHoldWrap').innerHTML = '<button class="hold" data-a="hold" style="flex:1">🎤 No hay micrófono: mantené apretado mientras cantan</button>';
+    const h = kkEl.querySelector('.hold');
+    h.addEventListener('pointerdown', ev => { ev.preventDefault(); holdOn = true; h.classList.add('dn'); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => h.addEventListener(ev, () => { holdOn = false; h.classList.remove('dn'); }));
+  }
+  if (KK.step !== 'sing') return stopAllKK();
+  const totalBars = COUNT + 9 * lineBars + 1;
+  KK.play = startBacking(tr, totalBars);
+  const { ac } = Snd.raw(), who = WHO(), dots = [...$('kkDots').children];
+  let lastLine = -2;
+  KK.tick = () => {
+    if (KK.step !== 'sing' || !KK.play) return;
+    const el = ac.currentTime - KK.play.t0, bar = el / KK.play.barDur;
+    let level = 0;
+    if (KK.mic) { KK.mic.an.getFloatTimeDomainData(KK.mic.buf); let s = 0; for (const v of KK.mic.buf) s += v * v; level = Math.sqrt(s / KK.mic.buf.length); }
+    const voiced = st.manual ? (holdOn || held.B) : level > st.thr;
+    if (!st.manual) $('kkMicBar').style.width = Math.min(100, level / Math.max(st.thr, 0.001) * 50) + '%';
+    else $('kkMicBar').style.width = voiced ? '80%' : '0%';
+    if (bar < COUNT) {
+      if (KK.mic && bar > 0.3) { st.floor.push(level); const avg = st.floor.reduce((a, b) => a + b, 0) / st.floor.length; st.thr = Math.max(0.02, avg * 2.2 + 0.01); }
+      $('kkWho').textContent = 'Shhh... ¡todavía no!'; $('kkLine').textContent = Math.max(1, Math.ceil((COUNT - bar) * 2)) + '...'; $('kkLine').classList.remove('on');
+      $('kkNext').textContent = KK.lines[0]; return;
+    }
+    const li = Math.floor((bar - COUNT) / lineBars);
+    if (li >= 9) { finishSinging(st); return; }
+    if (li !== lastLine) {
+      if (lastLine >= 0) { const L = st.lines[lastLine], ok = L.n && L.v / L.n >= 0.3; dots[lastLine].className = ok ? 'ok' : 'no'; if (ok) st.love++; $('kkLove').style.width = (st.love / 9 * 100) + '%'; }
+      lastLine = li; dots[li].className = 'now';
+      $('kkWho').textContent = 'Canta: ' + who[Math.floor(li / 3)];
+      $('kkPrev').textContent = KK.lines[li - 1] || ''; $('kkLine').textContent = KK.lines[li]; $('kkLine').classList.add('on'); $('kkNext').textContent = KK.lines[li + 1] || '';
+    }
+    st.lines[li].n++; if (voiced) st.lines[li].v++;
+  };
+}
+function finishSinging(st) {
+  KK.tick = null; const lines = st.lines.map(L => L.n > 0 && L.v / L.n >= 0.3);
+  KK.res = { lines, sung: lines.filter(Boolean).length }; stopAllKK();
+  if (KK.res.sung >= 6) Snd.correct(); else Snd.wrong();
+  KK.step = 'result'; renderKK();
+}
+function updateKaraoke() { if (mode === 'karaoke' && KK.tick) KK.tick(); }
+quests.push({ id: 'karaoke', pista: `La ${CONFIG.abuela.toLowerCase()} vive en la casita de techo azul del barrio. ¡Quiere escucharte cantar!` });
+function winKaraoke() {
+  if (done.has('karaoke')) { say([step('abuela', '¡Ay, me la cantaron otra vez! ¡Qué felicidad!')]); return; }
+  say([step('abuela', '¡Qué canción más hermosa! Me hicieron llorar de la emoción...'), complete('karaoke'),
+       step('abuela', '¡Gracias, mi amor! La voy a cantar todos los días.'), ...starMsg()]);
+}
+ents.push({ id: 'abuela', map: 'abuela', x: 7, y: 4, kind: 'person', long: true, quest: 'karaoke', pal: { h: '#d4d4e0', d: '#9b6ad0', q: '#5a4a8a' }, talk() {
+  if (done.has('karaoke')) return [step('abuela', '¿Me cantás la canción otra vez? ¡Me encantó!'), () => setTimeout(() => openKaraoke('music'), 0)];
+  const hayLetra = KK.lines.every(l => l.trim().length >= 2);
+  return [step('abuela', `¡${N}, mi nieta hermosa! ¡Feliz cumpleaños!`),
+          step('abuela', '¿Sabés qué me haría muy, muy feliz? ¡Que me cantes una canción!'),
+          step('abuela', `Pero tiene que ser una canción inventada por vos... ¡y si te ayuda ${CONFIG.amiga.correcta}, mejor!`),
+          step('abuela', hayLetra ? '¡Ya tenés la letra! Elegí la música y ¡a cantar!' : 'Primero escribí la letra, después elegís la música y ¡a cantar!'),
+          () => setTimeout(() => openKaraoke(hayLetra ? 'music' : 'write'), 0)];
+} });
+
+/* ======== TÍA LARA: misión de WhatsApp ======== */
+const norm = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+let tiaState = 0;
+quests.push({ id: 'whatsapp', pista: `La ${CONFIG.tia.toLowerCase()} está en el barrio, a la derecha, cerca de los árboles. ¡Tiene una misión secreta!` });
+ents.push({ id: 'tia', map: 'pueblo', x: 25, y: 13, kind: 'person', long: true, quest: 'whatsapp', pal: { h: '#3a2418', d: '#2fb59a', q: '#3a3a6a' }, talk() {
+  if (done.has('whatsapp')) return [step('tia', '¡Jajaja! La abuela se rió muchísimo con lo del sanguchito. 🥪')];
+  if (tiaState === 0) return [step('tia', `¡${N}! ¡Feliz cumple, sobrina hermosa!`),
+    step('tia', 'Te tengo una misión SECRETA... pero necesitás ayuda de mamá.'),
+    step('tia', 'Pedile a mamá que le mande un WhatsApp a la abuela que diga: "¡Tenés cara de sanguchito de miga!"'),
+    step('tia', '...¡y que le mande una foto de un sanguchito de miga! 🥪'),
+    step('tia', 'La abuela te va a contestar con una palabra secreta. Cuando la tengas, vení y decímela.'),
+    () => { tiaState = 1; }];
+  return [step('tia', '¿Ya tenés la palabra secreta de la abuela?'), () => setTimeout(openSecret, 0)];
+} });
+function openSecret() { mode = 'secret'; $('secretIn').value = ''; $('secretMsg').textContent = ''; $('secret').classList.remove('hidden'); setTimeout(() => $('secretIn').focus(), 50); }
+function closeSecret() { $('secret').classList.add('hidden'); $('secretIn').blur(); mode = 'play'; }
+function checkSecret() {
+  const v = $('secretIn').value; if (!v.trim()) return;
+  if (norm(v) === norm(CONFIG.palabraSecreta)) {
+    closeSecret(); Snd.correct();
+    say([step('tia', `¡${CONFIG.palabraSecreta.toUpperCase()}! ¡Esa es! ¡Misión secreta cumplida!`), complete('whatsapp'), step('tia', '¡Sos la mejor agente secreta de la familia! 🕵️'), ...starMsg()]);
+  } else { Snd.wrong(); $('secretMsg').textContent = 'Mmm... esa no es. ¿Le preguntaste bien a la abuela?'; $('secretIn').select(); }
+}
+$('secretOk').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); checkSecret(); });
+$('secretBack').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeSecret(); });
+$('secretIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkSecret(); } else if (e.key === 'Escape') closeSecret(); });
+$('secret').addEventListener('pointerdown', e => e.stopPropagation());
+
+/* ======== ESPE: el dibujo de la fiesta ======== */
+let dibujo = null, dibujoImg = null, dibujoTmp = null;
+function setDibujo(url) { dibujo = url; dibujoImg = new Image(); dibujoImg.src = url; }
+try { const d = localStorage.getItem('greta-dibujo'); if (d) setDibujo(d); } catch (e) {}
+quests.push({ id: 'dibujo', pista: `${CONFIG.amiga.correcta} está en el barrio, cerca del camino, a la izquierda. ¡Quiere dibujar con vos!` });
+ents.push({ id: 'espe', map: 'pueblo', x: 9, y: 7, kind: 'person', long: true, quest: 'dibujo', pal: { h: '#c8862a', d: '#5bc0eb', q: '#3a3a6a' }, talk() {
+  if (done.has('dibujo')) return [step('espe', '¡Nuestro dibujo quedó hermoso! ¿Lo viste pegado en la heladera de tu casa?')];
+  return [step('espe', `¡${N}! ¡Feliz cumple, amiga!`),
+          step('espe', '¿Querés que dibujemos? ¡Hagamos un dibujo de tu fiesta de cumpleaños!'),
+          step('espe', `Tiene que tener ${CONFIG.dibujo}.`),
+          step('espe', '¡Lo dibujamos en un papel y después lo subimos!'),
+          () => setTimeout(openDraw, 0)];
+} });
+function viewDibujo() { mode = 'view'; $('viewImg').src = dibujo; $('view').classList.remove('hidden'); }
+function openDraw() { mode = 'draw'; dibujoTmp = null; $('drawNeed').textContent = CONFIG.dibujo; $('drawPrev').style.display = 'none'; $('drawOk').classList.add('hidden'); $('draw').classList.remove('hidden'); }
+function closeDraw() { $('draw').classList.add('hidden'); mode = 'play'; }
+$('drawFile').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const img = new Image(); const u = URL.createObjectURL(f);
+  img.onload = () => {
+    const max = 640, k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    dibujoTmp = c.toDataURL('image/jpeg', 0.82); URL.revokeObjectURL(u);
+    $('drawPrev').src = dibujoTmp; $('drawPrev').style.display = 'block'; $('drawOk').classList.remove('hidden'); $('drawPick').textContent = '📷 Cambiar foto'; Snd.item();
+  };
+  img.src = u; e.target.value = '';
+});
+$('drawOk').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!dibujoTmp) return;
+  setDibujo(dibujoTmp); try { localStorage.setItem('greta-dibujo', dibujoTmp); } catch (er) {}
+  closeDraw(); Snd.correct();
+  say([step('espe', '¡Quedó HERMOSO! ¡Somos unas artistas!'), complete('dibujo'), step('espe', '¡Lo vamos a pegar con un imán en la heladera de tu casa!'), ...starMsg()]); });
+$('drawBack').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeDraw(); });
+$('viewClose').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); $('view').classList.add('hidden'); mode = 'play'; });
+['draw', 'view'].forEach(id => $(id).addEventListener('pointerdown', e => e.stopPropagation()));
+
+/* ======== Extras opcionales ======== */
+const extraSpots = [[25, 13], [9, 7], [27, 9]];
+CONFIG.extras.slice(0, 3).forEach((q, i) => {
+  const id = 'extra' + i;
+  CHARS[id] = { name: q.personaje, face: CHARS.gato.face };
+  quests.push({ id, pista: q.pista || `Buscá al ${q.personaje.toLowerCase()} por el barrio.` });
+  ents.push({ id, map: 'pueblo', x: extraSpots[i][0], y: extraSpots[i][1], kind: 'cat', quest: id,
+    pal: { k: '#2a2238', c: '#f0a050', l: '#fff1dc', n: '#ff7a9a', p: '#ff7a9a' },
+    talk() {
+      if (done.has(id)) return [step(id, '¡Gracias por responder! ¡Feliz cumple!')];
+      return [step(id, `¡Hola, ${N}! Te quiero hacer una pregunta...`),
+              { ...question(id, q.pregunta, { label: q.correcta }, q.otras.map(l => ({ label: l })), '¡Nooo! Probá otra vez.'),
+                after: [complete(id), step(id, '¡Muy bien! ¡Sabía que lo sabías!'), ...starMsg()] }];
+    } });
+});
+
+/* ======== Fiesta ======== */
+ents.push({ id: 'mesa', map: 'pueblo', x: 13, y: 17, w: 3, kind: 'table', talk() {
+  if (left()) return [step('', '¡Una torta gigante! 🎂'), step('', `Pero la fiesta empieza cuando tengas todas las estrellas. Te ${faltan()}.`)];
+  return [step('', '¡Tenés todas las estrellas!'), step('', '¡¡QUE EMPIECE LA FIESTA!!'), () => setTimeout(startParty, 50)];
+} });
+ents.push({ id: 'globos1', map: 'pueblo', x: 11, y: 14, kind: 'balloons', solid: false, decor: true });
+ents.push({ id: 'globos2', map: 'pueblo', x: 17, y: 14, kind: 'balloons', solid: false, decor: true });
+
+const here = e => e.map === cur.id;
+const isSolidEnt = e => e.solid !== false && !e.following;
+function entAt(x, y, any) { return ents.find(e => here(e) && (any ? e.talk : isSolidEnt(e)) && y === e.y && x >= e.x && x < e.x + (e.w || 1)); }
+function walkable(x, y) { if (x < 0 || y < 0 || x >= W || y >= H) return false; if (!WALKABLE.has(M[y][x])) return false; return !entAt(x, y); }
+
+/* ---------------- Diálogos ---------------- */
+const D = { queue: [], cur: null, chars: [], shown: 0, acc: 0, opts: null, sel: 0, onEnd: null, face: null };
+const dlg = $('dlg'), dlgName = $('dlgName'), dlgText = $('dlgText'), dlgNext = $('dlgNext'), optsEl = $('opts');
+function say(steps, onEnd) { D.queue = steps.slice(); D.onEnd = onEnd || null; mode = 'dialog'; next(); }
+function next() {
+  optsEl.classList.add('hidden'); D.opts = null;
+  while (D.queue.length && typeof D.queue[0] === 'function') D.queue.shift()();
+  if (!D.queue.length) return endDialog();
+  const s = D.queue.shift(); D.cur = s;
+  const ch = CHARS[s.who];
+  D.chars = Array.from(T(s.text)); D.shown = 0; D.acc = 0;
+  const name = s.name || (ch && ch.name) || '';
+  dlgName.textContent = T(name); dlgName.classList.toggle('hidden', !name);
+  D.face = ch ? ch.face : null; faceCv.classList.toggle('hidden', !D.face);
+  if (D.face) drawFace(D.face, false, false);
+  dlgText.textContent = ''; dlgNext.classList.add('hidden'); dlg.classList.remove('hidden');
+}
+function endDialog() { dlg.classList.add('hidden'); optsEl.classList.add('hidden'); D.cur = null; if (mode === 'dialog') mode = 'play'; const f = D.onEnd; D.onEnd = null; f && f(); }
+function updateDialog(dt) {
+  if (mode !== 'dialog' || !D.cur) return;
+  const typing = D.shown < D.chars.length;
+  if (typing) {
+    D.acc += dt * 30; const n = Math.min(D.chars.length, Math.floor(D.acc));
+    if (n > D.shown) { D.shown = n; dlgText.textContent = D.chars.slice(0, n).join(''); Snd.blip(); }
+    if (D.shown >= D.chars.length) textDone();
+  }
+  if (D.face) drawFace(D.face, typing && Math.floor(time * 9) % 2 === 0, (time % 3.2) < 0.14);
+}
+function textDone() {
+  dlgText.textContent = D.chars.join(''); D.shown = D.chars.length;
+  if (D.cur.options && !D.opts) showOpts(); else if (!D.cur.options) dlgNext.classList.remove('hidden');
+}
+function showOpts() {
+  D.opts = shuffle(D.cur.options); D.sel = 0; optsEl.innerHTML = '';
+  D.opts.forEach((o, i) => {
+    const d = document.createElement('div'); d.className = 'opt';
+    d.innerHTML = '<span class="cur">▶</span>' + (o.color ? `<span class="sw" style="background:${o.color}"></span>` : '') + '<span></span>';
+    d.lastChild.textContent = T(o.label);
+    d.addEventListener('pointerdown', ev => { ev.stopPropagation(); D.sel = i; paintOpts(); choose(); });
+    optsEl.appendChild(d);
+  });
+  paintOpts(); optsEl.classList.remove('hidden');
+}
+function paintOpts() { [...optsEl.children].forEach((c, i) => c.classList.toggle('sel', i === D.sel)); }
+function moveSel(d) { if (!D.opts) return; D.sel = (D.sel + (d === 'up' ? -1 : 1) + D.opts.length) % D.opts.length; Snd.sel(); paintOpts(); }
+function choose() {
+  const o = D.opts[D.sel], s = D.cur;
+  if (o.ok) { Snd.correct(); D.queue = [...(s.after || []), ...D.queue]; }
+  else { Snd.wrong(); D.queue = [step(s.who, s.wrong || '¡Casi! Probá otra vez.', s.name), s, ...D.queue]; }
+  next();
+}
+function dialogA() {
+  if (D.shown < D.chars.length) { textDone(); return; }
+  if (D.opts) { choose(); return; }
+  Snd.ok(); next();
+}
+function dialogB() {
+  if (D.shown < D.chars.length) { textDone(); return; }
+  if (D.opts) { Snd.sel(); D.queue = [step(D.cur.who, '¡Bueno! Volvé cuando quieras.', D.cur.name)]; next(); return; }
+  next();
+}
+dlg.addEventListener('pointerdown', e => { e.preventDefault(); pressA(); });
+
+/* ---------------- HUD ---------------- */
+function hud() { $('hud').innerHTML = quests.map((q, i) => `<span class="st${i < done.size ? ' on' : ''}">★</span>`).join(''); }
+
+/* ---------------- Entrada (teclado + táctil) ---------------- */
+const held = { up: 0, down: 0, left: 0, right: 0, B: 0 };
+const order = [];
+function setDir(d, on) {
+  if (on && !held[d]) { held[d] = 1; order.push(d); if (mode === 'dialog' && (d === 'up' || d === 'down')) moveSel(d); }
+  else if (!on && held[d]) { held[d] = 0; const i = order.indexOf(d); if (i >= 0) order.splice(i, 1); }
+}
+const curDir = () => order[order.length - 1] || null;
+function pressA() {
+  Snd.init();
+  if (mode === 'title') startGame();
+  else if (mode === 'play') interact();
+  else if (mode === 'dialog') dialogA();
+  else if (mode === 'party') closeParty();
+  else if (mode === 'notebook') nbKey('ok');
+}
+function pressB() { if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
+const KEYDIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;
+  if (mode === 'draw' || mode === 'view') { if (e.key === 'Escape' || (mode === 'view' && ['Enter','a','A',' '].includes(e.key))) { e.preventDefault(); $(mode).classList.add('hidden'); mode = 'play'; } return; }
+  if (mode === 'karaoke') { if (e.key === 'Escape' && KK.step !== 'sing') closeKaraoke(); if (['b','B','x','X'].includes(e.key)) held.B = 1; return; }
+  if (mode === 'notebook') {
+    e.preventDefault(); if (e.repeat) return;
+    if (/^\d$/.test(e.key)) nbKey(e.key);
+    else if (e.key === 'Backspace') nbKey('del');
+    else if (['Enter', ' ', 'a', 'A', 'z', 'Z'].includes(e.key)) nbKey('ok');
+    else if (['Escape', 'b', 'B', 'x', 'X'].includes(e.key)) closeNotebook();
+    return;
+  }
+  const d = KEYDIR[e.key];
+  if (d) { e.preventDefault(); if (e.repeat && mode === 'dialog' && (d === 'up' || d === 'down')) moveSel(d); setDir(d, true); return; }
+  const k = e.key.toLowerCase();
+  if (['a', 'z', 'enter', ' '].includes(k)) { e.preventDefault(); if (!e.repeat) pressA(); }
+  else if (['b', 'x', 'escape', 'backspace'].includes(k)) { e.preventDefault(); held.B = 1; if (!e.repeat) pressB(); }
+  else if (k === 'm') toggleSound();
+});
+addEventListener('keyup', e => { const d = KEYDIR[e.key]; if (d) setDir(d, false); if (['b', 'x', 'escape', 'backspace'].includes(e.key.toLowerCase())) held.B = 0; });
+addEventListener('blur', () => { ['up', 'down', 'left', 'right'].forEach(d => setDir(d, false)); held.B = 0; });
+$('title').addEventListener('pointerdown', e => { e.preventDefault(); pressA(); });
+
+const dpad = $('dpad'); let padDir = null;
+function padFrom(e) {
+  const r = dpad.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+  if (Math.hypot(dx, dy) < 12) return padDir;
+  return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+}
+function padSet(d) { if (d === padDir) return; if (padDir) setDir(padDir, false); padDir = d; if (d) setDir(d, true); }
+dpad.addEventListener('pointerdown', e => { e.preventDefault(); Snd.init(); dpad.setPointerCapture(e.pointerId); padSet(padFrom(e)); });
+dpad.addEventListener('pointermove', e => { if (padDir) padSet(padFrom(e)); });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => dpad.addEventListener(ev, () => padSet(null)));
+const bA = $('btnA'), bB = $('btnB');
+bA.addEventListener('pointerdown', e => { e.preventDefault(); bA.classList.add('dn'); pressA(); });
+bB.addEventListener('pointerdown', e => { e.preventDefault(); bB.classList.add('dn'); held.B = 1; pressB(); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => { bA.addEventListener(ev, () => bA.classList.remove('dn')); bB.addEventListener(ev, () => { bB.classList.remove('dn'); held.B = 0; }); });
+function toggleSound() { Snd.init(); $('snd').textContent = Snd.toggle() ? '🔇' : '🔊'; }
+$('snd').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); toggleSound(); });
+
+/* ---------------- Lógica ---------------- */
+function placeAt(mapId, x, y, dir) {
+  useMap(mapId); P.x = P.fx = x; P.y = P.fy = y; P.dir = dir; P.moving = false; P.t = 0;
+  followers.forEach(f => { f.map = mapId; f.x = f.fx = x; f.y = f.fy = y; });
+}
+let fade = 0, fadeDir = 0, warpTo = null;
+function warp(mapId, x, y, dir) { if (fadeDir) return; Snd.door(); mode = 'warp'; fadeDir = 1; warpTo = { mapId, x, y, dir }; }
+function updateFade(dt) {
+  if (fadeDir === 1) { fade += dt * 5; if (fade >= 1) { fade = 1; placeAt(warpTo.mapId, warpTo.x, warpTo.y, warpTo.dir); fadeDir = -1; } }
+  else if (fadeDir === -1) { fade -= dt * 5; if (fade <= 0) { fade = 0; fadeDir = 0; mode = 'play'; } }
+}
+function startGame() {
+  $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); $('snd').classList.remove('hidden');
+  placeAt('casa', 12, 3, 'down'); hud(); Snd.startMusic();
+  const varios = CONFIG.perros.length > 1;
+  say([step('mama', `¡Buen día, ${N}! ¡¡Feliz cumpleaños número ${CONFIG.edad}!! 🎉`),
+       step('mama', `¡Uy! Abrimos la puerta y ${listNames} ${varios ? 'se escaparon' : 'se escapó'}...`),
+       step('mama', 'Buscalos por la casa y por el barrio. Y ayudá a todos los que te necesiten.'),
+       step('mama', 'Cada vez que encuentres un perrito o ayudes a alguien, ganás una estrella ⭐.'),
+       step('mama', `Cuando juntes las ${quests.length} estrellas, ¡empieza la fiesta en el parque!`),
+       step('mama', 'Caminá con las FLECHAS. Para hablar, mirá a alguien de frente y apretá A.'),
+       step('mama', '¡Ah! Y vení a la cocina, que necesito tu ayuda con la torta.')]);
+}
+function interact() {
+  const [dx, dy] = DIRS[P.dir], e = entAt(P.x + dx, P.y + dy, true);
+  if (!e || !e.talk || e.decor) return;
+  if (['person', 'owl', 'cat'].includes(e.kind)) e.face = OPP[P.dir];
+  Snd.ok(); say(e.talk(), () => { e.face = null; });
+}
+let justStepped = false;
+function updatePlayer(dt) {
+  justStepped = false;
+  if (P.moving) {
+    P.t += dt / (held.B ? 0.11 : 0.2);
+    if (P.t < 1) return;
+    P.t = 0; P.moving = false; P.fx = P.x; P.fy = P.y; followers.forEach(f => { f.fx = f.x; f.fy = f.y; }); justStepped = true;
+  }
+  if (mode !== 'play') return;
+  const d = curDir();
+  if (!d) { P.turn = 0; return; }
+  if (P.dir !== d) { P.dir = d; if (!justStepped) { P.turn = 0.09; return; } }
+  if (P.turn > 0) { P.turn -= dt; return; }
+  const nx = P.x + DIRS[d][0], ny = P.y + DIRS[d][1];
+  if (!walkable(nx, ny)) {
+    const door = DOORS.find(o => o.map === cur.id && o.x === nx && o.y === ny);
+    if (door && d === 'up') return warp(door.to[0], door.to[1], door.to[2], 'up');
+    if (EXITS[cur.id] && tileAt(P.x, P.y) === MAT && d === 'down') return warp(EXITS[cur.id][0], EXITS[cur.id][1], EXITS[cur.id][2], 'down');
+    Snd.bump(); return;
+  }
+  const prev = [[P.x, P.y], ...followers.map(f => [f.x, f.y])];
+  followers.forEach((f, i) => { f.fx = f.x; f.fy = f.y; f.x = prev[i][0]; f.y = prev[i][1]; if (f.x !== f.fx) f.dir = f.x > f.fx ? 'right' : 'left'; });
+  P.fx = P.x; P.fy = P.y; P.x = nx; P.y = ny; P.moving = true; P.t = 0; P.steps++;
+}
+function sparkle() {
+  const px = P.x * TS + 8, py = P.y * TS;
+  for (let i = 0; i < 18; i++) { const a = Math.random() * Math.PI * 2, s = 25 + Math.random() * 40; particles.push({ map: cur.id, x: px, y: py, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 40, life: 1, c: ['#ffd84a', '#ffffff', '#ff9ccc', '#8fd3ff'][i % 4] }); }
+}
+
+/* ---------------- Render ---------------- */
+const lerp = (a, b, t) => a + (b - a) * t;
+function drawEnt(e, sx, sy) {
+  C = ctx; OX = sx; OY = sy;
+  const bob = Math.sin(time * 3 + e.x) > 0.6 ? -1 : 0;
+  switch (e.kind) {
+    case 'person': {
+      const pal = { k: '#2a2238', h: e.pal.h, s: SKIN, d: e.pal.d, q: e.pal.q, b: '#3a2a20', m: '#b0404a' };
+      ctx.drawImage(spr(e.long ? 'personLong' : 'person', pal), sx, sy - 2);
+      if (e.hat === 'chef') { R(4,-6,8,6,'#2a2238'); R(5,-5,6,5,'#ffffff'); R(3,-2,10,3,'#2a2238'); R(4,-1,8,2,'#ffffff'); R(9,-4,1,2,'#e2e2ee'); }
+      if (e.hat === 'beret') { R(4,-1,9,3,'#2a2238'); R(5,0,7,2,'#e8505b'); R(8,-2,1,1,'#2a2238'); }
+      break; }
+    case 'stall':
+      for (let i = 0; i < 3; i++) { OX = sx + i * 16; R(0,2,16,14,'#2a2238'); R(0,3,16,12,'#c98b4f'); R(0,3,16,3,'#e8b07a'); R(0,9,16,1,'#a46a35'); }
+      OX = sx; R(4,0,8,4,'#2a2238'); R(5,0,6,3,'#c0c0d0'); R(6,-1,4,1,'#ffffff');
+      R(19,1,10,3,'#2a2238'); R(20,1,8,2,'#ffffff'); R(21,0,3,1,'#e8b030'); R(24,0,3,1,'#e8b030');
+      R(36,0,6,4,'#2a2238'); R(37,0,4,3,'#ff6b6b'); R(38,-1,2,1,'#6cc35a');
+      break;
+    case 'easel': R(4,4,1,12,'#7a4a24'); R(11,4,1,12,'#7a4a24'); R(7,2,2,14,'#5c3518'); R(2,0,12,10,'#2a2238'); R(3,1,10,8,'#ffffff');
+      if (easelColor) { R(3,1,10,8,easelColor); R(5,3,3,3,'#ffffff'); }
+      else { R(4,2,3,3,'#ff6b8b'); R(8,3,3,2,'#ffe14d'); R(5,6,4,2,'#78b8ff'); R(10,6,2,2,'#6cc35a'); }
+      break;
+    case 'sign': R(7,8,2,8,'#5c3518'); R(1,2,14,8,'#2a2238'); R(2,3,12,6,'#c98b4f'); R(4,5,8,1,'#7a4a24'); R(4,7,6,1,'#7a4a24'); break;
+    case 'owl': {
+      R(1,10,14,6,'#2a2238'); R(2,11,12,5,'#a0602f'); R(2,11,12,1,'#d8a06a');
+      OY = sy + bob; circ(8,5,6,'#2a2238'); circ(8,5,5,'#8a6440'); circ(8,7,3,'#c8a47a');
+      R(3,-1,2,2,'#2a2238'); R(11,-1,2,2,'#2a2238');
+      const blink = (time % 4) < 0.15;
+      R(4,2,3,3,'#ffffff'); R(9,2,3,3,'#ffffff');
+      if (blink) { R(4,3,3,1,'#2a2238'); R(9,3,3,1,'#2a2238'); } else { R(5,3,1,1,'#2a2238'); R(10,3,1,1,'#2a2238'); }
+      R(7,5,2,2,'#ffb000'); break; }
+    case 'dog': {
+      const moving = e.following && P.moving, frame = moving && P.t > 0.25 && P.t < 0.75 ? 1 : 0;
+      const wag = !moving && Math.sin(time * 12) > 0;
+      ctx.drawImage(spr(frame ? 'dog1' : 'dog0', e.pal, e.dir === 'left'), sx, sy + (frame ? -1 : 0) - 1);
+      if (wag) { const tx = e.dir === 'left' ? 14 : 1; R(tx, 6, 1, 1, '#2a2238'); }
+      break; }
+    case 'cat': {
+      if (e.stump) { R(1,11,14,5,'#2a2238'); R(2,12,12,4,'#a0602f'); R(2,12,12,1,'#d8a06a'); }
+      OY = sy + bob - (e.stump ? 4 : 0); const p = e.pal;
+      circ(8,11,5,p.k); circ(8,11,4,p.c); circ(8,12,2,p.l);
+      R(3,1,3,4,p.k); R(4,2,1,2,p.n); R(10,1,3,4,p.k); R(11,2,1,2,p.n);
+      circ(8,5,4,p.k); circ(8,5,3,p.c); R(6,4,1,2,p.k); R(10,4,1,2,p.k); R(8,6,1,1,p.n);
+      const tw = Math.sin(time * 4) > 0 ? 1 : 0; R(13,8 - tw,2,6,p.k); R(13,8 - tw,1,5,p.c);
+      break; }
+    case 'table':
+      for (let i = 0; i < 3; i++) { OX = sx + i * 16; R(0,4,16,10,'#2a2238'); R(0,5,16,7,'#ffffff'); R(0,10,16,2,'#ff9ccc'); for (let j = 1; j < 16; j += 4) R(j,12,2,2,'#ff9ccc'); R(2,13,2,3,'#7a4a24'); R(12,13,2,3,'#7a4a24'); }
+      OX = sx + 16;
+      R(1,-6,14,11,'#2a2238'); R(2,-5,12,9,'#ffe0ef'); R(2,-5,12,3,'#ff9ccc'); R(2,0,12,1,'#ff9ccc');
+      for (let i = 0; i < Math.min(CONFIG.edad, 7); i++) { const cx = 2 + i * 2; R(cx,-10,1,4,'#78b8ff'); R(cx,-12 + (Math.sin(time * 15 + i) > 0 ? 0 : 1),1,2,'#ffb000'); }
+      OX = sx; R(4,1,6,3,'#2a2238'); R(5,1,4,2,'#ffd84a');
+      OX = sx + 32; R(5,0,7,4,'#2a2238'); R(6,0,5,3,'#78b8ff'); R(8,0,1,3,'#e8505b');
+      break;
+    case 'balloons': {
+      ['#e8505b', '#ffd84a', '#78b8ff'].forEach((c, i) => { const bx = 2 + i * 5, by = -14 + Math.round(Math.sin(time * 2 + i) * 1.5) - (i === 1 ? 3 : 0);
+        R(bx + 2, by + 6, 1, 10 - by - 8 + 4, '#ffffff'); circ(bx + 2, by + 2, 3, '#2a2238'); circ(bx + 2, by + 2, 2, c); R(bx + 1, by + 1, 1, 1, '#ffffff'); });
+      break; }
+  }
+}
+function drawPlayer(sx, sy) {
+  const pal = { k: '#2a2238', h: CONFIG.pelo, s: SKIN, p: '#ff9db0', d: P.dress, w: '#ffffff', b: '#4a3060', r: '#ff4d6d' };
+  const f = P.moving && P.t > 0.2 && P.t < 0.8 ? (P.steps % 2 ? 1 : 2) : 0;
+  const d = P.dir === 'left' || P.dir === 'right' ? 'side' : P.dir;
+  ctx.drawImage(spr('g_' + d + f, pal, P.dir === 'left'), sx, sy - 2 - (f ? 1 : 0));
+}
+function bubble(sx, sy, ch, col) {
+  C = ctx; OX = sx; OY = sy;
+  R(3,-1,11,11,'#2a2238'); R(4,0,9,9,'#ffffff'); R(7,9,3,2,'#2a2238'); R(8,9,1,1,'#ffffff');
+  ctx.fillStyle = col; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ch, sx + 8.5, sy + 5);
+}
+function render() {
+  let camX, camY;
+  if (mode === 'title') { camX = (W * TS - VW) / 2 + Math.sin(time * 0.25) * ((W * TS - VW) / 2); camY = (H * TS - VH) / 2 + Math.sin(time * 0.17) * 50; }
+  else { const pxp = lerp(P.fx, P.x, P.moving ? P.t : 1) * TS, pyp = lerp(P.fy, P.y, P.moving ? P.t : 1) * TS; camX = pxp + 8 - VW / 2; camY = pyp + 8 - VH / 2; }
+  camX = Math.round(Math.max(0, Math.min(W * TS - VW, camX))); camY = Math.round(Math.max(0, Math.min(H * TS - VH, camY)));
+  ctx.fillStyle = '#2a2238'; ctx.fillRect(0, 0, VW, VH);
+  ctx.drawImage(cur.cv, camX, camY, Math.min(VW, W * TS), Math.min(VH, H * TS), 0, 0, Math.min(VW, W * TS), Math.min(VH, H * TS));
+  C = ctx;
+  for (let y = Math.floor(camY / TS); y <= Math.floor((camY + VH) / TS) && y < H; y++)
+    for (let x = Math.floor(camX / TS); x <= Math.floor((camX + VW) / TS) && x < W; x++)
+      if (M[y][x] === WATER) { OX = x * TS - camX; OY = y * TS - camY; const o = Math.floor(time * 4 + x * 3 + y * 5) % 8; R(2 + (o % 6), 5, 4, 1, '#9fd3ff'); R(9 - (o % 5), 11, 4, 1, '#9fd3ff'); }
+  if (cur.id === 'casa' && dibujo && dibujoImg && dibujoImg.complete) {
+    const fx = 1 * TS - camX + 3, fy = 2 * TS - camY + 2;
+    ctx.fillStyle = '#2a2238'; ctx.fillRect(fx - 1, fy - 1, 9, 8); ctx.drawImage(dibujoImg, fx, fy, 7, 6);
+    ctx.fillStyle = '#e8505b'; ctx.fillRect(fx + 2, fy - 2, 3, 2);
+  }
+  const list = ents.filter(here).filter(e => e.kind !== 'item').map(e => {
+    const fx = e.following ? lerp(e.fx, e.x, P.moving ? P.t : 1) : e.x, fy = e.following ? lerp(e.fy, e.y, P.moving ? P.t : 1) : e.y;
+    return { y: fy * TS + (e.kind === 'balloons' ? -1 : e.kind === 'table' ? -16 : 0), draw: () => drawEnt(e, Math.round(fx * TS - camX), Math.round(fy * TS - camY)) };
+  });
+  if (mode !== 'title') {
+    const px = lerp(P.fx, P.x, P.moving ? P.t : 1) * TS, py = lerp(P.fy, P.y, P.moving ? P.t : 1) * TS;
+    list.push({ y: py + 0.5, draw: () => drawPlayer(Math.round(px - camX), Math.round(py - camY)) });
+  }
+  list.sort((a, b) => a.y - b.y).forEach(o => o.draw());
+  if (mode !== 'title') ents.filter(here).forEach(e => {
+    const b = Math.round(Math.sin(time * 5) * 1.5), sx = e.x * TS - camX, sy = e.y * TS - camY;
+    if (e.kind === 'item') { if (torta.state === 1 && !torta.got.has(e.item)) bubble(sx, sy - 13 + b, '!', '#2f9a4a'); return; }
+    if (!e.quest || done.has(e.quest) || e.following) return;
+    if (e.id === 'mama' && torta.state === 1 && torta.got.size < ITEMS.length) return;
+    if (e.kind === 'dog') { if ((time + e.x) % 3 < 1.2) bubble(sx, sy - 14 + b, '!', '#e8505b'); }
+    else bubble(sx, sy - (e.hat ? 20 : 15) + b, '?', '#e8a000');
+  });
+  particles.forEach(p => { if (p.map !== cur.id) return; ctx.fillStyle = p.c; const s = p.life > 0.5 ? 2 : 1; ctx.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), s, s); });
+  if (fade > 0) { ctx.fillStyle = `rgba(20,14,36,${fade})`; ctx.fillRect(0, 0, VW, VH); }
+}
+
+/* ---------------- Fiesta ---------------- */
+let confettiParts = [], partyOn = false;
+function drawCake() {
+  const c = $('cake').getContext('2d'); C = c; OX = 0; OY = 0; c.clearRect(0, 0, 48, 36);
+  R(4,16,40,18,'#2a2238'); R(5,17,38,16,'#ffe0ef'); R(5,17,38,5,'#ff9ccc'); for (let i = 5; i < 43; i += 6) R(i,22,3,2,'#ff9ccc');
+  R(5,27,38,1,'#ff9ccc'); R(2,32,44,3,'#2a2238'); R(3,32,42,2,'#c0c0d0');
+  const n = CONFIG.edad, gap = 34 / Math.max(n, 1);
+  for (let i = 0; i < n; i++) { const x = Math.round(7 + gap * i + gap / 2 - 1); R(x,9,2,8,['#78b8ff','#ffd84a','#6cc35a','#e8505b','#b48cff'][i % 5]); R(x,6,2,3,'#ffb000'); R(x,7,1,1,'#fff6a8'); }
+}
+function startParty() {
+  mode = 'party'; partyOn = true; Snd.stopMusic();
+  $('partyTitle').innerHTML = T('¡FELIZ CUMPLE,') + '<br>' + T(N.toUpperCase()) + '!';
+  $('partyMsg').textContent = T(CONFIG.mensajeFinal + ' — ' + CONFIG.tio);
+  drawCake(); $('party').classList.remove('hidden');
+  const cf = $('confetti'); cf.width = cf.clientWidth; cf.height = cf.clientHeight;
+  confettiParts = Array.from({ length: 140 }, () => newConf(cf, true));
+  Snd.birthday();
+}
+function newConf(cf, anywhere) { return { x: Math.random() * cf.width, y: anywhere ? Math.random() * cf.height : -10, vy: 40 + Math.random() * 80, vx: -20 + Math.random() * 40, s: 4 + Math.random() * 6, c: ['#ffd84a','#e8505b','#78b8ff','#6cc35a','#ffffff','#b48cff'][Math.random() * 6 | 0], w: Math.random() * 6 }; }
+function updateConfetti(dt) {
+  if (!partyOn) return;
+  const cf = $('confetti'), c = cf.getContext('2d'); c.clearRect(0, 0, cf.width, cf.height);
+  confettiParts.forEach((p, i) => { p.y += p.vy * dt; p.x += p.vx * dt + Math.sin(time * 3 + p.w) * 0.6; if (p.y > cf.height + 10) confettiParts[i] = newConf(cf); c.fillStyle = p.c; c.fillRect(p.x, p.y, p.s, p.s * (0.4 + Math.abs(Math.sin(time * 5 + p.w)) * 0.6)); });
+}
+function closeParty() { partyOn = false; $('party').classList.add('hidden'); mode = 'play'; Snd.startMusic(); }
+$('songBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); Snd.stopMusic(); Snd.birthday(); });
+$('contBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeParty(); });
+
+/* ---------------- Loop ---------------- */
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; time += dt;
+  updatePlayer(dt); updateDialog(dt); updateFade(dt); updateKaraoke();
+  for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 60 * dt; p.life -= dt; if (p.life <= 0) particles.splice(i, 1); }
+  render(); updateConfetti(dt);
+  requestAnimationFrame(loop);
+}
+
+/* ---------------- Tamaño de pantalla ---------------- */
+const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+function layout() {
+  const land = innerWidth > innerHeight, root = document.documentElement;
+  root.classList.toggle('touch', isTouch); root.classList.toggle('landscape', isTouch && land); root.classList.toggle('portrait', isTouch && !land);
+  let aw = innerWidth - 50, ah = innerHeight - 50;
+  if (isTouch && land) aw = innerWidth - 2 * 160 - 70;
+  if (isTouch && !land) ah = innerHeight - 190 - 50;
+  let w = Math.min(aw, ah * 1.5, 1100); w = Math.max(200, Math.floor(w));
+  const s = $('screen'); s.style.width = w + 'px'; s.style.height = Math.floor(w / 1.5) + 'px'; s.style.fontSize = (w / 30) + 'px';
+}
+addEventListener('resize', layout); layout();
+$('ttl').innerHTML = T('La aventura') + '<br>' + T('de ' + N);
+$('ttlSub').textContent = T(`✨ Edición cumpleaños ${CONFIG.edad} ✨`);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
