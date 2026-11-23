@@ -136,11 +136,11 @@ html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify S
 .simon button{aspect-ratio:1;border:.2em solid #1a1428;border-radius:.6em;opacity:.55;cursor:pointer;touch-action:none}
 .simon button.on{opacity:1;box-shadow:0 0 1em #fff;transform:scale(1.04)}
 .mgbtn{font-size:1.4em;width:2.6em;border-radius:.4em;border:.14em solid #2a2238;background:#fff;touch-action:none}
-.puz{display:grid;gap:.25em;width:13em}.pz{width:100%;image-rendering:pixelated;border:.14em solid #2a2238;border-radius:.2em;cursor:pointer}
-.pz.sel{border-color:#ffd84a;transform:scale(.92)}.mgcv.puzprev{width:5em;height:auto;opacity:.85}
+.puz{position:relative;width:11em;margin:1.1em 1em;touch-action:none;cursor:pointer}.pz{position:absolute;image-rendering:pixelated;pointer-events:none}
+.mgsnd{font-size:1.1em;width:2.2em;align-self:flex-start}.mgcv.puzprev{width:5em;height:auto;opacity:.85}
 .pint{display:grid;gap:1px;width:10.5em;background:#2a2238;border:.14em solid #2a2238;touch-action:none}
 .pc{aspect-ratio:1;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.7em;color:#6a6a80;cursor:pointer}
-.pc.done .num{visibility:hidden}
+.pc .num{text-shadow:0 0 2px #fff}.pc.bad{box-shadow:inset 0 0 0 2px #e8505b}
 .pintpal{display:flex;flex-direction:column;gap:.3em}.pintpal button{width:1.8em;height:1.8em;border-radius:50%;border:.14em solid #2a2238;font-size:.85em;color:#2a2238;cursor:pointer}
 .pintpal button.on{outline:.2em solid #ffd84a;transform:scale(1.15)}
 .cg .em{font-size:1.8em}.cg small{font-size:.75em;opacity:.7}
@@ -1626,18 +1626,19 @@ function memoKey(k) {
 
 /* ======== MINIJUEGOS de la consola (sin estrella, para jugar las veces que quiera) ======== */
 const MG = { id: null, raf: 0, key: null, timers: [] };
-function mgNote(n, d = 0.35) { const r = Snd.raw(); if (r.ac) r.tone(r.nf(n), r.ac.currentTime, d, 'square', 0.06); }
+let mgSimonSound = true;
+function mgNote(n, d = 0.35) { const r = Snd.raw(); if (r.ac && mgSimonSound) { if (r.ac.state === 'suspended') r.ac.resume(); r.tone(r.nf(n), r.ac.currentTime, d, 'square', 0.07, r.ac.destination); } }
 function mgLater(fn, ms) { const t = setTimeout(fn, ms); MG.timers.push(t); return t; }
 function mgCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; c.className = 'mgcv'; return c; }
 function mgPos(cv, e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height }; }
 function openMini(id, title) {
   mode = 'mini'; MG.id = id; MG.key = null; $('miniT').textContent = title; $('miniBody').innerHTML = ''; $('miniInfo').innerHTML = '';
-  $('mini').classList.remove('hidden'); Snd.init();
+  $('mini').classList.remove('hidden'); Snd.init(); Snd.stopMusic();
   ({ simon: mgSimon, huesos: mgHuesos, puzzle: mgPuzzle, buscar: mgBuscar, pintar: mgPintar })[id]();
 }
 function closeMini() {
   cancelAnimationFrame(MG.raf); MG.timers.forEach(clearTimeout); MG.timers = []; MG.id = null; MG.key = null;
-  $('mini').classList.add('hidden'); openConsole();
+  $('mini').classList.add('hidden'); Snd.startMusic(); openConsole();
 }
 function mgInfo(t) { $('miniInfo').innerHTML = numHTML(t); }
 function mgWin(msg) { Snd.correct(); mgInfo(msg); }
@@ -1649,7 +1650,10 @@ function mgSimon() {
   const COL = ['#e8505b', '#4a9ef0', '#ffd84a', '#5cbf4e'], NOTE = [0, 4, 7, 12], META = 6;
   const g = document.createElement('div'); g.className = 'simon';
   const bs = COL.map((c, i) => { const b = document.createElement('button'); b.style.background = c; b.dataset.i = i; g.appendChild(b); return b; });
-  $('miniBody').appendChild(g);
+  const sb = document.createElement('button'); sb.className = 'mgbtn mgsnd';
+  const sbTxt = () => sb.textContent = mgSimonSound ? '🔊' : '🔇'; sbTxt();
+  sb.addEventListener('pointerdown', e => { e.preventDefault(); mgSimonSound = !mgSimonSound; sbTxt(); });
+  $('miniBody').append(g, sb);
   let seq = [], pos = 0, turn = false;
   const flash = (i, ms = 380) => { bs[i].classList.add('on'); mgNote(NOTE[i], ms / 1000); mgLater(() => bs[i].classList.remove('on'), ms); };
   const play = () => { turn = false; pos = 0; mgInfo(`Mirá y escuchá... (${seq.length} de ${META})`);
@@ -1667,55 +1671,94 @@ function mgSimon() {
   grow();
 }
 
-// --- 2. Atrapá los huesitos ---
+// --- 2. Atrapá los huesitos (4 niveles) ---
 function mgHuesos() {
   const W2 = 180, H2 = 112, cv = mgCanvas(W2, H2), c = cv.getContext('2d'); c.imageSmoothingEnabled = false;
-  const mkb = (d, t) => { const b = document.createElement('button'); b.className = 'mgbtn'; b.textContent = t;
+  const LV = [{ meta: 10, vidas: Infinity }, { meta: 15, vidas: 3 }, { meta: 20, vidas: 2 }, { meta: 25, vidas: 0 }];
+  let x = W2 / 2, dir = 0, target = null, bones = [], got = 0, lost = 0, lv = 0, t = 0, spawn = 0, pause = 0, face = 1;
+  const mkb = (d, tx) => { const b = document.createElement('button'); b.className = 'mgbtn'; b.textContent = tx;
     b.addEventListener('pointerdown', e => { e.preventDefault(); target = null; dir = d; }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => dir = 0)); return b; };
   $('miniBody').append(mkb(-1, '◀'), cv, mkb(1, '▶'));
-  const META = 10; let x = W2 / 2, dir = 0, target = null, bones = [], got = 0, t = 0, spawn = 0, won = false, face = 1;
-  const raza = (CONFIG.perros.find(p => p.donde === 'casa') || CONFIG.perros[0]).raza;
+  const perro = CONFIG.perros.find(p => p.donde === 'casa') || CONFIG.perros[0], raza = perro.raza;
   const drawBone = (bx, by) => { c.fillStyle = '#2a2238'; c.fillRect(bx - 6, by - 2, 12, 4); c.fillRect(bx - 8, by - 4, 4, 8); c.fillRect(bx + 4, by - 4, 4, 8);
     c.fillStyle = '#fff6e0'; c.fillRect(bx - 5, by - 1, 10, 2); c.fillRect(bx - 7, by - 3, 2, 6); c.fillRect(bx + 5, by - 3, 2, 6); };
-  mgInfo(`Huesitos: 0 de ${META}`);
+  const info = () => { const L = LV[lv], v = L.vidas === Infinity ? '' : ' · ' + (L.vidas - lost > 0 ? '❤️'.repeat(L.vidas - lost) : 'sin errores');
+    mgInfo(`Nivel ${lv + 1} · Huesitos: ${got} de ${L.meta}${v}`); };
+  const startLv = (n, msg, ms) => { lv = n; got = 0; lost = 0; bones = []; pause = ms ? Math.round(ms / 16) : 0; if (msg) mgInfo(msg); else info();
+    if (ms) mgLater(info, ms); };
   const loop = () => {
-    t++; if (!won && --spawn <= 0) { bones.push({ x: 14 + Math.random() * (W2 - 28), y: -6, v: 0.7 + Math.random() * 0.5 + got * 0.04 }); spawn = 55 - got * 2; }
+    t++; const L = LV[lv];
+    if (pause > 0) pause--;
+    else if (--spawn <= 0) { bones.push({ x: 12 + Math.random() * (W2 - 24), y: -6, v: 0.55 + lv * 0.18 + Math.random() * 0.4 + got * 0.02 }); spawn = Math.max(18, 50 - lv * 7 - got); }
     if (target !== null) dir = Math.abs(target - x) < 2 ? 0 : Math.sign(target - x);
-    if (dir) face = dir; x = Math.max(16, Math.min(W2 - 16, x + dir * 2.2));
+    if (dir) face = dir; x = Math.max(16, Math.min(W2 - 16, x + dir * (2.1 + lv * 0.3)));
     c.fillStyle = '#9fd8ff'; c.fillRect(0, 0, W2, H2); c.fillStyle = '#5cbf4e'; c.fillRect(0, H2 - 18, W2, 18); c.fillStyle = '#3f9a3c'; c.fillRect(0, H2 - 18, W2, 2);
     c.fillStyle = '#ffffff'; [[20, 16], [110, 26], [150, 10]].forEach(([cx2, cy2]) => { c.fillRect(cx2, cy2, 24, 6); c.fillRect(cx2 + 5, cy2 - 4, 13, 4); });
     bones.forEach(b => { b.y += b.v; drawBone(b.x, b.y); });
-    bones = bones.filter(b => { if (b.y > H2 - 34 && b.y < H2 - 20 && Math.abs(b.x - x) < 16) { got++; Snd.item(); mgInfo(`Huesitos: ${got} de ${META}`); return false; } return b.y < H2; });
-    const frame = dir && (t >> 3) % 2 ? 1 : 0; c.drawImage(spr('dog_' + raza + frame, DOGPAL[raza], face < 0), Math.round(x - 16), H2 - 40);
-    if (got >= META && !won) { won = true; bones = []; mgWin(`¡${(CONFIG.perros.find(p => p.raza === raza) || {}).nombre || 'El perro'} comió un montón! 🦴 ¡Ganaste!`); Snd.bark();
-      mgLater(() => { won = false; got = 0; mgInfo(`Huesitos: 0 de ${META}`); }, 3500); }
+    bones = bones.filter(b => {
+      if (b.y > H2 - 34 && b.y < H2 - 20 && Math.abs(b.x - x) < 16) { got++; Snd.item(); info(); return false; }
+      if (b.y >= H2 - 12) { if (pause <= 0) { lost++; Snd.bump(); info(); } return false; }
+      return true; });
+    c.drawImage(spr('dog_' + raza + (dir && (t >> 3) % 2 ? 1 : 0), DOGPAL[raza], face < 0), Math.round(x - 16), H2 - 40);
+    if (pause <= 0 && lost > L.vidas) { Snd.wrong(); startLv(lv, `¡Uy! Se cayeron muchos huesitos. ¡Otra vez el nivel ${lv + 1}!`, 2500); }
+    else if (pause <= 0 && got >= L.meta) {
+      Snd.bark();
+      if (lv === LV.length - 1) { Snd.correct(); startLv(0, `🏆 ¡GANASTE LOS 4 NIVELES! ¡${perro.nombre} está llenísima! 🦴`, 5000); }
+      else { Snd.correct(); const n = LV[lv + 1];
+        startLv(lv + 1, `¡Nivel ${lv + 2}! Atrapá ${n.meta}` + (n.vidas ? ` y no dejes caer más de ${n.vidas}` : ' ¡sin dejar caer ninguno!'), 2800); } }
     MG.raf = requestAnimationFrame(loop);
   };
   cv.addEventListener('pointerdown', e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); target = mgPos(cv, e).x; });
   cv.addEventListener('pointermove', e => { if (e.buttons) target = mgPos(cv, e).x; });
   cv.addEventListener('pointerup', () => { target = null; dir = 0; });
   MG.key = (k, up) => { if (k === 'left' || k === 'right') { target = null; dir = up ? 0 : (k === 'left' ? -1 : 1); } };
-  loop();
+  startLv(0); loop();
 }
 
 // --- 3. Rompecabezas de la familia (CONFIG.fotoPuzzle = foto; si no hay, usa la casa de Greta) ---
 function mgPuzzle() {
-  const COLS = 3, ROWS = 2, PW = 64, PH = 64;
+  const COLS = 3, ROWS = 2, PW = 64, PH = 64, MG2 = 20;
   const src = mgCanvas(COLS * PW, ROWS * PH), s = src.getContext('2d');
-  const board = document.createElement('div'); board.className = 'puz'; board.style.gridTemplateColumns = `repeat(${COLS},1fr)`;
+  const board = document.createElement('div'); board.className = 'puz'; board.style.aspectRatio = `${COLS * PW}/${ROWS * PH}`;
   const prev = mgCanvas(COLS * PW, ROWS * PH); prev.className = 'mgcv puzprev';
   $('miniBody').append(board, prev);
+  const rnd = () => Math.random() < 0.5 ? 1 : -1;
+  const RT = [...Array(ROWS)].map(() => [...Array(COLS)].map(rnd)), BT = [...Array(ROWS)].map(() => [...Array(COLS)].map(rnd));
+  function edge(g, x0, y0, x1, y1, tb) {
+    const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, nx = uy, ny = -ux;
+    const P = (a, h) => [x0 + ux * a * L + nx * h * L * tb, y0 + uy * a * L + ny * h * L * tb];
+    if (tb) { g.lineTo(...P(0.37, 0)); g.bezierCurveTo(...P(0.42, 0.12), ...P(0.26, 0.30), ...P(0.5, 0.30)); g.bezierCurveTo(...P(0.74, 0.30), ...P(0.58, 0.12), ...P(0.63, 0)); }
+    g.lineTo(x1, y1);
+  }
+  function piecePath(g, p) {   // forma de la pieza p (según su lugar original)
+    const r = p / COLS | 0, cc = p % COLS, a = MG2, b = MG2 + PW, h = MG2 + PH;
+    g.beginPath(); g.moveTo(a, a);
+    edge(g, a, a, b, a, r > 0 ? -BT[r - 1][cc] : 0);
+    edge(g, b, a, b, h, cc < COLS - 1 ? RT[r][cc] : 0);
+    edge(g, b, h, a, h, r < ROWS - 1 ? BT[r][cc] : 0);
+    edge(g, a, h, a, a, cc > 0 ? -RT[r][cc - 1] : 0);
+    g.closePath();
+  }
   let order = [], sel = -1;
   const paint = () => { board.innerHTML = '';
-    order.forEach((p, i) => { const pc = mgCanvas(PW, PH); pc.className = 'pz' + (i === sel ? ' sel' : '') + (p === i ? ' ok' : ''); pc.dataset.i = i;
-      pc.getContext('2d').drawImage(src, (p % COLS) * PW, (p / COLS | 0) * PH, PW, PH, 0, 0, PW, PH); board.appendChild(pc); }); };
+    order.forEach((p, i) => {
+      const pc = mgCanvas(PW + MG2 * 2, PH + MG2 * 2), g = pc.getContext('2d'); pc.className = 'pz';
+      const col = i % COLS, row = i / COLS | 0;
+      pc.style.width = `${(PW + 2 * MG2) / (COLS * PW) * 100}%`; pc.style.left = `${(col * PW - MG2) / (COLS * PW) * 100}%`; pc.style.top = `${(row * PH - MG2) / (ROWS * PH) * 100}%`;
+      g.save(); piecePath(g, p); g.clip(); g.imageSmoothingEnabled = false;
+      g.drawImage(src, (p % COLS) * PW - MG2, (p / COLS | 0) * PH - MG2, PW + 2 * MG2, PH + 2 * MG2, 0, 0, PW + 2 * MG2, PH + 2 * MG2); g.restore();
+      piecePath(g, p); g.lineWidth = i === sel ? 4 : 2; g.strokeStyle = i === sel ? '#ffd84a' : '#2a2238'; g.stroke();
+      board.appendChild(pc); });
+    if (sel >= 0) board.appendChild(board.children[sel]);   // la elegida queda arriba
+  };
   const start = () => { prev.getContext('2d').drawImage(src, 0, 0);
     do order = shuffle([...Array(COLS * ROWS).keys()]); while (order.every((p, i) => p === i)); sel = -1; paint(); mgInfo('Tocá dos piezas para cambiarlas de lugar'); };
   if (CONFIG.fotoPuzzle) { const im = new Image(); im.onload = () => { const k = Math.max(src.width / im.width, src.height / im.height);
       s.drawImage(im, (src.width - im.width * k) / 2, (src.height - im.height * k) / 2, im.width * k, im.height * k); start(); }; im.src = CONFIG.fotoPuzzle; }
   else { s.imageSmoothingEnabled = false; s.drawImage(MAPS.pueblo.cv, 0, 0, 12 * 16, 8 * 16, 0, 0, src.width, src.height); start(); }
-  board.addEventListener('pointerdown', e => { e.preventDefault(); const d = e.target.closest('.pz'); if (!d) return; const i = +d.dataset.i;
-    if (sel < 0) { sel = i; Snd.sel(); } else { [order[sel], order[i]] = [order[i], order[sel]]; sel = -1; Snd.ok(); }
+  board.addEventListener('pointerdown', e => { e.preventDefault(); const r = board.getBoundingClientRect();
+    const col = Math.min(COLS - 1, Math.max(0, (e.clientX - r.left) / r.width * COLS | 0)), row = Math.min(ROWS - 1, Math.max(0, (e.clientY - r.top) / r.height * ROWS | 0)), i = row * COLS + col;
+    if (sel < 0) { sel = i; Snd.sel(); } else if (sel === i) { sel = -1; } else { [order[sel], order[i]] = [order[i], order[sel]]; sel = -1; Snd.ok(); }
     paint(); if (order.every((p, k) => p === k)) { mgWin('¡Armaste el rompecabezas! 🧩'); mgLater(start, 3500); } });
 }
 
@@ -1723,25 +1766,27 @@ function mgPuzzle() {
 function mgBuscar() {
   const W2 = 180, H2 = 112, cv = mgCanvas(W2, H2), c = cv.getContext('2d'); c.imageSmoothingEnabled = false;
   $('miniBody').appendChild(cv);
-  const perro = CONFIG.perros.find(p => p.raza === 'chihuahua') || CONFIG.perros[0], META = 3;
-  const COSAS = ['🌳', '🌷', '🌼', '🍄', '🪨', '🎈', '⚽', '🧸', '🐞', '🦋', '🌻', '🪁', '🍎', '🐌', '🌲', '🧺'];
+  const perro = CONFIG.perros.find(p => p.raza === 'chihuahua') || CONFIG.perros[0], META = 5;
+  const COSAS = ['🌳', '🌷', '🌼', '🍄', '🪨', '🎈', '⚽', '🧸', '🐞', '🦋', '🌻', '🪁', '🍎', '🐌', '🌲', '🧺', '🌿', '🍀', '🌸', '🥚'], PARECIDOS = ['🐑', '🐇', '🐐', '🐩', '🐈', '🦙'];
   let found = 0, dog, things, t0, hint = false, glow = 0;
   const round = () => {
     dog = { x: 20 + Math.random() * (W2 - 52), y: 12 + Math.random() * (H2 - 44) };
-    things = []; for (let k = 0; k < 34; k++) things.push({ e: COSAS[Math.random() * COSAS.length | 0], x: Math.random() * (W2 - 14), y: 14 + Math.random() * (H2 - 16), s: 12 + (Math.random() * 7 | 0) });
-    things = things.filter(o => !(o.x > dog.x - 6 && o.x < dog.x + 30 && o.y > dog.y + 2 && o.y < dog.y + 30));   // que siempre se lo vea un poquito
-    things.push({ e: '🌿', x: dog.x + 14, y: dog.y + 24, s: 16 });   // una ramita lo tapa a medias
+    things = []; for (let k = 0; k < 70; k++) things.push({ e: COSAS[Math.random() * COSAS.length | 0], x: Math.random() * (W2 - 12), y: 12 + Math.random() * (H2 - 12), s: 10 + (Math.random() * 7 | 0) });
+    for (let k = 0; k < 9; k++) things.push({ e: PARECIDOS[Math.random() * PARECIDOS.length | 0], x: Math.random() * (W2 - 12), y: 12 + Math.random() * (H2 - 12), s: 11 + (Math.random() * 4 | 0) });   // animalitos blancos que confunden
+    things = things.filter(o => !(o.x > dog.x + 2 && o.x < dog.x + 18 && o.y > dog.y + 4 && o.y < dog.y + 18));   // se le ve solo la carita
+    things.push({ e: '🌳', x: dog.x + 10, y: dog.y + 30, s: 20 }, { e: '🌿', x: dog.x - 4, y: dog.y + 26, s: 14 });   // lo tapan a medias
+    things = shuffle(things);
     t0 = performance.now(); hint = false; mgInfo(`Encontrá a ${perro.nombre} 🔍 (${found} de ${META})`);
   };
   const loop = () => {
     c.fillStyle = '#7ccf5e'; c.fillRect(0, 0, W2, H2); c.fillStyle = '#6cbd50'; for (let k = 0; k < 60; k++) c.fillRect((k * 53) % W2, (k * 37) % H2, 2, 1);
-    if (hint || performance.now() - t0 > 20000) { hint = true; glow++; c.fillStyle = `rgba(255,240,120,${0.35 + 0.25 * Math.sin(glow / 6)})`; c.beginPath(); c.arc(dog.x + 16, dog.y + 12, 22, 0, 7); c.fill(); }
+    if (hint || performance.now() - t0 > 45000) { hint = true; glow++; c.fillStyle = `rgba(255,240,120,${0.35 + 0.25 * Math.sin(glow / 6)})`; c.beginPath(); c.arc(dog.x + 16, dog.y + 12, 22, 0, 7); c.fill(); }
     c.drawImage(spr('dog_' + perro.raza + '0', DOGPAL[perro.raza]), Math.round(dog.x), Math.round(dog.y));
     c.textBaseline = 'bottom'; things.forEach(o => { c.font = o.s + 'px sans-serif'; c.fillText(o.e, o.x, o.y); });
     MG.raf = requestAnimationFrame(loop);
   };
   cv.addEventListener('pointerdown', e => { e.preventDefault(); const p = mgPos(cv, e);
-    if (Math.abs(p.x - dog.x - 16) < 20 && Math.abs(p.y - dog.y - 12) < 18) { found++; Snd.bark();
+    if (Math.abs(p.x - dog.x - 16) < 16 && Math.abs(p.y - dog.y - 12) < 14) { found++; Snd.bark();
       if (found >= META) { mgWin(`¡Encontraste a ${perro.nombre} ${META} veces! 🐶 ¡Sos una detective!`); found = 0; mgLater(round, 3500); }
       else { mgInfo(`¡Ahí está! 🐶 (${found} de ${META})`); mgLater(round, 1200); } }
     else Snd.bump(); });
@@ -1750,7 +1795,7 @@ function mgBuscar() {
 
 // --- 5. Pintar por números ---
 function mgPintar() {
-  const PAL = { 1: ['#ff8fb8', 'Rosa'], 2: ['#ffd84a', 'Amarillo'], 3: ['#a8683a', 'Marrón'], 4: ['#ffffff', 'Blanco'], 5: ['#8fd3ff', 'Celeste'] };
+  const PAL = { 1: ['#ff8fb8', 'Rosa'], 2: ['#ffd84a', 'Amarillo'], 3: ['#a8683a', 'Marrón'], 4: ['#b48cff', 'Violeta'], 5: ['#8fd3ff', 'Celeste'] };
   const PIC = ['5552555255', '5551555155', '5551555155', '5444444445', '5444444445', '5333333335', '5313313135', '5333333335', '4444444444', '5555555555'];
   const grid = document.createElement('div'); grid.className = 'pint'; grid.style.gridTemplateColumns = `repeat(${PIC[0].length},1fr)`;
   const pal = document.createElement('div'); pal.className = 'pintpal';
@@ -1759,8 +1804,8 @@ function mgPintar() {
   const paintPal = () => { pal.innerHTML = Object.entries(PAL).map(([n, [h, nom]]) => `<button data-n="${n}" class="${+n === col ? 'on' : ''}" style="background:${h}" title="${nom}"><span class="num">${n}</span></button>`).join(''); };
   const start = () => { grid.innerHTML = ''; cells = [];
     PIC.forEach(r => [...r].forEach(ch => { const d = document.createElement('div'); d.className = 'pc'; d.dataset.k = cells.length; d.innerHTML = `<span class="num">${ch}</span>`; cells.push({ d, want: +ch, has: 0 }); grid.appendChild(d); }));
-    paintPal(); mgInfo('Elegí un color y pintá los cuadritos con ese número'); };
-  const fill = k => { const cl = cells[k]; if (!cl || cl.has === col) return; cl.has = col; cl.d.style.background = PAL[col][0]; cl.d.classList.toggle('done', cl.has === cl.want); Snd.blip();
+    paintPal(); mgInfo('Elegí un color y pintá los cuadritos que tienen ese número'); };
+  const fill = k => { const cl = cells[k]; if (!cl || cl.has === col) return; cl.has = col; cl.d.style.background = PAL[col][0]; cl.d.classList.toggle('bad', cl.has !== cl.want); Snd.blip();
     if (cells.every(x => x.has === x.want)) { mgWin('¡Pintaste la torta! 🎂 ¡Te quedó hermosa!'); mgLater(start, 4000); } };
   pal.addEventListener('pointerdown', e => { e.preventDefault(); const b = e.target.closest('button'); if (b) { col = +b.dataset.n; Snd.sel(); paintPal(); } });
   grid.addEventListener('pointerdown', e => { e.preventDefault(); if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) e.target.releasePointerCapture(e.pointerId); const d = e.target.closest('.pc'); if (d) fill(+d.dataset.k); });
