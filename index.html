@@ -1707,7 +1707,7 @@ function mgHuesos() {
     if (pause > 0) pause--;
     else if (--spawn <= 0) {
       // cada hueso nuevo tiene que poder alcanzarse después del anterior: se limita cuánto puede alejarse
-      const caida = H2 - 30, vel = 2.4 + lv * 0.15; let v = 0.5 + lv * 0.07 + Math.random() * 0.25 + got * 0.008, llega = t + caida / v, nx;
+      const caida = H2 - 34, vel = 2.4 + lv * 0.15; let v = 0.5 + lv * 0.07 + Math.random() * 0.25 + got * 0.008, llega = t + caida / v, nx;
       if (last && last.t > t - 5) { const minT = last.t + 16; if (llega < minT) { llega = minT; v = caida / (llega - t); }
         const alcance = Math.max(10, vel * (llega - last.t) * 0.65); nx = last.x + (Math.random() * 2 - 1) * alcance; }
       else { const alcance = Math.max(20, vel * (llega - t) * 0.65); nx = x + (Math.random() * 2 - 1) * alcance; }
@@ -1719,10 +1719,10 @@ function mgHuesos() {
     c.fillStyle = '#ffffff'; [[20, 16], [110, 26], [150, 10]].forEach(([cx2, cy2]) => { c.fillRect(cx2, cy2, 24, 6); c.fillRect(cx2 + 5, cy2 - 4, 13, 4); });
     bones.forEach(b => { b.y += b.v; drawBone(b.x, b.y); });
     bones = bones.filter(b => {
-      if (b.y > H2 - 34 && b.y < H2 - 20 && Math.abs(b.x - x) < 16) { got++; Snd.item(); info(); return false; }
+      if (b.y > H2 - 40 && b.y < H2 - 22 && Math.abs(b.x - x) < 15) { got++; Snd.item(); info(); return false; }
       if (b.y >= H2 - 12) { if (pause <= 0) { lost++; Snd.bump(); info(); } return false; }
       return true; });
-    c.drawImage(spr('dog_' + raza + (dir && (t >> 3) % 2 ? 1 : 0), DOGPAL[raza], face < 0), Math.round(x - 16), H2 - 40);
+    c.drawImage(spr('dog_' + raza + (dir && (t >> 3) % 2 ? 1 : 0), DOGPAL[raza], face < 0), Math.round(x - 16), H2 - 42, 32, 32);   // parada sobre el pasto
     if (pause <= 0 && lost >= L.vidas) { Snd.wrong(); startLv(lv, `¡Uy! Se acabaron los corazones. ¡Otra vez el nivel ${lv + 1}!`, 2500); }
     else if (pause <= 0 && got >= L.meta) {
       Snd.bark();
@@ -1809,13 +1809,13 @@ function mgBuscar() {
   };
   const loop = () => {
     c.fillStyle = '#7ccf5e'; c.fillRect(0, 0, W2, H2); c.fillStyle = '#6cbd50'; for (let k = 0; k < 60; k++) c.fillRect((k * 53) % W2, (k * 37) % H2, 2, 1);
-    if (hint || performance.now() - t0 > 45000) { hint = true; glow++; c.fillStyle = `rgba(255,240,120,${0.35 + 0.25 * Math.sin(glow / 6)})`; c.beginPath(); c.arc(dog.x + 16, dog.y + 12, 22, 0, 7); c.fill(); }
+    if (hint || performance.now() - t0 > 45000) { hint = true; glow++; c.fillStyle = `rgba(255,240,120,${0.35 + 0.25 * Math.sin(glow / 6)})`; c.beginPath(); c.arc(dog.x + 8, dog.y + 9, 16, 0, 7); c.fill(); }
     c.drawImage(spr('dog_' + perro.raza + '0', DOGPAL[perro.raza]), Math.round(dog.x), Math.round(dog.y));
     c.textBaseline = 'bottom'; things.forEach(o => { c.font = o.s + 'px sans-serif'; c.fillText(o.e, o.x, o.y); });
     MG.raf = requestAnimationFrame(loop);
   };
   cv.addEventListener('pointerdown', e => { e.preventDefault(); const p = mgPos(cv, e);
-    if (Math.abs(p.x - dog.x - 16) < 16 && Math.abs(p.y - dog.y - 12) < 14) { found++; Snd.bark();
+    if (Math.abs(p.x - dog.x - 9) < 12 && Math.abs(p.y - dog.y - 9) < 11) { found++; Snd.bark();
       if (found >= META) { mgWin(`¡Encontraste a ${perro.nombre} ${META} veces! 🐶 ¡Sos una detective!`); found = 0; mgLater(round, 3500); }
       else { mgInfo(`¡Ahí está! 🐶 (${found} de ${META})`); mgLater(round, 1200); } }
     else Snd.bump(); });
