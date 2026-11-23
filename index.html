@@ -390,8 +390,8 @@ const GRASS=0, FLOWER=1, PATH=2, TREE=3, WATER=4, ROOF=5, WALL=6, WIN=7, DOOR=8,
       SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30, WARDROBE=31, GRILL=32, SINK=33, WASHER=34, TUB=35, TOILET=36, SHOWER=37,
       POOL=38, SHED=39, SPIRAL=40, DRESSER=41, ROUNDT=42, DOLLHOUSE=43, TOYBOX=44, GATEIN=45, GATEOUT=46, BIGWIN=47;
 const WALKABLE = new Set([GRASS, FLOWER, PATH, FLOOR, RUG, MAT, GATEIN]);
-const DOORS = [{ map: 'pueblo', x: 5, y: 4, to: ['casa', 10, 20] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
-const EXITS = { casa: ['pueblo', 5, 5], abuela: ['pueblo', 11, 5] };
+const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 9, 20] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
+const EXITS = { casa: ['pueblo', 4, 5], abuela: ['pueblo', 11, 5] };
 const MAPS = {};
 let cur = null, M = null, W = 0, H = 0;
 let F = null;
@@ -405,8 +405,8 @@ const tileAt = (x, y) => (M[y] && M[y][x] !== undefined) ? M[y][x] : VOID;
 // --- El barrio ---
 makeMap('pueblo', 30, 20, GRASS);
 rect(0,0,W,1,TREE); rect(0,H-1,W,1,TREE); rect(0,0,1,H,TREE); rect(W-1,0,1,H,TREE);
-rect(1,1,6,2,ROOF); rect(1,3,3,2,WALL); M[3][1]=BIGWIN; M[3][2]=BIGWIN; M[3][3]=BIGWIN; rect(4,3,3,2,GATEOUT);   // casa de Greta: ventanal del living + portón del garage
-rect(1,6,28,1,PATH); rect(14,6,1,11,PATH); M[5][5]=PATH; M[5][18]=PATH;
+rect(1,1,6,2,ROOF); rect(1,3,3,2,BIGWIN); rect(4,3,3,2,GATEOUT);   // casa de Greta: ventanal del living + portón del garage
+rect(1,6,28,1,PATH); rect(14,6,1,11,PATH); M[5][4]=PATH; M[5][5]=PATH; M[5][6]=PATH; M[5][18]=PATH;
 rect(2,13,6,5,WATER);
 rect(9,1,5,2,ROOF2); rect(9,3,5,2,WALL); M[3][10]=WIN; M[3][12]=WIN; M[4][11]=DOOR; M[5][11]=PATH;   // casa de la abuela
 rect(23,1,6,4,TREE); rect(25,2,3,2,GRASS); M[4][26]=GRASS;
@@ -458,7 +458,7 @@ vLine(9, 12, 16, [12]);      // comedor / cuarto de los papás (puerta)
 hLine(17, 9, 13);            // cuarto de los papás / garage
 vLine(9, 17, 20, [17]);      // living / garage (puerta de entrada a la casa)
 MAPS.casa.hW = hW; MAPS.casa.vW = vW;
-const GARAGE_EXIT = { y: 20, x0: 9, x1: 13 };   // el portón del garage (pared de abajo)
+const GARAGE_EXIT = { y: 20, x0: 9, x1: 9 };   // el portón del garage (pared de abajo)
 
 /* ---------------- Dibujo de tiles ---------------- */
 let C = null, OX = 0, OY = 0;
@@ -557,11 +557,22 @@ function drawTile(t, x, y) {
       R(5,7,2,2,'#78b8ff'); R(9,7,2,2,'#78b8ff'); R(7,11,2,4,'#a0602f'); break;
     case TOYBOX: floorT(x, y); R(1,5,14,10,'#2a2238'); R(2,6,12,8,'#5bc0eb'); R(2,6,12,2,'#8fd8f8'); circ(5,4,3,'#2a2238'); circ(5,4,2,'#ffd84a'); R(9,1,4,4,'#2a2238'); R(10,2,2,2,'#e8505b'); circ(12,4,2,'#2a2238'); circ(12,4,1,'#b48cff'); break;
     case GATEIN: floorT(x, y); R(0,13,16,3,'#5a5a6a'); R(2,14,12,1,'#8a8aa0'); break;
-    case GATEOUT: { R(0,0,16,16,'#f6e9c8'); const l = tileAt(x - 1, y) !== GATEOUT, r = tileAt(x + 1, y) !== GATEOUT, top = tileAt(x, y - 1) !== GATEOUT;
-      R(l ? 2 : 0, top ? 2 : 0, 16 - (l ? 2 : 0) - (r ? 2 : 0), 16 - (top ? 2 : 0), '#2a2238'); R(l ? 3 : 0, top ? 3 : 0, 16 - (l ? 3 : 0) - (r ? 3 : 0), 16 - (top ? 3 : 0), '#b8bec8');
-      for (let j = (top ? 5 : 1); j < 16; j += 3) R(l ? 3 : 0, j, 16 - (l ? 3 : 0) - (r ? 3 : 0), 1, '#8e949e'); if (x === 5 && y === 4) R(6,10,4,2,'#2a2238'); break; }
-    case BIGWIN: R(0,0,16,16,'#f6e9c8'); R(0,15,16,1,'#b39b6c'); { const l = tileAt(x - 1, y) !== BIGWIN, r = tileAt(x + 1, y) !== BIGWIN;
-      R(l ? 2 : 0, 2, 16 - (l ? 2 : 0) - (r ? 2 : 0), 11, '#2a2238'); R(l ? 3 : 0, 3, 16 - (l ? 3 : 0) - (r ? 3 : 0), 9, '#8fd3ff'); R(l ? 4 : 1, 4, 4, 3, '#e4f6ff'); if (!r) R(15,3,1,9,'#2a2238'); R(2,13,14,1,'#c98b4f'); } break;
+    case GATEOUT: {      // bloque de garage: puerta chica (col 4) + portón seccional (cols 5-6)
+      const K = '#2a2238', bx = (x - 4) * 16, by = (y - 3) * 16, Wd = '#b8742e', Wg = '#8e561e', Wl = '#d0904a';
+      R(0,0,16,16,'#f6e9c8'); OX -= bx; OY -= by;
+      R(1,1,46,31,K);
+      R(2,2,11,30,'#c88a3e'); R(3,3,9,28,Wd); for (let j = 5; j < 30; j += 6) R(5,j,4,3,'#cfe4f0'); R(10,17,1,3,'#ffd84a'); R(3,3,9,1,Wl);
+      R(13,2,1,30,K); R(14,2,33,30,Wd); for (let j = 9; j < 32; j += 4) R(14,j,33,1,Wg); R(14,2,33,1,Wl);
+      [18, 27, 36].forEach(xx => { R(xx,4,7,3,K); R(xx + 1,5,5,1,'#cfe4f0'); }); R(29,25,3,2,K);
+      OX += bx; OY += by; break; }
+    case BIGWIN: {       // ventanal doble del living (3x2)
+      const K = '#2a2238', bx = (x - 1) * 16, by = (y - 3) * 16;
+      R(0,0,16,16,'#f6e9c8'); if (y === 4) R(0,15,16,1,'#b39b6c'); OX -= bx; OY -= by;
+      R(3,2,42,24,K); R(4,3,40,22,'#ffffff'); R(6,5,17,18,'#8fd3ff'); R(25,5,17,18,'#8fd3ff');
+      R(6,5,17,5,'#bfe8ff'); R(25,5,17,5,'#bfe8ff'); R(8,7,5,1,'#ffffff'); R(27,7,5,1,'#ffffff'); R(8,8,2,4,'#e4f6ff'); R(27,8,2,4,'#e4f6ff');
+      R(23,5,2,18,'#ffffff'); R(14,5,1,18,'#d8e4ec'); R(33,5,1,18,'#d8e4ec');
+      R(2,26,44,3,K); R(3,26,42,2,'#c98b4f');
+      OX += bx; OY += by; break; }
     case SHOWER: floorT(x, y); R(0,0,16,16,'#2a2238'); R(1,0,15,16,'#cfe8f4'); for (let i = 3; i < 16; i += 4) { R(1,i,15,1,'#b0d0e0'); R(i,0,1,16,'#b0d0e0'); } R(1,0,1,16,'#ffffff');
       if (tileAt(x, y - 1) !== SHOWER) { R(6,1,5,3,'#8a8aa0'); R(7,4,1,2,'#7ab8e8'); R(9,5,1,2,'#7ab8e8'); R(8,7,1,2,'#7ab8e8'); } else { R(6,12,4,3,'#8a8aa0'); circ(8,13,1,'#5a5a70'); } break;
     case PLANT: floorT(x, y); R(5,9,6,6,'#2a2238'); R(6,10,4,5,'#c8603a'); circ(8,6,5,'#245a26'); circ(8,6,4,'#3f9a3c'); R(6,4,2,2,'#5cbf4e'); break;
@@ -585,7 +596,8 @@ function drawWalls(m) {
   // ventanal del living (pared de abajo)
   if (m.id === 'casa') { const y = 21 * TS - T, x0 = 1 * TS + 6, w = 8 * TS - 14; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#9fd3ff'); R(x0, y, w, 2, '#e4f6ff'); for (let i = x0 + 24; i < x0 + w - 4; i += 24) R(i, y, 1, 2 * T, K); }
   // portón del garage (adentro)
-  if (m.id === 'casa') { const y = 21 * TS - T, x0 = 9 * TS, w = 5 * TS; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#9aa0aa'); for (let i = x0 + 2; i < x0 + w; i += 4) R(i, y, 1, 2 * T, '#7a808a'); }
+  if (m.id === 'casa') { const y = 21 * TS - T; { const x0 = 10 * TS, w = 4 * TS; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#b8742e'); for (let i = x0 + 2; i < x0 + w; i += 4) R(i, y, 1, 2 * T, '#8e561e'); }
+    { const x0 = 9 * TS + 3, w = TS - 6; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#c88a3e'); R(x0 + w - 3, y + 2, 1, 2, '#ffd84a'); } }
 }
 useMap('pueblo');
 
@@ -608,6 +620,22 @@ SPR.personLong = SPR.person.map((row, y) => {
 const dogBody = ["................","................","................","..........kk.kk.",".........kcckcck","........kcccccck","........kcckccnk",".k......kccccppk",".kc....kccccckk.","..kckkkkcccccck.","...kcccccccccck.","...kcllllllcck..","...kccccccccck.."];
 SPR.dog0 = dogBody.concat(["...kck.kck.kck..","...kk..kk..kk...","................"]);
 SPR.dog1 = dogBody.concat(["....kck.kck.kck.","....kk..kk..kk..","................"]);
+const DOGROWS = {
+  chihuahua: ["................","................","................","................","................","..........k...k.","..........kk.kk.","..........kpkkpk","..........kwwwwk",".k.......kwwkwnk",".kk....kkwwwwwk.","..kkkkkwwwwwwk..","...kwwwwwwwwk...","...kwssssswwk...","...kwk.kwk.k....","...kk..kk..kk..."],
+  bichon:    ["................","................","................","................","................",".........kkkkk..","..kk....kgwwwwk.",".kwwk..kbwwkwwnk",".kwk...kbbwwwwpk","..kkkkkkbwwwwkk.","...kwwbbbwwwwk..","..kwwwbbbwwwwk..","..kwwwwwwwwwwk..","..kwwssssswwwk..","...kwwk.kwwk....","...kkk..kkk....."],
+  labrador:  ["................","................","................",".........kkkkk..","........kcccccck","........keecccck",".k......keeckcnk",".kc.....keecccpk","..kc...kcccccck.","...kkkkcccccck..","...kccccccccck..","...kcllllllcck..","...kccccccccck..","...kck.kck.kck..","...kck.kck.kck..","...kk..kk..kk..."]
+};
+const DOGPAL = {
+  chihuahua: { k: '#2a2238', w: '#f6f2ec', s: '#dcd2c4', p: '#f2a8b4', n: '#1a1a1a' },
+  bichon:    { k: '#2a2238', w: '#f8f6f2', s: '#e0dcd4', b: '#2c2a30', g: '#9a98a2', n: '#1a1a1a', p: '#ff7a9a' },
+  labrador:  { k: '#2a2238', c: '#5a3322', l: '#7a4a34', e: '#3e2216', n: '#1a1a1a', p: '#ff7a9a' }
+};
+for (const r in DOGROWS) {
+  SPR['dog_' + r + '0'] = DOGROWS[r];
+  const a = DOGROWS[r].slice(); a[14] = a[14].replace(/^\.(.*)$/, '$1.'); a[15] = a[15].replace(/^\.(.*)$/, '$1.');
+  SPR['dog_' + r + '1'] = a;
+}
+SPR.cat = ["................","................","..k......k......","..kk....kk......","..kpkkkkpk......","..koooooook.....","..kosooosok.....","..koeoooeok.....","..kowwpwwok.....","...kowwwok......","..koowwwook.....",".kosowwwosok..k.",".kooowwwoook.kok",".kosowwwosokkok.",".kooowwwoooook..","..kkwkkkkwkkk..."];
 const cache = new Map();
 function spr(name, pal, flip) {
   const key = name + JSON.stringify(pal) + (flip ? 'f' : '');
@@ -1311,7 +1339,7 @@ ents.push({ id: 'ropero', map: 'casa', x: 1, y: 11, w: 2, kind: 'item', quest: '
 
 
 
-/* ======== MUEBLES DE LA CASA (dibujados en varias casillas) ======== */
+/* ======== MUEBLES DE LA CASA (dibujados en varias casillas, nunca encima de las paredes) ======== */
 const FURN = [];
 const furn = (t, x, y, w = 1, h = 1, o = {}) => { const e = { id: 'f-' + t + '-' + x + '-' + y, map: 'casa', kind: 'f', t, x, y, w, h, ...o }; FURN.push(e); ents.push(e); return e; };
 const say1 = txt => () => [step('', txt)];
@@ -1321,8 +1349,8 @@ for (let x = 6; x <= 10; x++) furn('maceta', x, 1, 1, 1, { back: true });
 furn('galpon', 13, 1, 1, 2, { back: true, talk: say1('El galpón. Está lleno de herramientas y cosas guardadas.') });
 furn('pelopincho', 1, 6, 3, 2, { talk: say1('¡La Pelopincho! Hoy hace un poquito de frío para meterse... 🏊') });
 // cocina
-furn('escalera', 6, 4, 1, 1, { back: true, talk: say1('La escalera caracol sube al cuarto de Mateo... ¡pero por ahora está cerrado! 🔒') });
-furn('tv', 6, 5, 1, 1, { side: 'L' });
+furn('escalera', 6, 4, 1, 1, { back: true, talk: say1('La escalera sube al cuarto de Mateo... ¡pero por ahora está cerrado! 🔒') });
+furn('tv', 6, 5, 1, 2, { side: 'L' });
 furn('mesa', 9, 5, 3, 1);
 furn('mueble', 9, 7, 3, 1);
 furn('cocina', 13, 4, 1, 1, { back: true }); furn('bacha', 13, 5); furn('heladera', 13, 6); furn('lavarropas', 13, 7);
@@ -1339,101 +1367,122 @@ furn('aparador', 1, 13, 1, 3);
 furn('mesa', 4, 13, 2, 3, { chairs: true });
 furn('sillon', 1, 18, 3, 3, { cells: [[1, 18], [1, 19], [1, 20], [2, 20], [3, 20]] });
 furn('mesaRedonda', 4, 18);
-furn('tv', 8, 18, 1, 1, { side: 'R' });
+furn('tv', 8, 19, 1, 1, { side: 'R' });
 // baño
 furn('inodoro', 9, 8, 1, 1, { back: true });
-furn('lavabo', 11, 11, 1, 1);
+furn('bidet', 10, 8, 1, 1, { back: true });
+furn('lavabo', 11, 11, 2, 1);
 furn('banera', 13, 8, 1, 2, { back: true });
 // cuarto de los papás
 furn('comoda', 10, 12, 2, 1, { back: true });
 furn('mesaluz', 13, 12); furn('cama2', 12, 13, 2, 2); furn('mesaluz', 13, 15);
 furn('tv', 9, 14, 1, 1, { side: 'L' });
 // garage
-furn('auto', 12, 17, 2, 3, { talk: say1('El auto de la familia. ¡Brum brum! 🚗') });
+furn('auto', 12, 17, 2, 4, { talk: say1('El auto de la familia. ¡Brum brum! 🚗') });
+
+function furnInsets(e) {
+  const m = MAPS.casa; let L = 0, Rr = 0, T = 0, B = 0, G = 4;
+  for (let x = e.x; x < e.x + e.w; x++) { if (m.hW[e.y][x]) T = G; if (m.hW[e.y + e.h] && m.hW[e.y + e.h][x]) B = G; }
+  for (let y = e.y; y < e.y + e.h; y++) { if (m.vW[y][e.x]) L = G; if (m.vW[y][e.x + e.w]) Rr = G; }
+  return { L, T, fw: e.w * 16 - L - Rr, fh: e.h * 16 - T - B };
+}
 function drawFurn(e, sx, sy) {
-  C = ctx; OX = sx; OY = sy; const K = '#2a2238', Wd = '#a86a3a', Wl = '#c88a52', Wdk = '#7a4a24', w = e.w * 16, h = e.h * 16;
-  const box = (x, y, ww, hh, c) => { R(x - 1, y - 1, ww + 2, hh + 2, K); R(x, y, ww, hh, c); };
+  const ins = e._ins || (e._ins = furnInsets(e));
+  C = ctx; OX = sx + ins.L; OY = sy + ins.T; const fw = ins.fw, fh = ins.fh;
+  const K = '#2a2238', Wd = '#a86a3a', Wl = '#c88a52', Wdk = '#7a4a24';
+  const box = (x, y, ww, hh, c) => { R(x, y, ww, hh, K); R(x + 1, y + 1, ww - 2, hh - 2, c); };
+  const cx = fw >> 1, cy = fh >> 1;
   switch (e.t) {
     case 'parrilla':
-      box(1, 3, 46, 12, '#b5523a'); for (let y = 7; y < 15; y += 4) R(1, y, 46, 1, '#8e3a28'); for (let x = 4; x < 46; x += 8) { R(x, 3, 1, 4, '#8e3a28'); R(x + 4, 8, 1, 3, '#8e3a28'); R(x, 12, 1, 3, '#8e3a28'); }
-      box(5, -2, 30, 7, '#3a3a46'); for (let x = 7; x < 34; x += 3) R(x, -2, 1, 7, '#22222c'); R(9, -1, 6, 3, '#a8402e'); R(19, 0, 5, 3, '#b84a3a'); R(27, -1, 5, 3, '#a8402e');
-      box(39, -8, 6, 12, '#b5523a'); R(40, -8, 4, 2, '#8e3a28'); break;
-    case 'maceta': box(4, 10, 8, 5, '#c8603a'); R(4, 10, 8, 1, '#e07a50'); circ(8, 7, 6, K); circ(8, 7, 5, '#3f9a3c'); circ(6, 5, 2, '#5cbf4e'); R(10, 4, 2, 2, '#ff6b8b'); R(4, 8, 2, 2, '#ffe14d'); break;
+      box(0, 4, fw, fh - 4, '#b5523a'); for (let y = 8; y < fh - 1; y += 3) R(1, y, fw - 2, 1, '#8e3a28'); for (let x = 5; x < fw - 2; x += 7) { R(x, 5, 1, 3, '#8e3a28'); R(x + 3, 9, 1, 2, '#8e3a28'); }
+      box(3, 0, fw - 14, 7, '#3a3a46'); for (let x = 5; x < fw - 12; x += 3) R(x, 1, 1, 5, '#22222c'); R(7, 2, 6, 3, '#a8402e'); R(17, 2, 5, 3, '#b84a3a'); R(25, 2, 5, 3, '#a8402e');
+      box(fw - 9, 0, 7, fh, '#b5523a'); R(fw - 8, 1, 5, 2, '#8e3a28'); break;
+    case 'maceta': box(cx - 4, fh - 6, 8, 6, '#c8603a'); R(cx - 3, fh - 5, 6, 1, '#e07a50'); circ(cx, fh - 9, 5, K); circ(cx, fh - 9, 4, '#3f9a3c'); circ(cx - 2, fh - 11, 2, '#5cbf4e'); R(cx + 2, fh - 12, 2, 2, '#ff6b8b'); R(cx - 4, fh - 9, 2, 2, '#ffe14d'); break;
     case 'galpon':
-      R(1, 31, 14, 2, 'rgba(0,0,0,.2)'); box(1, 8, 14, 23, '#b07a46'); for (let x = 4; x < 15; x += 4) R(x, 8, 1, 23, '#8a5a30');
-      for (let i = 0; i < 6; i++) R(0 - (i > 3 ? 1 : 0), 7 - i, 16 + (i > 3 ? 2 : 0), 1, K); R(-1, 1, 18, 7, K); R(0, 2, 16, 5, '#6a4a3a'); R(0, 4, 16, 1, '#55392c');
-      box(4, 19, 8, 12, '#7a4a24'); R(5, 25, 1, 1, '#ffd84a'); box(5, 11, 6, 4, '#9fd3ff'); break;
+      box(0, 7, fw, fh - 7, '#b07a46'); for (let x = 3; x < fw - 1; x += 3) R(x, 8, 1, fh - 9, '#8a5a30');
+      box(-0, 0, fw, 8, '#6a4a3a'); R(1, 3, fw - 2, 1, '#55392c');
+      box(2, fh - 12, fw - 4, 12, '#7a4a24'); R(fw - 5, fh - 6, 1, 1, '#ffd84a'); box(3, 10, fw - 6, 4, '#9fd3ff'); break;
     case 'pelopincho':
-      R(2, 31, 46, 2, 'rgba(0,0,0,.2)'); box(1, 1, 46, 29, '#2f6fd0');
-      R(1, 1, 46, 3, '#5b9af0'); R(1, 26, 46, 4, '#2458b0'); box(4, 4, 40, 21, '#62c4f0');
-      for (let i = 0; i < 3; i++) { const o = Math.floor(time * 3 + i * 2) % 6; R(8 + i * 12 + o, 9 + i * 5, 6, 1, '#b6ecff'); }
-      [[0, 0], [45, 0], [0, 27], [45, 27]].forEach(([x, y]) => R(x, y, 3, 3, '#1a3a80'));
-      box(43, 10, 4, 12, '#d0d4dc'); for (let y = 12; y < 22; y += 3) R(43, y, 4, 1, '#8a8ea0'); break;
+      R(0, 0, fw, fh, K); R(1, 1, fw - 2, fh - 2, '#9cb8d8'); R(1, 1, fw - 2, 1, '#d4e4f4');
+      R(3, 3, fw - 6, fh - 6, K); R(4, 4, fw - 8, fh - 8, '#4fb2ec'); R(4, 4, fw - 8, 2, '#3a96d4');
+      for (let i = 0; i < 4; i++) { const o = Math.floor(time * 2 + i * 3) % 8; R(8 + i * 9 + o % 4, 9 + (i % 2) * 8, 6, 1, '#a8e2ff'); }
+      [[0, 0], [fw - 3, 0], [0, fh - 3], [fw - 3, fh - 3], [cx - 1, 0], [cx - 1, fh - 3]].forEach(([x, y]) => R(x, y, 3, 3, '#4a6a92'));
+      R(fw - 11, cy - 5, 2, 11, '#d8dce4'); R(fw - 6, cy - 5, 2, 11, '#d8dce4'); for (let y = cy - 4; y < cy + 6; y += 3) R(fw - 10, y, 5, 1, '#b8bcc8'); break;
     case 'escalera':
-      circ(8, 8, 7, K); circ(8, 8, 6, '#c8d0dc');
-      for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + 0.3; C.fillStyle = i % 2 ? '#a8b2c2' : '#dde3ec'; for (let r = 2; r < 6; r++) { C.fillRect(OX + 8 + Math.round(Math.cos(a) * r), OY + 8 + Math.round(Math.sin(a) * r), 2, 2); } }
-      circ(8, 8, 2, K); circ(8, 8, 1, '#5a6070'); break;
+      R(0, 0, fw, fh, K); for (let i = 0; i < 6; i++) { const y = 1 + i * 2; R(1, y, fw - 2, 2, i % 2 ? '#c89a62' : '#d8ae78'); R(1, y + 1, fw - 2, 1, '#9a6a3a'); }
+      R(1, 1, fw - 2, 3, '#5a3a20'); R(1, 1, 2, fh - 2, '#7a4a24'); R(fw - 3, 1, 2, fh - 2, '#7a4a24'); R(1, fh - 2, fw - 2, 1, '#e8c890'); break;
     case 'tv': {
-      const L = e.side === 'L'; box(L ? 1 : 6, 3, 9, 11, Wd); R(L ? 1 : 6, 3, 9, 2, Wl);
-      box(L ? 2 : 11, 1, 3, 14, K); R(L ? 3 : 12, 2, 1, 12, '#5a7ac0'); break; }
+      const L = e.side === 'L', ph = Math.min(fh - 2, e.h > 1 ? 22 : 12), py = cy - (ph >> 1);
+      box(L ? 2 : fw - 9, py + 1, 7, ph - 2, Wd); R(L ? 3 : fw - 8, py + 2, 5, 1, Wl);
+      box(L ? 0 : fw - 3, py, 3, ph, K); R(L ? 1 : fw - 2, py + 1, 1, ph - 2, '#5a7ac0'); break; }
     case 'mesa':
-      if (e.chairs) { [[2, 6], [2, 22], [2, 38], [26, 6], [26, 22], [26, 38]].forEach(([x, y]) => box(x - (x < 16 ? 1 : -1), y, 4, 6, Wdk)); }
-      box(e.chairs ? 7 : 1, 3, w - (e.chairs ? 14 : 2), h - 6, Wd); R(e.chairs ? 7 : 1, 3, w - (e.chairs ? 14 : 2), 2, Wl);
-      for (let y = 8; y < h - 4; y += 6) R(e.chairs ? 9 : 3, y, w - (e.chairs ? 18 : 6), 1, '#946032');
-      if (e.chairs) { circ(16, 12, 2, '#ffffff'); circ(16, 34, 2, '#ffffff'); } break;
+      if (e.chairs) { for (let y = 5; y < fh - 6; y += Math.floor((fh - 10) / 3)) { box(0, y, 5, 6, Wdk); box(fw - 5, y, 5, 6, Wdk); } }
+      { const tx = e.chairs ? 6 : 1, tw = fw - (e.chairs ? 12 : 2); box(tx, 2, tw, fh - 4, Wd); R(tx + 1, 3, tw - 2, 2, Wl); for (let y = 8; y < fh - 4; y += 6) R(tx + 2, y, tw - 4, 1, '#946032');
+        if (e.chairs) { circ(cx, 12, 2, '#ffffff'); circ(cx, fh - 12, 2, '#ffffff'); } } break;
     case 'mueble': case 'comoda':
-      box(1, 2, w - 2, 12, Wd); R(1, 2, w - 2, 2, Wl); for (let x = 16; x < w; x += 16) R(x, 4, 1, 10, Wdk);
-      for (let x = 0; x < w; x += 16) { R(x + 7, 8, 3, 1, '#ffd84a'); } if (e.t === 'comoda') { box(4, -2, 5, 4, '#ffe9a8'); } break;
+      box(0, 1, fw, fh - 1, Wd); R(1, 2, fw - 2, 2, Wl); const n = Math.max(1, Math.round(fw / 16));
+      for (let i = 1; i < n; i++) R(Math.round(i * fw / n), 4, 1, fh - 5, Wdk); for (let i = 0; i < n; i++) R(Math.round((i + 0.5) * fw / n) - 1, cy + 1, 3, 1, '#ffd84a');
+      if (e.t === 'comoda') box(3, 0, 5, 4, '#ffe9a8'); break;
     case 'aparador':
-      box(2, 1, 12, h - 2, Wd); R(2, 1, 2, h - 2, Wl); for (let y = 16; y < h; y += 16) R(4, y, 10, 1, Wdk); for (let y = 0; y < h; y += 16) R(10, y + 7, 1, 3, '#ffd84a');
-      box(5, 4, 5, 5, '#e8eef8'); circ(8, 22, 2, '#78b8ff'); break;
+      box(0, 0, fw, fh, Wd); R(1, 1, 2, fh - 2, Wl); for (let i = 1; i < 3; i++) R(2, Math.round(i * fh / 3), fw - 3, 1, Wdk); for (let i = 0; i < 3; i++) R(fw - 4, Math.round((i + 0.5) * fh / 3), 1, 3, '#ffd84a');
+      box(3, 4, 5, 5, '#e8eef8'); circ(6, cy + 4, 2, '#78b8ff'); break;
     case 'armario':
-      box(1, 0, 30, 15, Wd); R(1, 0, 30, 2, Wl); R(16, 2, 1, 13, Wdk); R(13, 6, 1, 4, '#ffd84a'); R(18, 6, 1, 4, '#ffd84a'); R(1, 13, 30, 2, Wdk); break;
-    case 'cocina': box(1, 1, 14, 14, '#e8e8f0'); R(1, 1, 14, 3, '#c8c8d4'); circ(5, 8, 2, K); circ(11, 8, 2, K); circ(5, 12, 2, K); circ(11, 12, 2, K); break;
-    case 'bacha': box(1, 1, 14, 14, '#e8e0d0'); box(4, 4, 8, 8, '#9ab0c8'); R(5, 5, 6, 6, '#bcd8f0'); R(13, 6, 2, 4, '#8a8aa0'); break;
+      box(0, 0, fw, fh, Wd); R(1, 1, fw - 2, 2, Wl); R(cx, 3, 1, fh - 4, Wdk); R(cx - 3, cy - 1, 1, 4, '#ffd84a'); R(cx + 3, cy - 1, 1, 4, '#ffd84a'); break;
+    case 'cocina':
+      box(0, 0, fw, fh, '#e4e4ec'); R(1, 1, 3, fh - 2, '#c4c4d0'); for (let i = 0; i < 3; i++) { R(1, 2 + i * 3, 2, 2, K); }
+      [[7, 3], [12, 3], [7, 8], [12, 8]].forEach(([x, y]) => { circ(x - 1 + (fw > 12 ? 0 : -1), y, 2, K); R(x - 1 + (fw > 12 ? 0 : -1), y, 1, 1, '#e8505b'); }); break;
+    case 'bacha':
+      box(0, 0, fw, fh, '#e0d8c8'); box(1, 2, fw - 5, fh - 4, '#8aa8c4'); R(2, 3, fw - 7, fh - 6, '#cfe4f4'); R(2, 3, fw - 7, 1, '#ffffff');
+      R(fw - 3, cy - 2, 2, 4, '#7a7e8a'); R(fw - 6, cy - 1, 4, 1, '#a8acb8'); R(fw - 6, cy, 1, 1, '#7ab8e8'); break;
     case 'heladera':
-      box(1, 0, 14, 15, '#f4f8ff'); R(1, 6, 14, 1, '#c0c8d8'); R(2, 2, 1, 3, '#8a8aa0'); R(2, 9, 1, 4, '#8a8aa0');
-      if (dibujo && dibujoImg && dibujoImg.complete) { R(5, 3, 9, 8, K); ctx.drawImage(dibujoImg, sx + 6, sy + 4, 7, 6); R(8, 2, 3, 2, '#e8505b'); } else R(6, 3, 2, 2, '#ff6b8b');
-      break;
-    case 'lavarropas': box(1, 1, 14, 14, '#f4f8ff'); R(1, 1, 14, 3, '#d8dce8'); circ(8, 9, 4, K); circ(8, 9, 3, '#7ab8e8'); R(4, 9, 2, 1, '#bfe6ff'); R(12, 2, 2, 1, '#e8505b'); break;
+      box(0, 0, fw, fh, '#f4f8ff'); R(1, cy - 1, fw - 2, 1, '#c0c8d8'); R(1, 2, 1, cy - 4, '#8a8aa0'); R(1, cy + 2, 1, cy - 4, '#8a8aa0');
+      if (dibujo && dibujoImg && dibujoImg.complete) { R(3, 2, 8, 7, K); ctx.drawImage(dibujoImg, OX + 4, OY + 3, 6, 5); R(6, 1, 3, 2, '#e8505b'); } else R(4, 3, 2, 2, '#ff6b8b'); break;
+    case 'lavarropas': box(0, 0, fw, fh, '#f4f8ff'); R(1, 1, 3, fh - 2, '#d8dce8'); circ(cx + 1, cy, 4, K); circ(cx + 1, cy, 3, '#7ab8e8'); R(cx - 1, cy - 1, 2, 1, '#bfe6ff'); R(2, 2, 1, 2, '#e8505b'); break;
     case 'cama':
-      box(1, 0, 14, 31, '#ffffff'); R(1, 0, 14, 3, Wd); box(3, 4, 10, 5, '#eef0ff'); R(1, 12, 14, 19, e.color); R(1, 12, 14, 2, '#ffb0d0');
-      for (let y = 17; y < 30; y += 5) for (let x = 3; x < 14; x += 5) R(x, y, 2, 2, '#ffd6e8'); break;
+      box(0, 0, fw, fh, '#ffffff'); R(1, 1, fw - 2, 3, Wd); box(2, 4, fw - 4, 6, '#eef0ff'); R(1, 11, fw - 2, fh - 12, e.color); R(1, 11, fw - 2, 2, '#ffb0d0');
+      for (let y = 16; y < fh - 2; y += 5) for (let x = 3; x < fw - 2; x += 4) R(x, y, 1, 1, '#ffd6e8'); break;
     case 'cama2':
-      R(30, 0, 2, 32, K); box(0, 1, 30, 30, '#ffffff'); box(27, 0, 4, 32, Wdk);
-      box(19, 3, 7, 11, '#eef0ff'); box(19, 18, 7, 11, '#eef0ff'); R(0, 1, 17, 30, '#4a5ac8'); R(15, 1, 2, 30, '#7a8af0'); for (let x = 2; x < 15; x += 4) R(x, 1, 1, 30, '#4050b0'); break;
-    case 'mesaluz': box(3, 3, 10, 10, Wdk); R(3, 3, 10, 2, Wd); circ(8, 8, 3, K); circ(8, 8, 2, '#ffe9a8'); break;
-    case 'baul': box(1, 6, 14, 9, '#5bc0eb'); R(1, 6, 14, 2, '#8fd8f8'); circ(5, 5, 3, K); circ(5, 5, 2, '#ffd84a'); box(9, 1, 4, 4, '#e8505b'); circ(12, 5, 2, K); circ(12, 5, 1, '#b48cff'); break;
-    case 'casita': box(3, 6, 10, 9, '#ffd6e4'); for (let i = 0; i < 6; i++) R(2 + i, 6 - i, 12 - i * 2, 1, K); for (let i = 0; i < 5; i++) R(3 + i, 6 - i, 10 - i * 2, 1, '#e8505b'); R(5, 8, 2, 2, '#78b8ff'); R(9, 8, 2, 2, '#78b8ff'); R(7, 11, 2, 4, Wd); break;
-    case 'osito': { const T = '#b9773f'; circ(8, 11, 4, K); circ(8, 11, 3, T); circ(8, 6, 3, K); circ(8, 6, 2, T); R(5, 3, 2, 2, K); R(10, 3, 2, 2, K); R(7, 6, 1, 1, K); R(9, 6, 1, 1, K); R(7, 11, 3, 2, '#e8b07a'); break; }
-    case 'mesaRedonda': circ(8, 8, 6, K); circ(8, 8, 5, Wd); circ(8, 8, 3, Wl); R(6, 6, 2, 1, '#e8c890'); break;
+      box(0, 1, fw, fh - 2, '#ffffff'); box(fw - 4, 0, 4, fh, Wdk);
+      box(fw - 12, 4, 8, cy - 6, '#eef0ff'); box(fw - 12, cy + 2, 8, cy - 6, '#eef0ff'); R(1, 2, fw - 15, fh - 4, '#4a5ac8'); R(fw - 16, 2, 2, fh - 4, '#7a8af0'); for (let x = 3; x < fw - 16; x += 4) R(x, 2, 1, fh - 4, '#4050b0'); break;
+    case 'mesaluz': box(2, 2, fw - 4, fh - 4, Wdk); R(3, 3, fw - 6, 2, Wd); circ(cx, cy, 3, K); circ(cx, cy, 2, '#ffe9a8'); break;
+    case 'baul': box(1, 5, fw - 2, fh - 5, '#5bc0eb'); R(2, 6, fw - 4, 2, '#8fd8f8'); circ(5, 5, 3, K); circ(5, 5, 2, '#ffd84a'); box(8, 1, 5, 5, '#e8505b'); circ(12, 5, 2, K); circ(12, 5, 1, '#b48cff'); break;
+    case 'casita': box(2, 6, fw - 4, fh - 6, '#ffd6e4'); for (let i = 0; i < 6; i++) R(1 + i, 6 - i, fw - 2 - i * 2, 1, K); for (let i = 0; i < 5; i++) R(2 + i, 6 - i, fw - 4 - i * 2, 1, '#e8505b'); R(4, 8, 2, 2, '#78b8ff'); R(fw - 6, 8, 2, 2, '#78b8ff'); R(cx - 1, fh - 5, 3, 4, Wd); break;
+    case 'osito': { const T2 = '#b9773f'; circ(8, 11, 4, K); circ(8, 11, 3, T2); circ(8, 6, 3, K); circ(8, 6, 2, T2); R(5, 3, 2, 2, K); R(10, 3, 2, 2, K); R(7, 6, 1, 1, K); R(9, 6, 1, 1, K); R(7, 11, 3, 2, '#e8b07a'); break; }
+    case 'mesaRedonda': circ(cx, cy, 6, K); circ(cx, cy, 5, Wd); circ(cx, cy, 3, Wl); R(cx - 2, cy - 2, 2, 1, '#e8c890'); break;
     case 'sillon': {
-      const B = '#9c7a4c', S = '#d8bc8c', SH = '#b89a68', HL = '#ecd8b0';
-      R(0, 0, 18, 48, K); R(0, 30, 48, 18, K);
-      R(1, 1, 5, 46, B); R(1, 42, 46, 5, B);
-      R(6, 3, 11, 39, S); R(6, 31, 41, 11, S);
-      R(6, 3, 11, 1, HL); R(6, 31, 41, 1, HL);
-      R(6, 16, 11, 1, SH); R(17, 31, 1, 11, SH); R(32, 31, 1, 11, SH);
-      R(1, 0, 16, 3, B); R(45, 31, 2, 11, B);
-      box(8, 5, 5, 5, '#e8505b'); box(38, 33, 5, 5, '#5bc0eb'); break; }
-    case 'inodoro': box(4, 1, 8, 4, '#ffffff'); circ(8, 10, 5, K); circ(8, 10, 4, '#ffffff'); circ(8, 10, 2, '#d8ecf8'); break;
-    case 'lavabo': R(5, 13, 6, 3, K); R(6, 13, 4, 3, '#d0d4dc'); circ(8, 9, 5, K); circ(8, 9, 4, '#ffffff'); circ(8, 8, 2, '#bfe0f0'); R(7, 13, 2, 2, '#8a8aa0'); break;
+      const B = '#1e1e24', S = '#34343e', SH = '#26262e', HL = '#50505e', A = 13;
+      R(0, 0, A, fh, K); R(0, fh - A, fw, A, K);
+      R(1, 1, 4, fh - 2, B); R(1, fh - 5, fw - 2, 4, B);
+      R(5, 4, A - 6, fh - 9, S); R(5, fh - A + 1, fw - 9, A - 6, S);
+      R(5, 4, A - 6, 1, HL); R(5, fh - A + 1, fw - 9, 1, HL);
+      R(5, 16, A - 6, 1, SH); R(5, 28, A - 6, 1, SH); R(A + 4, fh - A + 1, 1, A - 6, SH); R(A + 16, fh - A + 1, 1, A - 6, SH);
+      R(1, 1, A - 2, 3, B); R(fw - 4, fh - A + 1, 3, A - 2, B);
+      box(6, 6, 5, 5, '#e8505b'); box(fw - 11, fh - A + 2, 5, 5, '#ffd84a'); break; }
+    case 'inodoro': box(cx - 4, 0, 8, 4, '#ffffff'); circ(cx, 8, 4, K); circ(cx, 8, 3, '#ffffff'); circ(cx, 8, 1, '#d8ecf8'); break;
+    case 'bidet': R(cx - 2, 0, 4, 2, '#a8acb8'); circ(cx, 6, 4, K); circ(cx, 6, 3, '#ffffff'); circ(cx, 6, 1, '#d8ecf8'); R(cx, 2, 1, 2, '#7a7e8a'); break;
+    case 'lavabo':
+      box(4, 0, fw - 8, fh, '#e8e4dc'); R(5, 1, fw - 10, 1, '#ffffff');
+      for (let dy = -4; dy <= 4; dy++) { const ww = Math.round(9 * Math.sqrt(1 - (dy * dy) / 25)); R(cx - ww, cy - 1 + dy, ww * 2, 1, dy === -4 || dy === 4 ? K : '#ffffff'); R(cx - ww, cy - 1 + dy, 1, 1, K); R(cx + ww - 1, cy - 1 + dy, 1, 1, K); }
+      for (let dy = -2; dy <= 2; dy++) { const ww = Math.round(6 * Math.sqrt(1 - (dy * dy) / 9)); R(cx - ww, cy - 1 + dy, ww * 2, 1, '#cfe4f4'); }
+      R(cx - 1, fh - 4, 2, 3, '#8a8ea0'); R(cx - 1, cy + 2, 2, 2, '#a8acb8'); R(cx - 4, fh - 3, 2, 2, '#c8ccd8'); R(cx + 2, fh - 3, 2, 2, '#c8ccd8'); break;
     case 'banera':
-      box(1, 1, 14, 30, '#ffffff'); box(3, 4, 10, 24, '#bfe6ff'); R(3, 4, 10, 2, '#e4f6ff');
-      R(6, 1, 4, 2, '#8a8aa0'); R(7, 6, 1, 1, '#7ab8e8'); R(9, 8, 1, 1, '#7ab8e8'); R(6, 10, 1, 1, '#7ab8e8'); circ(8, 24, 1, '#7a8aa0'); break;
+      box(0, 0, fw, fh, '#ffffff'); box(2, 3, fw - 4, fh - 6, '#bfe6ff'); R(3, 4, fw - 6, 2, '#e4f6ff');
+      R(cx - 2, 0, 4, 2, '#8a8aa0'); R(cx - 1, 5, 1, 1, '#7ab8e8'); R(cx + 1, 7, 1, 1, '#7ab8e8'); circ(cx, fh - 7, 1, '#7a8aa0'); break;
     case 'auto': {
-      const B = '#d4d8e0', D = '#a9aeb9', L = '#eef0f4';
-      R(5, 46, 22, 2, 'rgba(0,0,0,.2)');
-      R(3, 8, 3, 8, K); R(26, 8, 3, 8, K); R(3, 32, 3, 8, K); R(26, 32, 3, 8, K);
-      const rows = [[0, 9, 23], [1, 7, 25], [2, 6, 26], [3, 6, 26]];
-      for (let y = 0; y < 48; y++) { let a = 5, b = 27; if (y < 4) [, a, b] = rows[y]; else if (y > 43) [, a, b] = rows[47 - y]; R(a - 1, y, b - a + 2, 1, K); }
-      for (let y = 1; y < 47; y++) { let a = 5, b = 27; if (y < 4) [, a, b] = rows[y]; else if (y > 43) [, a, b] = rows[47 - y]; R(a, y, b - a, 1, B); }
-      R(24, 4, 2, 40, D); R(6, 4, 2, 38, L);
-      R(9, 5, 14, 6, K); R(10, 6, 12, 4, '#4a5670'); R(11, 6, 3, 1, '#8aa0c8');
-      R(8, 12, 16, 15, K); R(9, 13, 14, 13, '#c2c6d0'); R(10, 13, 12, 1, L);
-      R(7, 28, 18, 9, K); R(8, 29, 16, 7, '#3e4a62'); R(9, 29, 6, 1, '#8aa0c8'); R(9, 30, 3, 1, '#8aa0c8');
-      R(15, 38, 2, 7, D); R(2, 28, 4, 3, K); R(26, 28, 4, 3, K);
-      R(7, 43, 4, 2, '#fff6a8'); R(21, 43, 4, 2, '#fff6a8'); R(9, 1, 4, 1, '#e8505b'); R(19, 1, 4, 1, '#e8505b'); break; }
+      const B = '#cfd3db', D = '#9aa0ac', L = '#eceff4', G = '#2c3346', GL = '#7f93b8';
+      const W0 = 22, H0 = 54, ox = cx - (W0 >> 1), oy = cy - (H0 >> 1);
+      R(ox + 2, oy + H0, W0 - 4, 2, 'rgba(0,0,0,.18)');
+      const prof = y => { if (y < 6) return [9, 8, 6, 5, 4, 3][y]; if (y > H0 - 6) return [3, 4, 5, 6, 8, 9][y - (H0 - 5)] || 3; return 2 + (y > 14 && y < 40 ? 1 : 0); };
+      for (let y = 0; y < H0; y++) { const p = Math.max(0, prof(y) - 1); R(ox + p, oy + y, W0 - p * 2, 1, K); }
+      for (let y = 1; y < H0 - 1; y++) { const p = prof(y); R(ox + p, oy + y, W0 - p * 2, 1, B); R(ox + W0 - p - 3, oy + y, 2, 1, D); R(ox + p, oy + y, 1, 1, L); }
+      R(ox - 1, oy + 7, 2, 7, K); R(ox + W0 - 1, oy + 7, 2, 7, K); R(ox - 1, oy + 38, 2, 7, K); R(ox + W0 - 1, oy + 38, 2, 7, K);
+      R(ox + cx - cx + 10, oy + 2, 2, 10, L);
+      for (let y = 0; y < 8; y++) { const p = 5 - Math.floor(y / 3); R(ox + p, oy + 13 + y, W0 - p * 2, 1, y === 0 ? K : G); } R(ox + 6, oy + 14, 4, 1, GL); R(ox + 6, oy + 15, 2, 1, GL);
+      R(ox + 4, oy + 21, W0 - 8, 16, '#bfc4cd'); R(ox + 5, oy + 22, W0 - 10, 1, L); R(ox + 3, oy + 22, 1, 14, G); R(ox + W0 - 4, oy + 22, 1, 14, G);
+      for (let y = 0; y < 6; y++) { const p = 4 + Math.floor(y / 3); R(ox + p, oy + 37 + y, W0 - p * 2, 1, y === 5 ? K : G); } R(ox + 6, oy + 38, 3, 1, GL);
+      R(ox - 2, oy + 17, 3, 2, K); R(ox + W0 - 1, oy + 17, 3, 2, K);
+      R(ox + 4, oy + 1, 4, 2, '#fff6a8'); R(ox + W0 - 8, oy + 1, 4, 2, '#fff6a8'); R(ox + 5, oy + H0 - 3, 4, 2, '#e8505b'); R(ox + W0 - 9, oy + H0 - 3, 4, 2, '#e8505b');
+      R(ox + 9, oy + H0 - 9, 4, 1, D); break; }
   }
 }
 
@@ -1484,7 +1533,7 @@ $('reto').addEventListener('pointerdown', e => e.stopPropagation());
 
 /* ======== CONSOLA de la tele: memo de la familia + juegos ======== */
 quests.push({ id: 'memo', pista: 'En la tele del living hay una consola. ¡Jugá al memo de la familia!' });
-ents.push({ id: 'tele', map: 'casa', x: 8, y: 18, kind: 'item', quest: 'memo', talk() {
+ents.push({ id: 'tele', map: 'casa', x: 8, y: 19, kind: 'item', quest: 'memo', talk() {
   return [step('', '¡La consola de la tele! 🎮'), () => setTimeout(openConsole, 0)];
 } });
 function openConsole() {
@@ -1562,9 +1611,12 @@ CONFIG.extras.slice(0, 3).forEach((q, i) => {
 
 /* ======== Fiesta ======== */
 ents.push({ id: 'mesa', map: 'pueblo', x: 13, y: 17, w: 3, kind: 'table', talk() {
-  if (left()) return [step('', '¡Una torta gigante! 🎂'), step('', `Pero la fiesta empieza cuando tengas todas las estrellas. Te ${faltan()}.`)];
+  if (left()) return [step('', done.has('torta') ? '¡La torta de mamá! 🎂 ¡Qué rica se ve!' : 'Acá va a ir la torta... ¡mamá todavía la está preparando en casa!'), step('', `La fiesta empieza cuando tengas todas las estrellas. Te ${faltan()}.`)];
   return [step('', '¡Tenés todas las estrellas!'), step('', '¡¡QUE EMPIECE LA FIESTA!!'), () => setTimeout(startParty, 50)];
 } });
+ents.push({ id: 'regalo1', map: 'pueblo', x: 12, y: 17, kind: 'gift', c: '#5b8ee8', b: '#ffd84a', talk: () => [step('', '¡Un regalo! 🎁 Pero se abre cuando empiece la fiesta.')] });
+ents.push({ id: 'regalo2', map: 'pueblo', x: 16, y: 17, kind: 'gift', c: '#e8505b', b: '#ffffff', talk: () => [step('', '¡Otro regalo! 🎁 ¿Qué será? ¡Hay que esperar a la fiesta!')] });
+ents.push({ id: 'regalo3', map: 'pueblo', x: 16, y: 18, kind: 'gift', c: '#9b59d0', b: '#7ad04a', decor: true });
 ents.push({ id: 'globos1', map: 'pueblo', x: 11, y: 14, kind: 'balloons', solid: false, decor: true });
 ents.push({ id: 'globos2', map: 'pueblo', x: 17, y: 14, kind: 'balloons', solid: false, decor: true });
 
@@ -1800,43 +1852,27 @@ function drawEnt(e, sx, sy) {
       if (blink) { R(4,3,3,1,'#2a2238'); R(9,3,3,1,'#2a2238'); } else { R(5,3,1,1,'#2a2238'); R(10,3,1,1,'#2a2238'); }
       R(7,5,2,2,'#ffb000'); break; }
     case 'dog': {
-      const moving = e.following && P.moving, frame = moving && P.t > 0.25 && P.t < 0.75 ? 1 : 0;
-      const img = dogSprite(e.raza || 'labrador', frame), bob = frame ? -1 : 0;
-      const dx = sx - 8, dy = sy - 8 + bob + (e.raza === 'labrador' ? 0 : 0);
-      if (e.dir === 'left') { ctx.save(); ctx.translate(dx + 32, dy); ctx.scale(-1, 1); ctx.drawImage(img, 0, 0); ctx.restore(); } else ctx.drawImage(img, dx, dy);
-      if (!moving && Math.sin(time * 12) > 0) { const tx = e.dir === 'left' ? sx + 22 : sx - 6; ctx.fillStyle = '#2a2238'; ctx.fillRect(tx, sy - 2 + (e.raza === 'labrador' ? -2 : 3), 1, 1); }
+      const moving = e.following && P.moving, frame = moving && P.t > 0.25 && P.t < 0.75 ? 1 : 0, r = e.raza || 'labrador';
+      ctx.drawImage(spr('dog_' + r + frame, DOGPAL[r], e.dir === 'left'), sx, sy + (frame ? -1 : 0));
       break; }
     case 'cat': {
-      if (e.stump) { R(1,11,14,5,'#2a2238'); R(2,12,12,4,'#a0602f'); R(2,12,12,1,'#d8a06a'); }
-      OY = sy + bob - (e.stump ? 4 : 0); const p = e.pal;
-      circ(8,11,5,p.k); circ(8,11,4,p.c); circ(8,12,2,p.l);
-      R(3,1,3,4,p.k); R(4,2,1,2,p.n); R(10,1,3,4,p.k); R(11,2,1,2,p.n);
-      circ(8,5,4,p.k); circ(8,5,3,p.c); R(6,4,1,2,p.k); R(10,4,1,2,p.k); R(8,6,1,1,p.n);
-      const tw = Math.sin(time * 4) > 0 ? 1 : 0; R(13,8 - tw,2,6,p.k); R(13,8 - tw,1,5,p.c);
-      break; }
-    case 'table':
+      if (e.stump) { R(1,11,14,5,'#2a2238'); R(2,12,12,4,'#a0602f'); R(2,12,12,1,'#d8a06a'); R(5,13,6,1,'#8a5030'); }
+      const blink = (time + e.x) % 4 < 0.15, pal = { k: '#2a2238', o: '#f0a050', s: '#c8702a', w: '#fff1dc', p: '#ff8aa8', e: blink ? '#f0a050' : '#3cae5a' };
+      ctx.drawImage(spr('cat', pal), sx, sy - (e.stump ? 3 : 0) + bob); break; }
+    case 'table': {
       for (let i = 0; i < 3; i++) { OX = sx + i * 16; R(0,4,16,10,'#2a2238'); R(0,5,16,7,'#ffffff'); R(0,10,16,2,'#ff9ccc'); for (let j = 1; j < 16; j += 4) R(j,12,2,2,'#ff9ccc'); R(2,13,2,3,'#7a4a24'); R(12,13,2,3,'#7a4a24'); }
-      OX = sx + 16;
-      R(1,-6,14,11,'#2a2238'); R(2,-5,12,9,'#ffe0ef'); R(2,-5,12,3,'#ff9ccc'); R(2,0,12,1,'#ff9ccc');
-      for (let i = 0; i < Math.min(CONFIG.edad, 7); i++) { const cx = 2 + i * 2; R(cx,-10,1,4,'#78b8ff'); R(cx,-12 + (Math.sin(time * 15 + i) > 0 ? 0 : 1),1,2,'#ffb000'); }
-      OX = sx; R(4,1,6,3,'#2a2238'); R(5,1,4,2,'#ffd84a');
-      OX = sx + 32; R(5,0,7,4,'#2a2238'); R(6,0,5,3,'#78b8ff'); R(8,0,1,3,'#e8505b');
-      break;
-    case 'car': {
-      const K = '#2a2238', B = '#d6dae2', D = '#b2b7c2', L = '#f2f4f8';
-      R(4,46,24,2,'rgba(0,0,0,.18)');
-      R(2,7,4,9,K); R(26,7,4,9,K); R(2,31,4,9,K); R(26,31,4,9,K);
-      R(7,0,18,48,K); R(5,3,22,42,K); R(4,7,24,34,K);
-      R(8,1,16,46,B); R(6,4,20,40,B); R(5,8,22,32,B);
-      R(24,6,2,36,D); R(26,9,1,30,D); R(7,6,2,34,L);
-      R(9,5,14,7,K); R(10,6,12,5,'#5f6f8f'); R(11,6,4,1,'#9fb4d8');
-      R(8,13,16,16,D); R(9,14,14,14,'#c8ccd6'); R(10,14,12,1,L);
-      R(8,30,16,9,K); R(9,31,14,7,'#6f8fc0'); R(10,31,5,1,'#cfe4ff'); R(10,32,2,1,'#cfe4ff');
-      R(3,29,3,3,K); R(26,29,3,3,K); R(3,30,2,1,D); R(27,30,2,1,D);
-      R(8,43,5,2,'#fff6a8'); R(19,43,5,2,'#fff6a8'); R(14,45,4,1,'#8a8e98');
-      R(9,1,4,1,'#e8505b'); R(19,1,4,1,'#e8505b');
+      OX = sx;
+      if (done.has('torta')) { OX = sx + 16;
+        R(1,-6,14,11,'#2a2238'); R(2,-5,12,9,'#ffe0ef'); R(2,-5,12,3,'#ff9ccc'); R(2,0,12,1,'#ff9ccc');
+        for (let i = 0; i < Math.min(CONFIG.edad, 7); i++) { const cx = 2 + i * 2; R(cx,-10,1,4,'#78b8ff'); R(cx,-12 + (Math.sin(time * 15 + i) > 0 ? 0 : 1),1,2,'#ffb000'); } OX = sx; }
+      else { OX = sx + 16; circ(8,7,4,'#2a2238'); circ(8,7,3,'#ffffff'); circ(8,7,1,'#e4e4ee'); OX = sx; }
+      circ(8,8,3,'#2a2238'); circ(8,8,2,'#ffffff'); circ(40,8,3,'#2a2238'); circ(40,8,2,'#ffffff');
       break; }
-    case 'teddy': { const T = '#b9773f'; circ(8,10,4,'#2a2238'); circ(8,10,3,T); circ(8,5,3,'#2a2238'); circ(8,5,2,T); R(5,2,2,2,'#2a2238'); R(10,2,2,2,'#2a2238'); R(7,5,1,1,'#2a2238'); R(9,5,1,1,'#2a2238'); R(7,10,3,2,'#e8b07a'); break; }
+    case 'gift': {
+      const c = e.c || '#e8505b', b2 = e.b || '#ffd84a';
+      R(2,4,12,11,'#2a2238'); R(3,5,10,9,c); R(3,5,10,2,'#ffffff40'); R(7,5,2,9,b2); R(3,8,10,2,b2);
+      R(4,1,4,4,'#2a2238'); R(8,1,4,4,'#2a2238'); R(5,2,2,2,b2); R(9,2,2,2,b2); R(7,3,2,2,'#2a2238');
+      if (e.small) { } break; }
     case 'balloons': {
       ['#e8505b', '#ffd84a', '#78b8ff'].forEach((c, i) => { const bx = 2 + i * 5, by = -14 + Math.round(Math.sin(time * 2 + i) * 1.5) - (i === 1 ? 3 : 0);
         R(bx + 2, by + 6, 1, 10 - by - 8 + 4, '#ffffff'); circ(bx + 2, by + 2, 3, '#2a2238'); circ(bx + 2, by + 2, 2, c); R(bx + 1, by + 1, 1, 1, '#ffffff'); });
