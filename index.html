@@ -6,7 +6,7 @@
 <title>La aventura de Greta</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify Sans',ui-monospace,monospace;color:#2a2238;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
@@ -17,6 +17,9 @@ html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify S
 .hidden{display:none!important}
 
 /* HUD */
+/* números claros para que no se confundan (7, 5, 8...) */
+.num,#keys button,#retoBig,#memoPairs,.nrow{font-family:'Nunito',system-ui,sans-serif;font-weight:900}
+#hud .cnt{font-family:'Nunito',system-ui,sans-serif;font-weight:900;margin-left:.25em;color:#2a2238}
 #hud{position:absolute;top:2.5%;left:2.5%;background:rgba(255,255,255,.92);border:.14em solid #2a2238;border-radius:.35em;padding:.1em .45em;font-size:.95em;font-weight:700;display:flex;gap:.1em;align-items:center}
 #hud .st{color:#cfc8dc}
 #hud .st.on{color:#ffb400;text-shadow:0 0 .2em #ffe27a}
@@ -312,6 +315,7 @@ const CONFIG = {
 /* ===================================================================== */
 
 const $ = id => document.getElementById(id);
+const numHTML = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/\d+/g, m => `<span class="num">${m}</span>`);
 const N = CONFIG.nombre;
 const T = s => CONFIG.mayusculas ? s.toUpperCase() : s;
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -449,7 +453,7 @@ for (let y = 0; y < 22; y++) for (let x = 0; x < 15; x++) {             // pared
 hLine(4, 6, 13, [9]);        // cocina / patio (puerta al patio)
 vLine(6, 4, 7);              // cocina / patio izquierdo
 hLine(8, 1, 5);              // patio / cuarto de Greta
-hLine(8, 6, 13, [7]);        // cocina / pasillo y baño
+hLine(8, 9, 13);             // baño (el pasillo queda abierto a la cocina)
 vLine(6, 8, 11, [10]);       // cuarto de Greta / pasillo (puerta)
 hLine(12, 1, 5);             // cuarto de Greta / comedor
 vLine(9, 8, 11, [10]);       // pasillo / baño (puerta)
@@ -561,7 +565,7 @@ function drawTile(t, x, y) {
       const K = '#2a2238', bx = (x - 4) * 16, by = (y - 3) * 16, Wd = '#b8742e', Wg = '#8e561e', Wl = '#d0904a';
       R(0,0,16,16,'#f6e9c8'); OX -= bx; OY -= by;
       R(1,1,46,31,K);
-      R(2,2,11,30,'#c88a3e'); R(3,3,9,28,Wd); for (let j = 5; j < 30; j += 6) R(5,j,4,3,'#cfe4f0'); R(10,17,1,3,'#ffd84a'); R(3,3,9,1,Wl);
+      R(2,2,11,30,Wg); for (let j = 4; j < 11; j += 2) R(3,j,9,1,'#7a4618'); R(2,11,11,1,K); R(3,12,9,20,Wd); R(3,12,9,1,Wl); for (let j = 14; j < 29; j += 5) R(5,j,4,3,'#cfe4f0'); R(10,21,1,3,'#ffd84a');
       R(13,2,1,30,K); R(14,2,33,30,Wd); for (let j = 9; j < 32; j += 4) R(14,j,33,1,Wg); R(14,2,33,1,Wl);
       [18, 27, 36].forEach(xx => { R(xx,4,7,3,K); R(xx + 1,5,5,1,'#cfe4f0'); }); R(29,25,3,2,K);
       OX += bx; OY += by; break; }
@@ -586,9 +590,12 @@ for (const id in MAPS) {
 function drawWalls(m) {
   OX = 0; OY = 0; const K = '#2a2238', CR = '#f1e2c0', HI = '#fffaf0', T = 3;
   const segs = [];
+  const h = (y, x) => !!(m.hW[y] && m.hW[y][x]), v = (y, x) => !!(m.vW[y] && m.vW[y][x]);
   for (let y = 0; y <= m.h; y++) for (let x = 0; x <= m.w; x++) {
-    if (m.hW[y] && m.hW[y][x]) segs.push([x * TS - T, y * TS - T, TS + 2 * T, 2 * T]);
-    if (m.vW[y] && m.vW[y][x]) segs.push([x * TS - T, y * TS - T, 2 * T, TS + 2 * T]);
+    if (h(y, x)) { const l = h(y, x - 1) || v(y - 1, x) || v(y, x), r = h(y, x + 1) || v(y - 1, x + 1) || v(y, x + 1);
+      segs.push([x * TS - (l ? T : 0), y * TS - T, TS + (l ? T : 0) + (r ? T : 0), 2 * T]); }
+    if (v(y, x)) { const t = v(y - 1, x) || h(y, x - 1) || h(y, x), b = v(y + 1, x) || h(y + 1, x - 1) || h(y + 1, x);
+      segs.push([x * TS - T, y * TS - (t ? T : 0), 2 * T, TS + (t ? T : 0) + (b ? T : 0)]); }
   }
   segs.forEach(([x, y, w, h]) => R(x - 1, y - 1, w + 2, h + 2, K));
   segs.forEach(([x, y, w, h]) => R(x, y, w, h, CR));
@@ -596,8 +603,8 @@ function drawWalls(m) {
   // ventanal del living (pared de abajo)
   if (m.id === 'casa') { const y = 21 * TS - T, x0 = 1 * TS + 6, w = 8 * TS - 14; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#9fd3ff'); R(x0, y, w, 2, '#e4f6ff'); for (let i = x0 + 24; i < x0 + w - 4; i += 24) R(i, y, 1, 2 * T, K); }
   // portón del garage (adentro)
-  if (m.id === 'casa') { const y = 21 * TS - T; { const x0 = 10 * TS, w = 4 * TS; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#b8742e'); for (let i = x0 + 2; i < x0 + w; i += 4) R(i, y, 1, 2 * T, '#8e561e'); }
-    { const x0 = 9 * TS + 3, w = TS - 6; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#c88a3e'); R(x0 + w - 3, y + 2, 1, 2, '#ffd84a'); } }
+  if (m.id === 'casa') { const y = 21 * TS - T; { const x0 = 10 * TS + 1, w = 4 * TS - 6; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#b8742e'); for (let i = x0 + 2; i < x0 + w; i += 4) R(i, y, 1, 2 * T, '#8e561e'); }
+    { const x0 = 9 * TS + 5, w = TS - 6; R(x0 - 1, y - 1, w + 2, 2 * T + 2, K); R(x0, y, w, 2 * T, '#c88a3e'); R(x0 + w - 3, y + 2, 1, 2, '#ffd84a'); } }
 }
 useMap('pueblo');
 
@@ -636,13 +643,17 @@ for (const r in DOGROWS) {
   SPR['dog_' + r + '1'] = a;
 }
 SPR.cat = ["................","................","..k......k......","..kk....kk......","..kpkkkkpk......","..koooooook.....","..kosooosok.....","..koeoooeok.....","..kowwpwwok.....","...kowwwok......","..koowwwook.....",".kosowwwosok..k.",".kooowwwoook.kok",".kosowwwosokkok.",".kooowwwoooook..","..kkwkkkkwkkk..."];
+const CAR_ROWS = [".....aaaaaaaaaaaaaaaaaa.....", "....abaaaccccccccccaaaba....", "...ababbbaccccccccabbbaba...", "...aabbbbaccccccccabbbbaa...", "...aabbbbaccccccccabbbbaa...", "...aabbbaccccccccccabbbaa...", "...adaaaccccccccccccaaaea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccaaaaccccceeea...", "...addccaaaaffffaaaaceeea...", "...addaaffggffffffffaaeea...", "...adaffggffffffffffffaea...", "...aafffggfffffffffffffaa...", "..aaaffffffffffffffffffaaa..", "aacafaffffffffffffffffafacaa", "accafaffffffffffffffffafacca", "aaaaffaffffffffffffffaffaaaa", "...affaffffffffffffffaffa...", "...afffaffffffffffffafffa...", "...afffaaaaaaaaaaaaaafffa...", "...afffaddddddddddddafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaaaaaaaaaaaaaaffea...", "...adffafffffffffffffafea...", "...adfafgggffffffffffafea...", "...adfafffffffffffffffaea...", "...adaffffffffffffffffaea...", "...adafffffffffffffffffaa...", "...aaffffffffffffffffffaa...", "...adaaffffffffffffffaaea...", "...addcaaaafffffffaaaeeea...", "...addcccccaaaaaaaccceeea...", "...addccccccccccccccceeea...", "...acccccccccccccccccccca...", "....acccccccccccccccccca....", "....acccccccccccccccccca....", ".....ahhhcccccccccchhha.....", "......aaccccccccccccaa......", "........aaaaaaaaaaaa........"];
+const CAR_PAL = {a:'#2a2238',b:'#f7e6b4',c:'#ced2da',d:'#eaedf2',e:'#b4b9c4',f:'#a8c6d6',g:'#cde4f0',h:'#e8505b'};
+SPR.auto = CAR_ROWS;
 const cache = new Map();
 function spr(name, pal, flip) {
   const key = name + JSON.stringify(pal) + (flip ? 'f' : '');
   let c = cache.get(key);
   if (!c) {
-    c = document.createElement('canvas'); c.width = 16; c.height = 16; const x = c.getContext('2d');
-    SPR[name].forEach((row, y) => { for (let i = 0; i < 16; i++) { const col = pal[row[i]]; if (!col) continue; x.fillStyle = col; x.fillRect(flip ? 15 - i : i, y, 1, 1); } });
+    const rows = SPR[name], sw = Math.max(16, rows[0].length), sh = Math.max(16, rows.length);
+    c = document.createElement('canvas'); c.width = sw; c.height = sh; const x = c.getContext('2d');
+    rows.forEach((row, y) => { for (let i = 0; i < row.length; i++) { const col = pal[row[i]]; if (!col) continue; x.fillStyle = col; x.fillRect(flip ? sw - 1 - i : i, y, 1, 1); } });
     cache.set(key, c);
   }
   return c;
@@ -806,7 +817,7 @@ const torta = { state: 0, got: new Set() };
 const ITEMS = [
   { id: 'huevos',    label: 'los huevos',               x: 13, y: 6,  flavor: 'La heladera. ¡Qué fresquito!' },
   { id: 'harina',    label: 'la harina',                x: 10, y: 7,  flavor: 'El mueble de la cocina. Hay frascos de todos los colores.' },
-  { id: 'chispitas', label: 'las chispitas de colores', x: 5,  y: 14, flavor: 'La mesa del comedor. Está llena de cuadernos de Mateo.' }
+  { id: 'chispitas', label: 'las chispitas de colores', x: 5,  y: 15, flavor: 'La mesa del comedor. Está llena de cuadernos de Mateo.' }
 ];
 quests.push({ id: 'torta', pista: `${CONFIG.mama} te necesita en la cocina, adentro de casa.` });
 ents.push({ id: 'mama', map: 'casa', x: 11, y: 6, kind: 'person', long: true, quest: 'torta', pal: { h: '#7a4a24', d: '#e86a8a', q: '#5a4a8a' }, talk() {
@@ -843,7 +854,7 @@ ents.push({ id: 'papa', map: 'casa', x: 4, y: 2, kind: 'person', quest: 'amiga',
 // Mateo: tarea de matemática en el cuaderno (sin opciones: hay que escribir el número)
 quests.push({ id: 'cuenta', pista: `${CONFIG.hermano} está en el comedor haciendo la tarea. ¡Te necesita!` });
 const NB = { probs: CONFIG.tarea.map(t => { const m = t.match(/(\d+)\s*([+\-])\s*(\d+)/); const a = +m[1], b = +m[3]; return { txt: `${a} ${m[2]} ${b}`, ans: m[2] === '+' ? a + b : a - b, ok: false }; }), i: 0, input: '' };
-ents.push({ id: 'mateo', map: 'casa', x: 3, y: 14, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
+ents.push({ id: 'mateo', map: 'casa', x: 3, y: 15, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
   if (done.has('cuenta')) return [step('mateo', '¡Sos una genia de los números, hermanita!')];
   if (NB.i > 0) return [step('mateo', `¿Seguimos con la tarea? Te ${NB.probs.length - NB.i === 1 ? 'falta 1 cuenta' : 'faltan ' + (NB.probs.length - NB.i) + ' cuentas'}.`), () => setTimeout(openNotebook, 0)];
   return [step('mateo', '¡Hola, hermanita! Te tengo una tarea de matemática...'),
@@ -1042,7 +1053,7 @@ function renderKK() {
     const r = KK.res, ok = r.sung >= 6;
     kkEl.innerHTML = `<h2>${ok ? '🎉 ¡Qué hermoso!' : '😮 ¡Casi!'}</h2>
       <div class="kkbig">${ok ? `¡La ${esc(CONFIG.abuela.toLowerCase())} está feliz! ❤️` : `La ${esc(CONFIG.abuela.toLowerCase())} casi no las escuchó...`}</div>
-      <div class="kksub" style="text-align:center;font-size:.9em;margin-top:.4em">Cantaron ${r.sung} de 9 líneas.${ok ? '' : ' ¡Canten más fuerte! Tienen que cantar por lo menos 6.'}</div>
+      <div class="kksub" style="text-align:center;font-size:.9em;margin-top:.4em">Cantaron <span class="num">${r.sung}</span> de <span class="num">9</span> líneas.${ok ? '' : ' ¡Canten más fuerte! Tienen que cantar por lo menos <span class="num">6</span>.'}</div>
       <div class="kkdots" style="margin-top:.5em">${r.lines.map(v => `<span class="${v ? 'ok' : 'no'}"></span>`).join('')}</div>
       <div style="flex:1"></div><div class="kkbtns">${ok ? '<button class="pri" data-a="win">Seguir ▶</button>' : '<button data-a="toMusic">Otra música</button><button class="pri" data-a="toSing">Probar de nuevo 🎤</button>'}</div>`;
   }
@@ -1364,18 +1375,18 @@ furn('osito', 3, 8, 1, 1, { solid: false, decor: true });
 // comedor y living
 furn('mueble', 2, 12, 2, 1, { back: true });
 furn('aparador', 1, 13, 1, 3);
-furn('mesa', 4, 13, 2, 3, { chairs: true });
+furn('mesa', 4, 14, 2, 3, { chairs: true });
 furn('sillon', 1, 18, 3, 3, { cells: [[1, 18], [1, 19], [1, 20], [2, 20], [3, 20]] });
 furn('mesaRedonda', 4, 18);
-furn('tv', 8, 19, 1, 1, { side: 'R' });
+furn('tv', 8, 18, 1, 3, { side: 'R' });
 // baño
 furn('inodoro', 9, 8, 1, 1, { back: true });
 furn('bidet', 10, 8, 1, 1, { back: true });
 furn('lavabo', 11, 11, 2, 1);
 furn('banera', 13, 8, 1, 2, { back: true });
 // cuarto de los papás
-furn('comoda', 10, 12, 2, 1, { back: true });
-furn('mesaluz', 13, 12); furn('cama2', 12, 13, 2, 2); furn('mesaluz', 13, 15);
+furn('comoda', 10, 12, 3, 1, { back: true });
+furn('mesaluz', 13, 13); furn('cama2', 12, 14, 2, 2); furn('mesaluz', 13, 16);
 furn('tv', 9, 14, 1, 1, { side: 'L' });
 // garage
 furn('auto', 12, 17, 2, 4, { talk: say1('El auto de la familia. ¡Brum brum! 🚗') });
@@ -1408,9 +1419,11 @@ function drawFurn(e, sx, sy) {
       for (let i = 0; i < 4; i++) { const o = Math.floor(time * 2 + i * 3) % 8; R(8 + i * 9 + o % 4, 9 + (i % 2) * 8, 6, 1, '#a8e2ff'); }
       [[0, 0], [fw - 3, 0], [0, fh - 3], [fw - 3, fh - 3], [cx - 1, 0], [cx - 1, fh - 3]].forEach(([x, y]) => R(x, y, 3, 3, '#4a6a92'));
       R(fw - 11, cy - 5, 2, 11, '#d8dce4'); R(fw - 6, cy - 5, 2, 11, '#d8dce4'); for (let y = cy - 4; y < cy + 6; y += 3) R(fw - 10, y, 5, 1, '#b8bcc8'); break;
-    case 'escalera':
-      R(0, 0, fw, fh, K); for (let i = 0; i < 6; i++) { const y = 1 + i * 2; R(1, y, fw - 2, 2, i % 2 ? '#c89a62' : '#d8ae78'); R(1, y + 1, fw - 2, 1, '#9a6a3a'); }
-      R(1, 1, fw - 2, 3, '#5a3a20'); R(1, 1, 2, fh - 2, '#7a4a24'); R(fw - 3, 1, 2, fh - 2, '#7a4a24'); R(1, fh - 2, fw - 2, 1, '#e8c890'); break;
+    case 'escalera': {
+      R(0, 0, fw, fh, K); R(1, 1, fw - 2, 4, '#3a2a40');
+      for (let i = 0; i < 4; i++) { const y = 5 + i * 2, ins2 = 3 - i; R(1 + ins2, y, fw - 2 - ins2 * 2, 1, '#e2bc86'); R(1 + ins2, y + 1, fw - 2 - ins2 * 2, 1, '#8a5a30'); }
+      for (let i = 0; i < 4; i++) { R(1 + (3 - i), 5 + i * 2, 1, 2, '#5a3a20'); R(fw - 2 - (3 - i), 5 + i * 2, 1, 2, '#5a3a20'); }
+      R(cx - 1, 1, 2, 1, '#ffe14d'); R(cx - 2, 2, 4, 1, '#ffe14d'); break; }
     case 'tv': {
       const L = e.side === 'L', ph = Math.min(fh - 2, e.h > 1 ? 22 : 12), py = cy - (ph >> 1);
       box(L ? 2 : fw - 9, py + 1, 7, ph - 2, Wd); R(L ? 3 : fw - 8, py + 2, 5, 1, Wl);
@@ -1468,21 +1481,7 @@ function drawFurn(e, sx, sy) {
     case 'banera':
       box(0, 0, fw, fh, '#ffffff'); box(2, 3, fw - 4, fh - 6, '#bfe6ff'); R(3, 4, fw - 6, 2, '#e4f6ff');
       R(cx - 2, 0, 4, 2, '#8a8aa0'); R(cx - 1, 5, 1, 1, '#7ab8e8'); R(cx + 1, 7, 1, 1, '#7ab8e8'); circ(cx, fh - 7, 1, '#7a8aa0'); break;
-    case 'auto': {
-      const B = '#cfd3db', D = '#9aa0ac', L = '#eceff4', G = '#2c3346', GL = '#7f93b8';
-      const W0 = 22, H0 = 54, ox = cx - (W0 >> 1), oy = cy - (H0 >> 1);
-      R(ox + 2, oy + H0, W0 - 4, 2, 'rgba(0,0,0,.18)');
-      const prof = y => { if (y < 6) return [9, 8, 6, 5, 4, 3][y]; if (y > H0 - 6) return [3, 4, 5, 6, 8, 9][y - (H0 - 5)] || 3; return 2 + (y > 14 && y < 40 ? 1 : 0); };
-      for (let y = 0; y < H0; y++) { const p = Math.max(0, prof(y) - 1); R(ox + p, oy + y, W0 - p * 2, 1, K); }
-      for (let y = 1; y < H0 - 1; y++) { const p = prof(y); R(ox + p, oy + y, W0 - p * 2, 1, B); R(ox + W0 - p - 3, oy + y, 2, 1, D); R(ox + p, oy + y, 1, 1, L); }
-      R(ox - 1, oy + 7, 2, 7, K); R(ox + W0 - 1, oy + 7, 2, 7, K); R(ox - 1, oy + 38, 2, 7, K); R(ox + W0 - 1, oy + 38, 2, 7, K);
-      R(ox + cx - cx + 10, oy + 2, 2, 10, L);
-      for (let y = 0; y < 8; y++) { const p = 5 - Math.floor(y / 3); R(ox + p, oy + 13 + y, W0 - p * 2, 1, y === 0 ? K : G); } R(ox + 6, oy + 14, 4, 1, GL); R(ox + 6, oy + 15, 2, 1, GL);
-      R(ox + 4, oy + 21, W0 - 8, 16, '#bfc4cd'); R(ox + 5, oy + 22, W0 - 10, 1, L); R(ox + 3, oy + 22, 1, 14, G); R(ox + W0 - 4, oy + 22, 1, 14, G);
-      for (let y = 0; y < 6; y++) { const p = 4 + Math.floor(y / 3); R(ox + p, oy + 37 + y, W0 - p * 2, 1, y === 5 ? K : G); } R(ox + 6, oy + 38, 3, 1, GL);
-      R(ox - 2, oy + 17, 3, 2, K); R(ox + W0 - 1, oy + 17, 3, 2, K);
-      R(ox + 4, oy + 1, 4, 2, '#fff6a8'); R(ox + W0 - 8, oy + 1, 4, 2, '#fff6a8'); R(ox + 5, oy + H0 - 3, 4, 2, '#e8505b'); R(ox + W0 - 9, oy + H0 - 3, 4, 2, '#e8505b');
-      R(ox + 9, oy + H0 - 9, 4, 1, D); break; }
+    case 'auto': { const img = spr('auto', CAR_PAL); ctx.drawImage(img, OX + cx - 14, OY + cy - 30); break; }
   }
 }
 
@@ -1654,13 +1653,13 @@ function updateDialog(dt) {
   const typing = D.shown < D.chars.length;
   if (typing) {
     D.acc += dt * 30; const n = Math.min(D.chars.length, Math.floor(D.acc));
-    if (n > D.shown) { D.shown = n; dlgText.textContent = D.chars.slice(0, n).join(''); Snd.blip(); }
+    if (n > D.shown) { D.shown = n; dlgText.innerHTML = numHTML(D.chars.slice(0, n).join('')); Snd.blip(); }
     if (D.shown >= D.chars.length) textDone();
   }
   if (D.face) drawFace(D.face, typing && Math.floor(time * 9) % 2 === 0, (time % 3.2) < 0.14);
 }
 function textDone() {
-  dlgText.textContent = D.chars.join(''); D.shown = D.chars.length;
+  dlgText.innerHTML = numHTML(D.chars.join('')); D.shown = D.chars.length;
   if (D.cur.options && !D.opts) showOpts(); else if (!D.cur.options) dlgNext.classList.remove('hidden');
 }
 function showOpts() {
@@ -1668,7 +1667,7 @@ function showOpts() {
   D.opts.forEach((o, i) => {
     const d = document.createElement('div'); d.className = 'opt';
     d.innerHTML = '<span class="cur">▶</span>' + (o.color ? `<span class="sw" style="background:${o.color}"></span>` : '') + '<span></span>';
-    d.lastChild.textContent = T(o.label);
+    d.lastChild.innerHTML = numHTML(T(o.label));
     d.addEventListener('pointerdown', ev => { ev.stopPropagation(); D.sel = i; paintOpts(); choose(); });
     optsEl.appendChild(d);
   });
@@ -1695,7 +1694,7 @@ function dialogB() {
 dlg.addEventListener('pointerdown', e => { e.preventDefault(); pressA(); });
 
 /* ---------------- HUD ---------------- */
-function hud() { $('hud').innerHTML = quests.map((q, i) => `<span class="st${i < done.size ? ' on' : ''}">★</span>`).join(''); }
+function hud() { $('hud').innerHTML = `<span class="st on">★</span><span class="cnt">${done.size}/${quests.length}</span>`; }
 
 /* ---------------- Entrada (teclado + táctil) ---------------- */
 const held = { up: 0, down: 0, left: 0, right: 0, B: 0 };
@@ -1973,7 +1972,7 @@ function layout() {
 }
 addEventListener('resize', layout); layout();
 $('ttl').innerHTML = T('La aventura') + '<br>' + T('de ' + N);
-$('ttlSub').textContent = T(`✨ Edición cumpleaños ${CONFIG.edad} ✨`);
+$('ttlSub').innerHTML = numHTML(T(`✨ Edición cumpleaños ${CONFIG.edad} ✨`));
 requestAnimationFrame(loop);
 </script>
 </body>
