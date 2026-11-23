@@ -260,7 +260,7 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
         <h1 id="ttl"></h1>
         <div class="sub" id="ttlSub"></div>
         <div class="start">▶ Apretá A para empezar</div>
-        <div class="keys"><kbd>← ↑ → ↓</kbd> caminar &nbsp; <kbd>A</kbd> hablar y aceptar &nbsp; <kbd>B</kbd> volver<br>(mantené <kbd>B</kbd> mientras caminás para correr)</div>
+        <div class="keys"><kbd>← ↑ → ↓</kbd> caminar &nbsp; <kbd>A</kbd> hablar y aceptar &nbsp; <kbd>B</kbd> volver</div>
       </div>
       <div id="party" class="hidden">
         <canvas id="confetti"></canvas>
@@ -2052,7 +2052,7 @@ let justStepped = false;
 function updatePlayer(dt) {
   justStepped = false;
   if (P.moving) {
-    P.t += dt / (held.B ? 0.11 : 0.2);
+    P.t += dt / 0.2;   // siempre la misma velocidad (sin correr)
     if (P.t < 1) return;
     P.t = 0; P.moving = false; P.fx = P.x; P.fy = P.y; followers.forEach(f => { f.fx = f.x; f.fy = f.y; }); justStepped = true;
   }
