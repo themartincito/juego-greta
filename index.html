@@ -1686,7 +1686,7 @@ function mgSimon() {
 // --- 2. Atrapá los huesitos (4 niveles) ---
 function mgHuesos() {
   const W2 = 180, H2 = 112, cv = mgCanvas(W2, H2), c = cv.getContext('2d'); c.imageSmoothingEnabled = false;
-  const LV = [{ meta: 10, vidas: Infinity }, { meta: 15, vidas: 3 }, { meta: 20, vidas: 2 }, { meta: 25, vidas: 0 }];
+  const LV = [{ meta: 10, vidas: Infinity }, { meta: 15, vidas: 3 }, { meta: 20, vidas: 2 }, { meta: 25, vidas: 1 }];
   let x = W2 / 2, dir = 0, target = null, bones = [], got = 0, lost = 0, lv = 0, t = 0, spawn = 0, pause = 0, face = 1;
   const mkb = (d, tx) => { const b = document.createElement('button'); b.className = 'mgbtn'; b.textContent = tx;
     b.addEventListener('pointerdown', e => { e.preventDefault(); target = null; dir = d; }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => dir = 0)); return b; };
@@ -1694,7 +1694,7 @@ function mgHuesos() {
   const perro = CONFIG.perros.find(p => p.donde === 'casa') || CONFIG.perros[0], raza = perro.raza;
   const drawBone = (bx, by) => { c.fillStyle = '#2a2238'; c.fillRect(bx - 6, by - 2, 12, 4); c.fillRect(bx - 8, by - 4, 4, 8); c.fillRect(bx + 4, by - 4, 4, 8);
     c.fillStyle = '#fff6e0'; c.fillRect(bx - 5, by - 1, 10, 2); c.fillRect(bx - 7, by - 3, 2, 6); c.fillRect(bx + 5, by - 3, 2, 6); };
-  const info = () => { const L = LV[lv], v = L.vidas === Infinity ? '' : ' · ' + (L.vidas - lost > 0 ? '❤️'.repeat(L.vidas - lost) : 'sin errores');
+  const info = () => { const L = LV[lv], v = L.vidas === Infinity ? '' : ' · ' + '❤️'.repeat(Math.max(0, L.vidas - lost));
     mgInfo(`Nivel ${lv + 1} · Huesitos: ${got} de ${L.meta}${v}`); };
   const startLv = (n, msg, ms) => { lv = n; got = 0; lost = 0; bones = []; pause = ms ? Math.round(ms / 16) : 0; if (msg) mgInfo(msg); else info();
     if (ms) mgLater(info, ms); };
@@ -1712,12 +1712,12 @@ function mgHuesos() {
       if (b.y >= H2 - 12) { if (pause <= 0) { lost++; Snd.bump(); info(); } return false; }
       return true; });
     c.drawImage(spr('dog_' + raza + (dir && (t >> 3) % 2 ? 1 : 0), DOGPAL[raza], face < 0), Math.round(x - 16), H2 - 40);
-    if (pause <= 0 && lost > L.vidas) { Snd.wrong(); startLv(lv, `¡Uy! Se cayeron muchos huesitos. ¡Otra vez el nivel ${lv + 1}!`, 2500); }
+    if (pause <= 0 && lost >= L.vidas) { Snd.wrong(); startLv(lv, `¡Uy! Se acabaron los corazones. ¡Otra vez el nivel ${lv + 1}!`, 2500); }
     else if (pause <= 0 && got >= L.meta) {
       Snd.bark();
       if (lv === LV.length - 1) { Snd.correct(); startLv(0, `🏆 ¡GANASTE LOS 4 NIVELES! ¡${perro.nombre} está llenísima! 🦴`, 5000); }
       else { Snd.correct(); const n = LV[lv + 1];
-        startLv(lv + 1, `¡Nivel ${lv + 2}! Atrapá ${n.meta}` + (n.vidas ? ` y no dejes caer más de ${n.vidas}` : ' ¡sin dejar caer ninguno!'), 2800); } }
+        startLv(lv + 1, `¡Nivel ${lv + 2}! Atrapá ${n.meta}` + ` · Tenés ${n.vidas} ${n.vidas === 1 ? 'corazón' : 'corazones'} ❤️`, 2800); } }
     MG.raf = requestAnimationFrame(loop);
   };
   cv.addEventListener('pointerdown', e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); target = mgPos(cv, e).x; });
