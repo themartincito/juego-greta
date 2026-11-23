@@ -26,7 +26,7 @@ body{line-height:1.15}
 #hud{position:absolute;top:2.5%;left:2.5%;background:rgba(255,255,255,.92);border:.14em solid #2a2238;border-radius:.35em;padding:.1em .45em;font-size:.95em;font-weight:700;display:flex;gap:.1em;align-items:center}
 #hud .st{color:#cfc8dc}
 #hud .st.on{color:#ffb400;text-shadow:0 0 .2em #ffe27a}
-#snd{position:absolute;top:2.5%;right:2.5%;background:rgba(255,255,255,.92);border:.14em solid #2a2238;border-radius:.35em;font:inherit;font-size:.9em;padding:.05em .35em;cursor:pointer}
+#snd{position:absolute;top:2.5%;right:2.5%;background:rgba(255,255,255,.92);border:.14em solid #2a2238;border-radius:.35em;font:inherit;font-size:.9em;padding:.15em .4em;cursor:pointer}
 
 /* Diálogo estilo GBA */
 #dlg{position:absolute;left:2.5%;right:2.5%;bottom:3%;min-height:31%;display:flex;gap:.7em;align-items:flex-start;background:#fff;border:.18em solid #2a2238;border-radius:.45em;box-shadow:inset 0 0 0 .14em #fff,inset 0 0 0 .32em #78b8ff;padding:.7em 1em .6em;font-size:1.08em;line-height:1.38;font-weight:700;cursor:pointer}
@@ -141,7 +141,7 @@ body{line-height:1.15}
 .simon button.on{opacity:1;box-shadow:0 0 1em #fff;transform:scale(1.04)}
 .mgbtn{font-size:1.4em;width:2.6em;border-radius:.4em;border:.14em solid #2a2238;background:#fff;touch-action:none}
 .puz{position:relative;width:11em;margin:1.1em 1em;touch-action:none;cursor:pointer}.pz{position:absolute;image-rendering:pixelated;pointer-events:none}
-.mgsnd{font-size:1.1em;width:2.2em;align-self:flex-start}.mgcv.puzprev{width:5em;height:auto;opacity:.85}
+.mgsnd{font-size:1.1em;width:2.2em;align-self:flex-start;display:flex;justify-content:center;padding:.2em}.mgcv.puzprev{width:5em;height:auto;opacity:.85}
 .pint{display:grid;gap:1px;width:10.5em;background:#2a2238;border:.14em solid #2a2238;touch-action:none}
 .pc{aspect-ratio:1;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.7em;color:#6a6a80;cursor:pointer}
 .pc .num{text-shadow:0 0 2px #fff}.pc.bad{box-shadow:inset 0 0 0 2px #e8505b}
@@ -1658,7 +1658,7 @@ function mgSimon() {
   const g = document.createElement('div'); g.className = 'simon';
   const bs = COL.map((c, i) => { const b = document.createElement('button'); b.style.background = c; b.dataset.i = i; g.appendChild(b); return b; });
   const sb = document.createElement('button'); sb.className = 'mgbtn mgsnd';
-  const sbTxt = () => sb.textContent = mgSimonSound ? '🔊' : '🔇'; sbTxt();
+  const sbTxt = () => sb.innerHTML = sndIcon(mgSimonSound); sbTxt();
   sb.addEventListener('pointerdown', e => { e.preventDefault(); mgSimonSound = !mgSimonSound; sbTxt(); });
   $('miniBody').append(g, sb);
   const METAS = [6, 8, 10, 12, Infinity]; let etapa = 0, seq = [], pos = 0, turn = false, record = 0;
@@ -2010,7 +2010,11 @@ const bA = $('btnA'), bB = $('btnB');
 bA.addEventListener('pointerdown', e => { e.preventDefault(); bA.classList.add('dn'); pressA(); });
 bB.addEventListener('pointerdown', e => { e.preventDefault(); bB.classList.add('dn'); held.B = 1; pressB(); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => { bA.addEventListener(ev, () => bA.classList.remove('dn')); bB.addEventListener(ev, () => { bB.classList.remove('dn'); held.B = 0; }); });
-function toggleSound() { Snd.init(); $('snd').textContent = Snd.toggle() ? '🔇' : '🔊'; }
+const sndIcon = on => `<svg viewBox="0 0 16 16" width="1.3em" height="1.3em" style="display:block"><rect x="2" y="6" width="3" height="4" fill="#9a9aae"/><polygon points="5,6 9,2 9,14 5,10" fill="#9a9aae"/><rect x="2" y="6" width="1" height="4" fill="#bdbdcc"/>` +
+  (on ? '<path d="M10.5 6 Q12 8 10.5 10" stroke="#9a9aae" stroke-width="1.4" fill="none"/><path d="M12.5 4 Q15 8 12.5 12" stroke="#9a9aae" stroke-width="1.4" fill="none"/>'
+      : '<line x1="2" y1="2" x2="14" y2="14" stroke="#e8505b" stroke-width="1.6"/>') + '</svg>';
+function toggleSound() { Snd.init(); $('snd').innerHTML = sndIcon(!Snd.toggle()); }
+$('snd').innerHTML = sndIcon(true);
 $('snd').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); toggleSound(); });
 
 /* ---------------- Lógica ---------------- */
