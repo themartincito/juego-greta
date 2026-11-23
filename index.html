@@ -191,6 +191,7 @@ body{line-height:1.15}
 #title .start{margin-top:.6em;font-size:1.05em;font-weight:700;animation:blink 1s steps(2) infinite}
 #title .keys{margin-top:.5em;font-size:.68em;line-height:1.5;opacity:.95;background:rgba(0,0,0,.35);padding:.35em .8em;border-radius:.4em}
 @keyframes blink{50%{opacity:0}}
+kbd.ar{display:inline-flex;align-items:center;justify-content:center;padding:.12em .2em;margin:0 .05em;vertical-align:middle}
 kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding:0 .3em;font-weight:700}
 
 /* Fiesta final */
@@ -260,7 +261,7 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
         <h1 id="ttl"></h1>
         <div class="sub" id="ttlSub"></div>
         <div class="start">▶ Apretá A para empezar</div>
-        <div class="keys"><kbd>← ↑ → ↓</kbd> caminar &nbsp; <kbd>A</kbd> hablar y aceptar &nbsp; <kbd>B</kbd> volver</div>
+        <div class="keys"><kbd class="ar"><svg viewBox="0 0 10 10" width="0.95em" height="0.95em" style="transform:rotate(-90deg)"><path d="M5 1 L9 6 H6.4 V9 H3.6 V6 H1 Z" fill="#2a2238"/></svg></kbd><kbd class="ar"><svg viewBox="0 0 10 10" width="0.95em" height="0.95em" style="transform:rotate(0deg)"><path d="M5 1 L9 6 H6.4 V9 H3.6 V6 H1 Z" fill="#2a2238"/></svg></kbd><kbd class="ar"><svg viewBox="0 0 10 10" width="0.95em" height="0.95em" style="transform:rotate(90deg)"><path d="M5 1 L9 6 H6.4 V9 H3.6 V6 H1 Z" fill="#2a2238"/></svg></kbd><kbd class="ar"><svg viewBox="0 0 10 10" width="0.95em" height="0.95em" style="transform:rotate(180deg)"><path d="M5 1 L9 6 H6.4 V9 H3.6 V6 H1 Z" fill="#2a2238"/></svg></kbd> caminar &nbsp; <kbd>A</kbd> hablar y aceptar &nbsp; <kbd>B</kbd> volver</div>
       </div>
       <div id="party" class="hidden">
         <canvas id="confetti"></canvas>
