@@ -387,14 +387,17 @@ const Snd = (() => {
 const TS = 16, VW = 240, VH = 160;
 const GRASS=0, FLOWER=1, PATH=2, TREE=3, WATER=4, ROOF=5, WALL=6, WIN=7, DOOR=8, FENCE=9, BUSH=10,
       FLOOR=11, WALLI=12, WALLWIN=13, VOID=14, PART=15, RUG=16, MAT=17, FRIDGE=18, COUNTER=19, STOVE=20,
-      SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30, WARDROBE=31, GRILL=32, SINK=33, WASHER=34, TUB=35, TOILET=36, SHOWER=37;
-const WALKABLE = new Set([GRASS, FLOWER, PATH, FLOOR, RUG, MAT]);
-const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 4, 19] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
-const EXITS = { casa: ['pueblo', 4, 5], abuela: ['pueblo', 11, 5] };
+      SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30, WARDROBE=31, GRILL=32, SINK=33, WASHER=34, TUB=35, TOILET=36, SHOWER=37,
+      POOL=38, SHED=39, SPIRAL=40, DRESSER=41, ROUNDT=42, DOLLHOUSE=43, TOYBOX=44, GATEIN=45, GATEOUT=46;
+const WALKABLE = new Set([GRASS, FLOWER, PATH, FLOOR, RUG, MAT, GATEIN]);
+const DOORS = [{ map: 'pueblo', x: 5, y: 4, to: ['casa', 10, 21] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
+const EXITS = { casa: ['pueblo', 5, 5], abuela: ['pueblo', 11, 5] };
 const MAPS = {};
 let cur = null, M = null, W = 0, H = 0;
-function useMap(id) { cur = MAPS[id]; M = cur.M; W = cur.w; H = cur.h; }
-function makeMap(id, w, h, fill) { MAPS[id] = { id, w, h, M: Array.from({ length: h }, () => Array(w).fill(fill)) }; useMap(id); }
+let F = null;
+function useMap(id) { cur = MAPS[id]; M = cur.M; W = cur.w; H = cur.h; F = cur.F; }
+function makeMap(id, w, h, fill) { MAPS[id] = { id, w, h, M: Array.from({ length: h }, () => Array(w).fill(fill)), F: Array.from({ length: h }, () => Array(w).fill('wood')) }; useMap(id); }
+const floorRect = (x, y, w, h, k) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) F[j][i] = k; };
 const rect = (x, y, w, h, t) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) M[j][i] = t; };
 const hash = (x, y) => (((x * 73856093) ^ (y * 19349663)) >>> 0);
 const tileAt = (x, y) => (M[y] && M[y][x] !== undefined) ? M[y][x] : VOID;
@@ -402,8 +405,8 @@ const tileAt = (x, y) => (M[y] && M[y][x] !== undefined) ? M[y][x] : VOID;
 // --- El barrio ---
 makeMap('pueblo', 30, 20, GRASS);
 rect(0,0,W,1,TREE); rect(0,H-1,W,1,TREE); rect(0,0,1,H,TREE); rect(W-1,0,1,H,TREE);
-rect(1,1,6,2,ROOF); rect(1,3,6,2,WALL); M[3][2]=WIN; M[3][5]=WIN; M[4][4]=DOOR;
-rect(1,6,28,1,PATH); rect(14,6,1,11,PATH); M[5][4]=PATH; M[5][18]=PATH;
+rect(1,1,6,2,ROOF); rect(1,3,3,2,WALL); M[3][2]=WIN; rect(4,3,3,2,GATEOUT);   // casa de Greta: living + garage con portón
+rect(1,6,28,1,PATH); rect(14,6,1,11,PATH); M[5][5]=PATH; M[5][18]=PATH;
 rect(2,13,6,5,WATER);
 rect(9,1,5,2,ROOF2); rect(9,3,5,2,WALL); M[3][10]=WIN; M[3][12]=WIN; M[4][11]=DOOR; M[5][11]=PATH;   // casa de la abuela
 rect(23,1,6,4,TREE); rect(25,2,3,2,GRASS); M[4][26]=GRASS;
@@ -421,21 +424,29 @@ rect(0,0,1,10,VOID); rect(14,0,1,10,VOID); rect(0,9,15,1,VOID);
 rect(6,2,3,1,SOFA); M[2][10]=PIANO; M[2][11]=PIANO; M[2][2]=SHELF; M[2][3]=SHELF; M[2][1]=PLANT; M[2][13]=PLANT;
 rect(5,5,5,3,RUG); M[6][2]=TABLEI; M[6][3]=TABLEI; M[8][7]=MAT;
 
-// --- La casa de Greta por dentro (según el plano real, versión compacta) ---
-makeMap('casa', 15, 21, FLOOR);
-rect(0,0,15,21,VOID);
-rect(1,1,13,3,GRASS); rect(1,4,4,2,GRASS); M[1][1]=GRILL; M[1][2]=GRILL; for (let x = 8; x <= 13; x++) M[1][x] = BUSH;   // patio
-rect(5,4,9,1,WALLI); M[4][9]=FLOOR;                                                                 // pared del fondo con puerta al patio
-rect(5,5,9,4,FLOOR); M[5][5]=PART; M[5][13]=STOVE; M[6][13]=SINK; M[7][13]=FRIDGE; M[8][13]=WASHER; M[5][12]=COUNTER; M[7][9]=TABLEI; M[7][10]=TABLEI;  // cocina
-rect(1,6,4,1,PART); rect(5,6,1,6,PART); M[9][5]=FLOOR; rect(1,7,4,4,FLOOR); rect(1,11,4,1,PART);   // cuarto de Greta
-M[7][1]=WARDROBE; M[7][4]=BEDH; M[8][4]=BEDF; M[10][1]=DESK;
-rect(6,6,1,6,FLOOR);                                                                               // pasillo
-rect(7,9,7,1,PART); rect(7,10,1,7,PART); M[11][7]=FLOOR; M[14][7]=FLOOR;                           // baño y cuarto de los papás
-rect(8,10,6,2,FLOOR); M[10][13]=SHOWER; M[11][13]=SHOWER; M[11][11]=TOILET; M[10][8]=SINK; rect(8,12,6,1,PART);  // baño con ducha al fondo
-rect(8,13,6,3,FLOOR); M[13][12]=BEDH; M[13][13]=BEDH; M[14][12]=BEDF; M[14][13]=BEDF; M[13][8]=PLANT; rect(7,16,7,1,PART);  // cuarto de los papás
-rect(1,12,6,8,FLOOR); M[13][2]=TABLEI; M[13][3]=TABLEI; M[13][4]=TABLEI;                           // living-comedor
-M[15][1]=SOFA; M[16][1]=SOFA; M[17][1]=SOFA; M[17][2]=SOFA; M[17][3]=SOFA; M[15][3]=TABLEI; M[16][6]=TV;
-M[19][4]=MAT;                                                                                      // puerta de entrada
+// --- La casa de Greta por dentro (plano real) ---
+makeMap('casa', 15, 23, FLOOR);
+rect(0,0,15,23,VOID);
+rect(1,1,13,3,GRASS); rect(1,4,4,4,GRASS);                                                          // patio (arriba y a la izquierda)
+M[1][1]=GRILL; M[1][2]=GRILL; for (let x = 6; x <= 10; x++) M[1][x] = BUSH; M[1][13]=SHED; M[2][13]=SHED; rect(1,6,3,2,POOL);
+rect(5,4,9,1,WALLI); M[4][9]=FLOOR;                                                                // pared del fondo, puerta al patio
+rect(5,5,1,3,PART); rect(6,5,8,3,FLOOR);                                                           // cocina
+M[5][6]=SPIRAL; M[6][6]=TV; M[6][9]=TABLEI; M[6][10]=TABLEI; M[7][9]=COUNTER; M[7][10]=COUNTER;
+M[5][13]=STOVE; M[6][13]=SINK; M[7][13]=FRIDGE; M[7][11]=WASHER;
+rect(1,8,4,1,PART); rect(5,8,9,1,PART); M[8][7]=FLOOR;                                              // pared entre cocina/patio y lo de abajo
+rect(1,9,4,3,FLOOR); rect(5,9,1,3,PART); M[10][5]=FLOOR; rect(1,12,4,1,PART);                      // cuarto de Greta
+M[9][1]=BEDH; M[10][1]=BEDF; M[9][4]=TV; M[11][4]=WARDROBE; M[11][3]=DOLLHOUSE; M[11][2]=TOYBOX;
+rect(6,9,2,3,FLOOR); rect(6,12,2,1,FLOOR); M[12][5]=PART;                                                        // pasillo
+rect(8,9,1,12,PART); M[10][8]=FLOOR; M[14][8]=FLOOR; M[17][8]=FLOOR;                               // pared: baño, papás, garage
+rect(9,9,5,3,FLOOR); M[9][9]=TOILET; M[10][10]=SINK; M[9][13]=TUB; M[10][13]=TUB; M[11][13]=TUB;   // baño con bañera y ducha
+rect(9,12,5,1,PART);
+rect(9,13,5,3,FLOOR); for (let x = 10; x <= 13; x++) M[13][x] = DRESSER; M[15][9]=TV; M[14][12]=BEDH; M[14][13]=BEDH; M[15][12]=BEDF; M[15][13]=BEDF;  // cuarto de los papás
+rect(9,16,5,1,PART);
+rect(1,13,7,8,FLOOR); M[14][1]=DRESSER; M[15][1]=DRESSER; M[14][4]=TABLEI; M[14][5]=TABLEI; M[15][4]=TABLEI; M[15][5]=TABLEI;  // comedor
+M[18][1]=SOFA; M[19][1]=SOFA; M[20][1]=SOFA; M[20][2]=SOFA; M[20][3]=SOFA; M[18][4]=ROUNDT; M[19][7]=TV;          // living
+rect(9,17,5,4,FLOOR);                                                                              // garage
+rect(1,21,7,1,PART); rect(8,21,6,1,FENCE); M[21][10]=GATEIN;                                       // frente: pared del living y reja del garage
+floorRect(1,17,7,4,'dark'); floorRect(1,9,4,3,'bordo'); floorRect(9,13,5,3,'navy'); floorRect(9,9,5,3,'gray'); floorRect(8,17,6,5,'red'); floorRect(8,21,6,1,'red');
 
 /* ---------------- Dibujo de tiles ---------------- */
 let C = null, OX = 0, OY = 0;
@@ -445,7 +456,14 @@ function grassT(x, y) {
   R(0,0,16,16,'#82d05e'); const h = hash(x, y);
   R(h % 12 + 1, (h >> 4) % 12 + 1, 1, 2, '#62b046'); R((h >> 8) % 12 + 2, (h >> 12) % 12 + 2, 1, 2, '#62b046'); R((h >> 8) % 12 + 3, (h >> 12) % 12 + 3, 1, 1, '#62b046');
 }
-function floorT(x) { R(0,0,16,16,'#dca46a'); R(0,7,16,1,'#c08a52'); R(0,15,16,1,'#c08a52'); R((x % 2) * 8 + 3,0,1,7,'#c08a52'); R(((x + 1) % 2) * 8 + 3,8,1,7,'#c08a52'); }
+const FLOORS = { wood: ['#dca46a', '#c08a52'], dark: ['#a5673a', '#87512a'], bordo: ['#8e2e40', '#7a2434'], navy: ['#2a3a72', '#22305e'], gray: ['#aeb0ba', '#94969f'], red: ['#df8f86', '#c97a70'] };
+function floorT(x, y) {
+  const k = (F && F[y] && F[y][x]) || 'wood', [a, b] = FLOORS[k];
+  R(0,0,16,16,a);
+  if (k === 'wood' || k === 'dark') { R(0,7,16,1,b); R(0,15,16,1,b); R((x % 2) * 8 + 3,0,1,7,b); R(((x + 1) % 2) * 8 + 3,8,1,7,b); }
+  else if (k === 'gray' || k === 'red') { R(0,15,16,1,b); R(15,0,1,16,b); R(0,7,16,1,b); R(7,0,1,16,b); }
+  else { const h = hash(x, y); R(h % 13 + 1, (h >> 4) % 13 + 1, 1, 1, b); R((h >> 8) % 13 + 1, (h >> 12) % 13 + 1, 1, 1, b); R((h >> 3) % 13 + 2, (h >> 9) % 13 + 2, 1, 1, b); }
+}
 function wallT(x, y) {
   R(0,0,16,16,'#f4e4c1'); for (let i = 2; i < 16; i += 5) R(i,0,2,16,'#ecd8ae');
   if (y === 0) { R(0,0,16,4,'#5a4a6a'); R(0,4,16,1,'#3a2a4a'); }
@@ -468,46 +486,69 @@ function drawTile(t, x, y) {
       if (t === WIN) { R(3,2,10,9,'#2a2238'); R(4,3,8,7,'#8fd3ff'); R(4,3,3,2,'#ffffff'); R(7,3,1,7,'#2a2238'); R(4,6,8,1,'#2a2238'); R(2,11,12,2,'#c98b4f'); }
       if (t === DOOR) { R(3,1,10,15,'#2a2238'); R(4,2,8,14,'#a0602f'); R(5,3,6,5,'#b97a43'); R(5,9,6,6,'#b97a43'); R(10,9,1,1,'#ffd84a'); }
       break;
-    case FENCE: grassT(x, y); R(0,6,16,2,'#8a8aa0'); R(0,6,16,1,'#ffffff'); R(0,10,16,2,'#8a8aa0'); R(0,10,16,1,'#ffffff');
+    case FENCE: if (cur.id === 'casa') floorT(x, y); else grassT(x, y); R(0,6,16,2,'#8a8aa0'); R(0,6,16,1,'#ffffff'); R(0,10,16,2,'#8a8aa0'); R(0,10,16,1,'#ffffff');
       R(2,3,3,12,'#8a8aa0'); R(2,3,2,11,'#ffffff'); R(11,3,3,12,'#8a8aa0'); R(11,3,2,11,'#ffffff'); break;
     // ---- interior ----
-    case FLOOR: floorT(x); break;
+    case FLOOR: floorT(x, y); break;
     case WALLI: wallT(x, y); break;
     case WALLWIN: wallT(x, y); R(2,2,2,10,'#e86a8a'); R(12,2,2,10,'#e86a8a'); R(4,3,8,8,'#2a2238'); R(5,4,6,6,'#8fd3ff'); R(5,4,2,2,'#ffffff'); R(7,4,1,6,'#2a2238'); break;
     case VOID: R(0,0,16,16,'#2a2238'); break;
     case PART: {
-      floorT(x); const isW = t => t === PART || t === WALLI || t === WALLWIN || t === VOID;
-      const l = isW(tileAt(x - 1, y)), r = isW(tileAt(x + 1, y)), u = isW(tileAt(x, y - 1)), d = isW(tileAt(x, y + 1));
-      const lp = tileAt(x - 1, y) === PART, rp = tileAt(x + 1, y) === PART, up = tileAt(x, y - 1) === PART, dp = tileAt(x, y + 1) === PART;
-      const vert = up || dp || (!lp && !rp), hor = lp || rp;
-      if (vert) { const y0 = u ? 0 : 3, y1 = d ? 16 : 12; R(5,y0,6,y1 - y0,'#2a2238'); R(6,y0,4,y1 - y0,'#f4e4c1'); R(6,y0,1,y1 - y0,'#fff7e4'); }
-      if (hor) { const x0 = l ? 0 : 5, x1 = r ? 16 : 11; R(x0,4,x1 - x0,7,'#2a2238'); R(x0,5,x1 - x0,5,'#f4e4c1'); R(x0,5,x1 - x0,2,'#fff7e4'); if (vert) R(6,5,4,5,'#f4e4c1'); }
+      floorT(x, y); const K = '#2a2238', CR = '#f4e4c1';
+      const isP = t => t === PART, isW = t => t === PART || t === WALLI || t === WALLWIN || t === VOID || t === FENCE;
+      const tu = tileAt(x, y - 1), td = tileAt(x, y + 1), tl = tileAt(x - 1, y), tr = tileAt(x + 1, y);
+      let u = isP(tu) || (isW(tu) && isP(td)), d = isP(td) || (isW(td) && isP(tu)), l = isP(tl) || (isW(tl) && isP(tr)), r = isP(tr) || (isW(tr) && isP(tl));
+      if (!u && !d && !l && !r) { if (isW(tu) || isW(td)) { u = isW(tu); d = isW(td); } else { l = isW(tl); r = isW(tr); } }
+      const vert = u || d, hor = l || r;
+      let u2 = false, d2 = false, l2 = false, r2 = false;
+      if (vert && !hor) { if (u && !d) d2 = true; if (d && !u) u2 = true; }
+      if (hor && !vert) { if (l && !r) r2 = true; if (r && !l) l2 = true; }
+      const segs = [];
+      if (vert || (!hor)) segs.push(['v', (u || u2) ? 0 : 5, (d || d2) ? 16 : 11]);
+      if (hor) segs.push(['h', (l || l2) ? 0 : 5, (r || r2) ? 16 : 11]);
+      segs.forEach(([o, a0, a1]) => { if (o === 'v') R(5, a0, 6, a1 - a0, K); else R(a0, 5, a1 - a0, 6, K); });
+      segs.forEach(([o, a0, a1]) => { const b0 = a0 === 0 ? 0 : a0 + 1, b1 = a1 === 16 ? 16 : a1 - 1; if (o === 'v') { R(6, b0, 4, b1 - b0, CR); R(6, b0, 1, b1 - b0, '#fff7e4'); } else { R(b0, 6, b1 - b0, 4, CR); R(b0, 6, b1 - b0, 1, '#fff7e4'); } });
+      const DC = '#9a6a3a';
+      if (d2) R(4,14,8,2,DC); if (u2) R(4,0,8,2,DC); if (r2) R(14,4,2,8,DC); if (l2) R(0,4,2,8,DC);
       break; }
-    case RUG: floorT(x); R(0,0,16,16,'#e86a8a'); if (tileAt(x, y - 1) !== RUG) R(0,0,16,2,'#ffd6e4'); if (tileAt(x, y + 1) !== RUG) R(0,14,16,2,'#ffd6e4');
+    case RUG: floorT(x, y); R(0,0,16,16,'#e86a8a'); if (tileAt(x, y - 1) !== RUG) R(0,0,16,2,'#ffd6e4'); if (tileAt(x, y + 1) !== RUG) R(0,14,16,2,'#ffd6e4');
       if (tileAt(x - 1, y) !== RUG) R(0,0,2,16,'#ffd6e4'); if (tileAt(x + 1, y) !== RUG) R(14,0,2,16,'#ffd6e4'); R(7,7,2,2,'#ffd6e4'); break;
-    case MAT: floorT(x); R(2,5,12,8,'#2a2238'); R(3,6,10,6,'#7aa84a'); R(3,8,10,1,'#5a8a3a'); R(3,10,10,1,'#5a8a3a'); break;
-    case FRIDGE: floorT(x); R(2,0,12,16,'#2a2238'); R(3,1,10,14,'#f4f8ff'); R(3,6,10,1,'#c0c8d8'); R(11,2,1,3,'#8a8aa0'); R(11,8,1,4,'#8a8aa0'); R(4,9,2,2,'#ff6b8b'); break;
-    case COUNTER: floorT(x); R(0,2,16,14,'#2a2238'); R(0,3,16,4,'#e8e0d0'); R(0,7,16,8,'#b97a43'); R(2,9,5,4,'#a0602f'); R(9,9,5,4,'#a0602f'); R(10,3,4,2,'#78b8ff'); break;
-    case STOVE: floorT(x); R(0,2,16,14,'#2a2238'); R(1,3,14,4,'#d0d0dc'); R(3,4,3,2,'#2a2238'); R(10,4,3,2,'#2a2238'); R(1,7,14,8,'#e8e8f0'); R(3,9,10,4,'#2a2238'); R(4,10,8,2,'#5a5a70'); break;
-    case SHELF: floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,14,'#a0602f'); R(2,5,12,1,'#7a4a24'); R(2,10,12,1,'#7a4a24');
+    case MAT: floorT(x, y); R(2,5,12,8,'#2a2238'); R(3,6,10,6,'#7aa84a'); R(3,8,10,1,'#5a8a3a'); R(3,10,10,1,'#5a8a3a'); break;
+    case FRIDGE: floorT(x, y); R(2,0,12,16,'#2a2238'); R(3,1,10,14,'#f4f8ff'); R(3,6,10,1,'#c0c8d8'); R(11,2,1,3,'#8a8aa0'); R(11,8,1,4,'#8a8aa0'); R(4,9,2,2,'#ff6b8b'); break;
+    case COUNTER: floorT(x, y); R(0,2,16,14,'#2a2238'); R(0,3,16,4,'#e8e0d0'); R(0,7,16,8,'#b97a43'); R(2,9,5,4,'#a0602f'); R(9,9,5,4,'#a0602f'); R(10,3,4,2,'#78b8ff'); break;
+    case STOVE: floorT(x, y); R(0,2,16,14,'#2a2238'); R(1,3,14,4,'#d0d0dc'); R(3,4,3,2,'#2a2238'); R(10,4,3,2,'#2a2238'); R(1,7,14,8,'#e8e8f0'); R(3,9,10,4,'#2a2238'); R(4,10,8,2,'#5a5a70'); break;
+    case SHELF: floorT(x, y); R(1,0,14,16,'#2a2238'); R(2,1,12,14,'#a0602f'); R(2,5,12,1,'#7a4a24'); R(2,10,12,1,'#7a4a24');
       R(3,2,3,3,'#ffe14d'); R(8,2,3,3,'#ff6b6b'); R(3,6,5,4,'#ffffff'); R(10,6,3,4,'#6cc35a'); R(3,11,3,4,'#78b8ff'); R(9,11,4,4,'#e8b07a'); break;
-    case TV: floorT(x); R(1,9,14,7,'#2a2238'); R(2,10,12,5,'#8a5a30'); R(2,1,12,9,'#2a2238'); R(3,2,10,6,'#4a6aa8'); R(4,3,3,1,'#9fd3ff'); break;
-    case SOFA: floorT(x); R(0,2,16,13,'#2a2238'); R(0,3,16,5,'#c84a5a'); R(0,8,16,6,'#e86a7a'); R(0,8,16,1,'#ff9aa8');
+    case TV: floorT(x, y); R(1,9,14,7,'#2a2238'); R(2,10,12,5,'#8a5a30'); R(2,1,12,9,'#2a2238'); R(3,2,10,6,'#4a6aa8'); R(4,3,3,1,'#9fd3ff'); break;
+    case SOFA: floorT(x, y); R(0,2,16,13,'#2a2238'); R(0,3,16,5,'#c84a5a'); R(0,8,16,6,'#e86a7a'); R(0,8,16,1,'#ff9aa8');
       if (tileAt(x - 1, y) !== SOFA) R(0,3,3,11,'#a8323a'); if (tileAt(x + 1, y) !== SOFA) R(13,3,3,11,'#a8323a'); break;
-    case TABLEI: floorT(x); R(0,3,16,10,'#2a2238'); R(0,4,16,7,'#c98b4f'); R(0,4,16,1,'#e8b07a'); R(1,11,2,4,'#7a4a24'); R(13,11,2,4,'#7a4a24'); break;
-    case BEDH: { const c = x >= 8 ? '#9b8ad8' : '#f06aa8'; floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,15,'#ffffff'); R(3,2,10,6,'#e4e4f4'); R(2,10,12,6,c); R(2,10,12,1,'#ffffff'); break; }
-    case BEDF: { const c = x >= 8 ? '#9b8ad8' : '#f06aa8'; floorT(x); R(1,0,14,15,'#2a2238'); R(2,0,12,14,c); R(2,13,12,1,'#2a2238'); R(4,4,8,1,'#ffffff'); R(4,8,8,1,'#ffffff'); break; }
-    case DESK: floorT(x); R(0,3,16,11,'#2a2238'); R(1,4,14,6,'#c98b4f'); R(1,10,14,3,'#a46a35'); R(3,5,5,3,'#ffffff'); R(10,5,2,3,'#e8505b'); break;
-    case PIANO: floorT(x); R(0,1,16,14,'#2a2238'); R(1,2,14,6,'#5a2e2e'); R(1,2,14,1,'#7a4a4a'); R(1,8,14,5,'#ffffff'); for (let i = 2; i < 15; i += 3) R(i,8,1,3,'#2a2238'); R(1,13,14,1,'#5a2e2e'); if (tileAt(x - 1, y) !== PIANO) R(3,3,6,3,'#f4e4c1'); break;
-    case WARDROBE: floorT(x); R(1,0,14,16,'#2a2238'); R(2,1,12,14,'#e8a0c8'); R(2,1,12,2,'#f8c8e0'); R(7,3,1,12,'#2a2238'); R(5,8,1,2,'#ffd84a'); R(9,8,1,2,'#ffd84a'); R(3,13,10,1,'#c070a0'); break;
+    case TABLEI: floorT(x, y); R(0,3,16,10,'#2a2238'); R(0,4,16,7,'#c98b4f'); R(0,4,16,1,'#e8b07a'); R(1,11,2,4,'#7a4a24'); R(13,11,2,4,'#7a4a24'); break;
+    case BEDH: { const c = x >= 8 ? '#9b8ad8' : '#f06aa8'; floorT(x, y); R(1,0,14,16,'#2a2238'); R(2,1,12,15,'#ffffff'); R(3,2,10,6,'#e4e4f4'); R(2,10,12,6,c); R(2,10,12,1,'#ffffff'); break; }
+    case BEDF: { const c = x >= 8 ? '#9b8ad8' : '#f06aa8'; floorT(x, y); R(1,0,14,15,'#2a2238'); R(2,0,12,14,c); R(2,13,12,1,'#2a2238'); R(4,4,8,1,'#ffffff'); R(4,8,8,1,'#ffffff'); break; }
+    case DESK: floorT(x, y); R(0,3,16,11,'#2a2238'); R(1,4,14,6,'#c98b4f'); R(1,10,14,3,'#a46a35'); R(3,5,5,3,'#ffffff'); R(10,5,2,3,'#e8505b'); break;
+    case PIANO: floorT(x, y); R(0,1,16,14,'#2a2238'); R(1,2,14,6,'#5a2e2e'); R(1,2,14,1,'#7a4a4a'); R(1,8,14,5,'#ffffff'); for (let i = 2; i < 15; i += 3) R(i,8,1,3,'#2a2238'); R(1,13,14,1,'#5a2e2e'); if (tileAt(x - 1, y) !== PIANO) R(3,3,6,3,'#f4e4c1'); break;
+    case WARDROBE: floorT(x, y); R(1,0,14,16,'#2a2238'); R(2,1,12,14,'#e8a0c8'); R(2,1,12,2,'#f8c8e0'); R(7,3,1,12,'#2a2238'); R(5,8,1,2,'#ffd84a'); R(9,8,1,2,'#ffd84a'); R(3,13,10,1,'#c070a0'); break;
     case GRILL: grassT(x, y); R(1,3,14,10,'#2a2238'); R(2,4,12,8,'#6a6a7a'); for (let i = 3; i < 14; i += 2) R(i,5,1,6,'#3a3a48'); R(4,6,3,2,'#c84a3a'); R(9,7,3,2,'#c84a3a'); R(2,13,2,3,'#2a2238'); R(12,13,2,3,'#2a2238'); break;
-    case SINK: floorT(x); R(0,2,16,14,'#2a2238'); R(0,3,16,12,'#e8e0d0'); R(3,5,10,7,'#9ab0c8'); R(4,6,8,5,'#bcd8f0'); R(7,3,2,3,'#8a8aa0'); break;
-    case WASHER: floorT(x); R(1,1,14,15,'#2a2238'); R(2,2,12,13,'#f4f8ff'); R(2,2,12,3,'#d8dce8'); circ(8,10,4,'#2a2238'); circ(8,10,3,'#7ab8e8'); R(11,3,2,1,'#e8505b'); break;
-    case TUB: floorT(x); R(0,1,16,14,'#2a2238'); R(1,2,14,12,'#ffffff'); R(3,4,10,8,'#bfe6ff'); R(12,2,2,2,'#8a8aa0'); break;
-    case TOILET: floorT(x); R(3,1,10,5,'#2a2238'); R(4,2,8,3,'#ffffff'); circ(8,10,5,'#2a2238'); circ(8,10,4,'#ffffff'); circ(8,10,2,'#d8ecf8'); break;
-    case SHOWER: floorT(x); R(0,0,16,16,'#2a2238'); R(1,0,15,16,'#cfe8f4'); for (let i = 3; i < 16; i += 4) { R(1,i,15,1,'#b0d0e0'); R(i,0,1,16,'#b0d0e0'); } R(1,0,1,16,'#ffffff');
+    case SINK: floorT(x, y); R(0,2,16,14,'#2a2238'); R(0,3,16,12,'#e8e0d0'); R(3,5,10,7,'#9ab0c8'); R(4,6,8,5,'#bcd8f0'); R(7,3,2,3,'#8a8aa0'); break;
+    case WASHER: floorT(x, y); R(1,1,14,15,'#2a2238'); R(2,2,12,13,'#f4f8ff'); R(2,2,12,3,'#d8dce8'); circ(8,10,4,'#2a2238'); circ(8,10,3,'#7ab8e8'); R(11,3,2,1,'#e8505b'); break;
+    case TUB: { floorT(x, y); const top = tileAt(x, y - 1) !== TUB, bot = tileAt(x, y + 1) !== TUB;
+      R(1, top ? 1 : 0, 14, 16 - (top ? 1 : 0) - (bot ? 1 : 0), '#2a2238'); R(2, top ? 2 : 0, 12, 16 - (top ? 2 : 0) - (bot ? 2 : 0), '#ffffff'); R(4, top ? 4 : 0, 8, 16 - (top ? 4 : 0) - (bot ? 4 : 0), '#bfe6ff');
+      if (top) { R(6,1,4,2,'#8a8aa0'); R(7,3,1,1,'#7ab8e8'); R(9,4,1,1,'#7ab8e8'); } if (bot) circ(8,10,1,'#7a8aa0'); break; }
+    case TOILET: floorT(x, y); R(3,1,10,5,'#2a2238'); R(4,2,8,3,'#ffffff'); circ(8,10,5,'#2a2238'); circ(8,10,4,'#ffffff'); circ(8,10,2,'#d8ecf8'); break;
+    case POOL: grassT(x, y); R(0,0,16,16,'#e8ecf0'); R(1,1,14,14,'#3a9ee8'); if (tileAt(x, y - 1) !== POOL) R(0,0,16,2,'#ffffff'); if (tileAt(x, y + 1) !== POOL) R(0,14,16,2,'#ffffff'); if (tileAt(x - 1, y) !== POOL) R(0,0,2,16,'#ffffff'); if (tileAt(x + 1, y) !== POOL) R(14,0,2,16,'#ffffff');
+      R(3 + (hash(x, y) % 6), 5, 4, 1, '#9fd8ff'); R(5 + (hash(x, y) % 4), 10, 4, 1, '#9fd8ff'); break;
+    case SHED: grassT(x, y); R(1,0,14,16,'#2a2238'); R(2,1,12,14,'#a0602f'); for (let i = 4; i < 14; i += 3) R(i,1,1,14,'#87512a'); if (tileAt(x, y - 1) !== SHED) R(1,0,14,3,'#6a4a2a'); else { R(5,4,6,11,'#2a2238'); R(6,5,4,10,'#87512a'); R(9,10,1,1,'#ffd84a'); } break;
+    case SPIRAL: floorT(x, y); circ(8,8,7,'#2a2238'); circ(8,8,6,'#9ab0c8'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; C.fillStyle = '#6a7a90'; for (let r = 2; r < 6; r++) C.fillRect(OX + 8 + Math.round(Math.cos(a) * r), OY + 8 + Math.round(Math.sin(a) * r), 1, 1); } circ(8,8,1,'#4a5a70'); break;
+    case DRESSER: floorT(x, y); R(0,1,16,13,'#2a2238'); R(1,2,14,11,'#a0602f'); R(1,2,14,2,'#c98b4f'); R(1,7,14,1,'#7a4a24'); R(7,4,2,1,'#ffd84a'); R(7,9,2,1,'#ffd84a'); break;
+    case ROUNDT: floorT(x, y); circ(8,8,6,'#2a2238'); circ(8,8,5,'#a0602f'); circ(8,8,3,'#c98b4f'); R(6,6,2,1,'#e8b07a'); break;
+    case DOLLHOUSE: floorT(x, y); R(2,4,12,12,'#2a2238'); R(3,5,10,10,'#ffd6e4'); for (let i = 0; i < 6; i++) R(2 + i, 4 - i, 12 - i * 2, 1, '#2a2238'); for (let i = 0; i < 5; i++) R(3 + i, 4 - i, 10 - i * 2, 1, '#e8505b');
+      R(5,7,2,2,'#78b8ff'); R(9,7,2,2,'#78b8ff'); R(7,11,2,4,'#a0602f'); break;
+    case TOYBOX: floorT(x, y); R(1,5,14,10,'#2a2238'); R(2,6,12,8,'#5bc0eb'); R(2,6,12,2,'#8fd8f8'); circ(5,4,3,'#2a2238'); circ(5,4,2,'#ffd84a'); R(9,1,4,4,'#2a2238'); R(10,2,2,2,'#e8505b'); circ(12,4,2,'#2a2238'); circ(12,4,1,'#b48cff'); break;
+    case GATEIN: floorT(x, y); R(0,13,16,3,'#5a5a6a'); R(2,14,12,1,'#8a8aa0'); break;
+    case GATEOUT: R(0,0,16,16,'#df8f86'); R(0,0,16,1,'#2a2238'); for (let i = 1; i < 16; i += 3) { R(i,1,2,15,'#3a3a48'); R(i,1,1,15,'#6a6a7a'); } R(0,6,16,2,'#3a3a48'); R(0,13,16,2,'#3a3a48'); if (x === 5 && y === 4) { R(4,9,8,1,'#ffd84a'); } break;
+    case SHOWER: floorT(x, y); R(0,0,16,16,'#2a2238'); R(1,0,15,16,'#cfe8f4'); for (let i = 3; i < 16; i += 4) { R(1,i,15,1,'#b0d0e0'); R(i,0,1,16,'#b0d0e0'); } R(1,0,1,16,'#ffffff');
       if (tileAt(x, y - 1) !== SHOWER) { R(6,1,5,3,'#8a8aa0'); R(7,4,1,2,'#7ab8e8'); R(9,5,1,2,'#7ab8e8'); R(8,7,1,2,'#7ab8e8'); } else { R(6,12,4,3,'#8a8aa0'); circ(8,13,1,'#5a5a70'); } break;
-    case PLANT: floorT(x); R(5,9,6,6,'#2a2238'); R(6,10,4,5,'#c8603a'); circ(8,6,5,'#245a26'); circ(8,6,4,'#3f9a3c'); R(6,4,2,2,'#5cbf4e'); break;
+    case PLANT: floorT(x, y); R(5,9,6,6,'#2a2238'); R(6,10,4,5,'#c8603a'); circ(8,6,5,'#245a26'); circ(8,6,4,'#3f9a3c'); R(6,4,2,2,'#5cbf4e'); break;
   }
 }
 for (const id in MAPS) {
@@ -636,8 +677,8 @@ function question(who, text, correct, wrongs, wrongText, name) {
 const torta = { state: 0, got: new Set() };
 const ITEMS = [
   { id: 'huevos',    label: 'los huevos',               x: 13, y: 7,  flavor: 'La heladera. ¡Qué fresquito!' },
-  { id: 'harina',    label: 'la harina',                x: 12, y: 5,  flavor: 'La mesada de la cocina. Hay frascos de todos los colores.' },
-  { id: 'chispitas', label: 'las chispitas de colores', x: 4,  y: 13, flavor: 'La mesa del comedor. Está llena de cuadernos de Mateo.' }
+  { id: 'harina',    label: 'la harina',                x: 9,  y: 7,  flavor: 'La mesada de la cocina. Hay frascos de todos los colores.' },
+  { id: 'chispitas', label: 'las chispitas de colores', x: 5,  y: 14, flavor: 'La mesa del comedor. Está llena de cuadernos de Mateo.' }
 ];
 quests.push({ id: 'torta', pista: `${CONFIG.mama} te necesita en la cocina, adentro de casa.` });
 ents.push({ id: 'mama', map: 'casa', x: 11, y: 6, kind: 'person', long: true, quest: 'torta', pal: { h: '#7a4a24', d: '#e86a8a', q: '#5a4a8a' }, talk() {
@@ -674,7 +715,7 @@ ents.push({ id: 'papa', map: 'casa', x: 3, y: 2, kind: 'person', quest: 'amiga',
 // Mateo: tarea de matemática en el cuaderno (sin opciones: hay que escribir el número)
 quests.push({ id: 'cuenta', pista: `${CONFIG.hermano} está en el comedor haciendo la tarea. ¡Te necesita!` });
 const NB = { probs: CONFIG.tarea.map(t => { const m = t.match(/(\d+)\s*([+\-])\s*(\d+)/); const a = +m[1], b = +m[3]; return { txt: `${a} ${m[2]} ${b}`, ans: m[2] === '+' ? a + b : a - b, ok: false }; }), i: 0, input: '' };
-ents.push({ id: 'mateo', map: 'casa', x: 1, y: 13, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
+ents.push({ id: 'mateo', map: 'casa', x: 3, y: 15, kind: 'person', quest: 'cuenta', pal: { h: '#5a341a', d: '#f0a030', q: '#3a5a8a' }, talk() {
   if (done.has('cuenta')) return [step('mateo', '¡Sos una genia de los números, hermanita!')];
   if (NB.i > 0) return [step('mateo', `¿Seguimos con la tarea? Te ${NB.probs.length - NB.i === 1 ? 'falta 1 cuenta' : 'faltan ' + (NB.probs.length - NB.i) + ' cuentas'}.`), () => setTimeout(openNotebook, 0)];
   return [step('mateo', '¡Hola, hermanita! Te tengo una tarea de matemática...'),
@@ -718,7 +759,7 @@ $('nbClose').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPr
 
 /* ======== BARRIO ======== */
 let tioMet = false;
-ents.push({ id: 'tio', map: 'pueblo', x: 5, y: 5, kind: 'person', quest: 'tio', pal: { h: '#2b1d14', d: '#3c9d6a', q: '#2f3d66' }, talk() {
+ents.push({ id: 'tio', map: 'pueblo', x: 3, y: 5, kind: 'person', quest: 'tio', pal: { h: '#2b1d14', d: '#3c9d6a', q: '#2f3d66' }, talk() {
   const s = [];
   if (!tioMet) { tioMet = true; s.push(step('tio', `¡Feliz cumple, ${N}! ¡Soy el ${CONFIG.tio.toLowerCase()}!`), step('tio', 'Si te perdés, vení a hablar conmigo y te doy una pista.')); }
   if (!done.has('tio') && tioState === 0) return s.concat([step('tio', '¡Y te tengo un DESAFÍO de deportista! 💪'),
@@ -767,7 +808,7 @@ ents.push({ id: 'buho', map: 'pueblo', x: 22, y: 11, kind: 'cat', stump: true, p
 
 /* ======== PERROS ======== */
 const DOG_SPOTS = {
-  casa:   { map: 'casa',   x: 13, y: 15, dir: 'left',  pista: '¡Escuché un ladrido adentro de casa, debajo de la cama de los papás!' },
+  casa:   { map: 'casa',   x: 11, y: 15, dir: 'left',  pista: '¡Escuché un ladrido adentro de casa, debajo de la cama de los papás!' },
   bosque: { map: 'pueblo', x: 25, y: 2,  dir: 'left',  pista: 'Escuché ladridos entre los árboles, arriba a la derecha del barrio.' },
   lago:   { map: 'pueblo', x: 8,  y: 16, dir: 'left',  pista: '¡Algo se mueve cerca del lago, abajo a la izquierda del barrio!' },
   plaza:  { map: 'pueblo', x: 27, y: 15, dir: 'left',  pista: 'Vi un perrito corriendo abajo a la derecha del barrio.' }
@@ -1164,12 +1205,19 @@ $('ward').addEventListener('pointerdown', e => {
   }
 });
 quests.push({ id: 'ropa', pista: 'Tu ropero está en tu cuarto. ¡Elegí qué ponerte para la fiesta!' });
-ents.push({ id: 'ropero', map: 'casa', x: 1, y: 7, kind: 'item', quest: 'ropa', talk() {
+ents.push({ id: 'ropero', map: 'casa', x: 4, y: 11, kind: 'item', quest: 'ropa', talk() {
   return [step('', done.has('ropa') ? '¡Tu ropero! ¿Te cambiás de ropa?' : '¡Tu ropero! Elegí qué ponerte para la fiesta.'), () => setTimeout(openWard, 0)];
 } });
 
-ents.push({ id: 'auto', map: 'pueblo', x: 1, y: 7, w: 2, kind: 'car', talk: () => [step('', 'El auto de la familia. ¡Brum brum! 🚗')] });
-ents.push({ id: 'auto2', map: 'pueblo', x: 1, y: 8, w: 2, kind: 'none', solid: true, decor: true });
+ents.push({ id: 'auto', map: 'casa', x: 12, y: 17, w: 2, kind: 'car', talk: () => [step('', 'El auto de la familia. ¡Brum brum! 🚗')] });
+ents.push({ id: 'auto2', map: 'casa', x: 12, y: 18, w: 2, kind: 'none', talk: () => [step('', 'El auto de la familia. ¡Brum brum! 🚗')] });
+ents.push({ id: 'auto3', map: 'casa', x: 12, y: 19, w: 2, kind: 'none', talk: () => [step('', 'El auto de la familia. ¡Brum brum! 🚗')] });
+ents.push({ id: 'escalera', map: 'casa', x: 6, y: 5, kind: 'item', talk: () => [step('', 'La escalera caracol sube al cuarto de Mateo... ¡pero por ahora está cerrado! 🔒')] });
+ents.push({ id: 'galpon', map: 'casa', x: 13, y: 2, kind: 'item', talk: () => [step('', 'El galpón. Está lleno de herramientas y cosas guardadas.')] });
+ents.push({ id: 'pileta', map: 'casa', x: 1, y: 6, w: 3, kind: 'item', talk: () => [step('', '¡La pileta! Hoy hace un poquito de frío para meterse... 🏊')] });
+ents.push({ id: 'casita', map: 'casa', x: 3, y: 11, kind: 'item', talk: () => [step('', '¡Tu casita de muñecas! Las muñecas están durmiendo la siesta. 🏠')] });
+ents.push({ id: 'juguetes', map: 'casa', x: 2, y: 11, kind: 'item', talk: () => [step('', 'El baúl de juguetes: pelotas, bloques, una corona y peluches. 🧸')] });
+ents.push({ id: 'osito', map: 'casa', x: 2, y: 9, kind: 'teddy', solid: false, decor: true });
 
 /* ======== ALEMÁN ======== */
 CHARS.profe = { name: 'Profe de alemán', face: { hair: '#d8a040', style: 'bun', shirt: '#4a6aa8', glasses: true, bg: '#e0ecff' } };
@@ -1218,7 +1266,7 @@ $('reto').addEventListener('pointerdown', e => e.stopPropagation());
 
 /* ======== CONSOLA de la tele: memo de la familia + juegos ======== */
 quests.push({ id: 'memo', pista: 'En la tele del living hay una consola. ¡Jugá al memo de la familia!' });
-ents.push({ id: 'tele', map: 'casa', x: 6, y: 16, kind: 'item', quest: 'memo', talk() {
+ents.push({ id: 'tele', map: 'casa', x: 7, y: 19, kind: 'item', quest: 'memo', talk() {
   return [step('', '¡La consola de la tele! 🎮'), () => setTimeout(openConsole, 0)];
 } });
 function openConsole() {
@@ -1447,7 +1495,7 @@ function updateFade(dt) {
 }
 function startGame() {
   $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); $('snd').classList.remove('hidden');
-  placeAt('casa', 2, 9, 'down'); hud(); Snd.startMusic();
+  placeAt('casa', 3, 10, 'down'); hud(); Snd.startMusic();
   const varios = CONFIG.perros.length > 1;
   say([step('mama', `¡Buen día, ${N}! ¡¡Feliz cumpleaños número ${CONFIG.edad}!! 🎉`),
        step('mama', `¡Uy! Abrimos la puerta y ${listNames} ${varios ? 'se escaparon' : 'se escapó'}...`),
@@ -1480,7 +1528,7 @@ function updatePlayer(dt) {
   if (!walkable(nx, ny)) {
     const door = DOORS.find(o => o.map === cur.id && o.x === nx && o.y === ny);
     if (door && d === 'up') return warp(door.to[0], door.to[1], door.to[2], 'up');
-    if (EXITS[cur.id] && tileAt(P.x, P.y) === MAT && d === 'down') return warp(EXITS[cur.id][0], EXITS[cur.id][1], EXITS[cur.id][2], 'down');
+    if (EXITS[cur.id] && (tileAt(P.x, P.y) === MAT || tileAt(P.x, P.y) === GATEIN) && d === 'down') return warp(EXITS[cur.id][0], EXITS[cur.id][1], EXITS[cur.id][2], 'down');
     Snd.bump(); return;
   }
   const prev = [[P.x, P.y], ...followers.map(f => [f.x, f.y])];
@@ -1546,18 +1594,20 @@ function drawEnt(e, sx, sy) {
       OX = sx + 32; R(5,0,7,4,'#2a2238'); R(6,0,5,3,'#78b8ff'); R(8,0,1,3,'#e8505b');
       break;
     case 'car': {
-      const K = '#2a2238', B = '#d9dde5', D = '#b4b9c4', L = '#f3f5f8';
-      R(3,31,26,2,'rgba(0,0,0,.18)');
-      R(1,5,5,8,K); R(26,5,5,8,K); R(1,20,5,8,K); R(26,20,5,8,K); R(2,6,3,6,'#3a3a48'); R(27,6,3,6,'#3a3a48'); R(2,21,3,6,'#3a3a48'); R(27,21,3,6,'#3a3a48');
-      R(5,0,22,32,K); R(4,2,24,28,K); R(6,1,20,30,B); R(5,3,22,26,B);
-      R(25,3,2,26,D); R(6,29,20,1,D); R(6,3,2,24,L);
-      R(8,3,16,5,K); R(9,4,14,3,'#5f6f8f'); R(10,4,4,1,'#9fb4d8');
-      R(8,9,16,10,D); R(9,10,14,8,'#c8ccd6'); R(10,10,12,1,L);
-      R(7,19,18,7,K); R(8,20,16,5,'#6f8fc0'); R(9,20,5,1,'#cfe4ff'); R(9,21,2,1,'#cfe4ff');
-      R(2,18,3,2,K); R(27,18,3,2,K);
-      R(7,27,5,2,'#fff6a8'); R(20,27,5,2,'#fff6a8'); R(13,28,6,1,'#8a8e98'); R(14,30,4,1,'#8a8e98');
-      R(7,1,4,1,'#e8505b'); R(21,1,4,1,'#e8505b');
+      const K = '#2a2238', B = '#d6dae2', D = '#b2b7c2', L = '#f2f4f8';
+      R(4,46,24,2,'rgba(0,0,0,.18)');
+      R(2,7,4,9,K); R(26,7,4,9,K); R(2,31,4,9,K); R(26,31,4,9,K);
+      R(7,0,18,48,K); R(5,3,22,42,K); R(4,7,24,34,K);
+      R(8,1,16,46,B); R(6,4,20,40,B); R(5,8,22,32,B);
+      R(24,6,2,36,D); R(26,9,1,30,D); R(7,6,2,34,L);
+      R(9,5,14,7,K); R(10,6,12,5,'#5f6f8f'); R(11,6,4,1,'#9fb4d8');
+      R(8,13,16,16,D); R(9,14,14,14,'#c8ccd6'); R(10,14,12,1,L);
+      R(8,30,16,9,K); R(9,31,14,7,'#6f8fc0'); R(10,31,5,1,'#cfe4ff'); R(10,32,2,1,'#cfe4ff');
+      R(3,29,3,3,K); R(26,29,3,3,K); R(3,30,2,1,D); R(27,30,2,1,D);
+      R(8,43,5,2,'#fff6a8'); R(19,43,5,2,'#fff6a8'); R(14,45,4,1,'#8a8e98');
+      R(9,1,4,1,'#e8505b'); R(19,1,4,1,'#e8505b');
       break; }
+    case 'teddy': { const T = '#b9773f'; circ(8,10,4,'#2a2238'); circ(8,10,3,T); circ(8,5,3,'#2a2238'); circ(8,5,2,T); R(5,2,2,2,'#2a2238'); R(10,2,2,2,'#2a2238'); R(7,5,1,1,'#2a2238'); R(9,5,1,1,'#2a2238'); R(7,10,3,2,'#e8b07a'); break; }
     case 'balloons': {
       ['#e8505b', '#ffd84a', '#78b8ff'].forEach((c, i) => { const bx = 2 + i * 5, by = -14 + Math.round(Math.sin(time * 2 + i) * 1.5) - (i === 1 ? 3 : 0);
         R(bx + 2, by + 6, 1, 10 - by - 8 + 4, '#ffffff'); circ(bx + 2, by + 2, 3, '#2a2238'); circ(bx + 2, by + 2, 2, c); R(bx + 1, by + 1, 1, 1, '#ffffff'); });
