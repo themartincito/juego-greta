@@ -129,6 +129,7 @@ html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify S
 #console h3,#memo h3,#mini h3{color:#ffd84a;font-size:1.15em}
 .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5em;width:100%}
 .cg{font:inherit;font-weight:700;font-size:.8em;background:#fff;color:#2a2238;border:.14em solid #78b8ff;border-radius:.5em;padding:.5em .3em;display:flex;flex-direction:column;align-items:center;gap:.15em;cursor:pointer;text-decoration:none;text-align:center}
+#cgClose{background:#ffd84a !important;color:#2a2238}
 .mgcv{height:9.5em;width:auto;image-rendering:pixelated;border:.14em solid #78b8ff;border-radius:.3em;touch-action:none;display:block}
 #miniBody{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:.4em;width:100%;min-height:0}
 #miniInfo{font-weight:700;font-size:.85em;color:#ffd84a}
@@ -322,7 +323,7 @@ const CONFIG = {
 
   // Juegos de afuera para la consola: vacío a propósito, solo se juega a los juegos de adentro
   juegos: [],
-  fotoPuzzle: "",               // foto para el rompecabezas (ej: "familia.jpg" subida al mismo repo). Vacío = usa la casa de Greta
+  fotosPuzzle: [],              // fotos para el rompecabezas, subidas al repo (ej: "fotos/1.jpg"). Vacío = usa la casa de Greta
 
   extras: [],                   // preguntas extra con animalitos (opcional)
   mensajeFinal: "¡Te quiero muchísimo! Que tengas un cumple hermoso."
@@ -1656,16 +1657,25 @@ function mgSimon() {
   const sbTxt = () => sb.textContent = mgSimonSound ? '🔊' : '🔇'; sbTxt();
   sb.addEventListener('pointerdown', e => { e.preventDefault(); mgSimonSound = !mgSimonSound; sbTxt(); });
   $('miniBody').append(g, sb);
-  let seq = [], pos = 0, turn = false;
+  const METAS = [6, 8, 10, 12, Infinity]; let etapa = 0, seq = [], pos = 0, turn = false, record = 0;
+  try { record = +localStorage.getItem('simonRecord') || 0; } catch (e) {}
+  const meta = () => METAS[etapa], cuenta = () => meta() === Infinity ? `${seq.length} notas · récord ${record}` : `${seq.length} de ${meta()}`;
   const flash = (i, ms = 380) => { bs[i].classList.add('on'); mgNote(NOTE[i], ms / 1000); mgLater(() => bs[i].classList.remove('on'), ms); };
-  const play = () => { turn = false; pos = 0; mgInfo(`Mirá y escuchá... (${seq.length} de ${META})`);
-    seq.forEach((n, k) => mgLater(() => flash(n), 700 + k * 650)); mgLater(() => { turn = true; mgInfo(`¡Tu turno! (${seq.length} de ${META})`); }, 700 + seq.length * 650); };
+  const play = () => { turn = false; pos = 0; const vel = Math.max(380, 650 - etapa * 50); mgInfo(`Nivel ${etapa + 1} · Mirá y escuchá... (${cuenta()})`);
+    seq.forEach((n, k) => mgLater(() => flash(n, vel - 270), 700 + k * vel)); mgLater(() => { turn = true; mgInfo(`Nivel ${etapa + 1} · ¡Tu turno! (${cuenta()})`); }, 700 + seq.length * vel); };
   const grow = () => { seq.push(Math.random() * 4 | 0); play(); };
+  const nueva = n => { etapa = n; seq = []; grow(); };
   const press = i => {
     if (!turn) return; flash(i, 250);
-    if (i !== seq[pos]) { turn = false; Snd.wrong(); mgInfo('¡Uy! Te lo muestro otra vez 😊'); mgLater(play, 1200); return; }
+    if (i !== seq[pos]) { turn = false; Snd.wrong();
+      if (meta() === Infinity) { const hechas = seq.length - 1; if (hechas > record) { record = hechas; try { localStorage.setItem('simonRecord', record); } catch (e) {} }
+        mgInfo(`¡Fin! Llegaste a ${hechas} notas 🎵 Récord: ${record}`); mgLater(() => nueva(0), 4000); }
+      else { mgInfo('¡Uy! Te lo muestro otra vez 😊'); mgLater(play, 1200); }
+      return; }
     if (++pos === seq.length) { turn = false;
-      if (seq.length === META) { mgLater(() => mgWin('¡Ganaste! ¡Qué oído musical! 🎵'), 400); mgLater(() => { seq = []; grow(); }, 3500); }
+      if (seq.length === meta()) { Snd.correct();
+        mgInfo(etapa + 1 < METAS.length - 1 ? `¡Nivel ${etapa + 1} superado! Ahora: ${METAS[etapa + 1]} notas 🎵` : (etapa + 1 === METAS.length - 1 ? '¡Superaste los 4 niveles! Ahora: ¡sin fin, hasta que te equivoques! 🎵' : ''));
+        mgLater(() => nueva(etapa + 1), 3000); }
       else { Snd.ok(); mgLater(grow, 700); } }
   };
   g.addEventListener('pointerdown', e => { e.preventDefault(); const b = e.target.closest('button'); if (b) press(+b.dataset.i); });
@@ -1691,9 +1701,9 @@ function mgHuesos() {
   const loop = () => {
     t++; const L = LV[lv];
     if (pause > 0) pause--;
-    else if (--spawn <= 0) { bones.push({ x: 12 + Math.random() * (W2 - 24), y: -6, v: 0.55 + lv * 0.18 + Math.random() * 0.4 + got * 0.02 }); spawn = Math.max(18, 50 - lv * 7 - got); }
+    else if (--spawn <= 0) { bones.push({ x: 12 + Math.random() * (W2 - 24), y: -6, v: 0.5 + lv * 0.07 + Math.random() * 0.25 + got * 0.008 }); spawn = Math.max(30, 54 - lv * 4 - (got >> 1)); }
     if (target !== null) dir = Math.abs(target - x) < 2 ? 0 : Math.sign(target - x);
-    if (dir) face = dir; x = Math.max(16, Math.min(W2 - 16, x + dir * (2.1 + lv * 0.3)));
+    if (dir) face = dir; x = Math.max(16, Math.min(W2 - 16, x + dir * (2.4 + lv * 0.15)));
     c.fillStyle = '#9fd8ff'; c.fillRect(0, 0, W2, H2); c.fillStyle = '#5cbf4e'; c.fillRect(0, H2 - 18, W2, 18); c.fillStyle = '#3f9a3c'; c.fillRect(0, H2 - 18, W2, 2);
     c.fillStyle = '#ffffff'; [[20, 16], [110, 26], [150, 10]].forEach(([cx2, cy2]) => { c.fillRect(cx2, cy2, 24, 6); c.fillRect(cx2 + 5, cy2 - 4, 13, 4); });
     bones.forEach(b => { b.y += b.v; drawBone(b.x, b.y); });
@@ -1717,7 +1727,7 @@ function mgHuesos() {
   startLv(0); loop();
 }
 
-// --- 3. Rompecabezas de la familia (CONFIG.fotoPuzzle = foto; si no hay, usa la casa de Greta) ---
+// --- 3. Rompecabezas de la familia (CONFIG.fotosPuzzle = fotos; si no hay, usa la casa de Greta) ---
 function mgPuzzle() {
   const COLS = 3, ROWS = 2, PW = 64, PH = 64, MG2 = 20;
   const src = mgCanvas(COLS * PW, ROWS * PH), s = src.getContext('2d');
@@ -1755,13 +1765,19 @@ function mgPuzzle() {
   };
   const start = () => { prev.getContext('2d').drawImage(src, 0, 0);
     do order = shuffle([...Array(COLS * ROWS).keys()]); while (order.every((p, i) => p === i)); sel = -1; paint(); mgInfo('Tocá dos piezas para cambiarlas de lugar'); };
-  if (CONFIG.fotoPuzzle) { const im = new Image(); im.onload = () => { const k = Math.max(src.width / im.width, src.height / im.height);
-      s.drawImage(im, (src.width - im.width * k) / 2, (src.height - im.height * k) / 2, im.width * k, im.height * k); start(); }; im.src = CONFIG.fotoPuzzle; }
-  else { s.imageSmoothingEnabled = false; s.drawImage(MAPS.pueblo.cv, 0, 0, 12 * 16, 8 * 16, 0, 0, src.width, src.height); start(); }
+  const fotos = CONFIG.fotosPuzzle || [];
+  const cargar = () => {
+    if (!fotos.length) { s.imageSmoothingEnabled = false; s.drawImage(MAPS.pueblo.cv, 0, 0, 12 * 16, 8 * 16, 0, 0, src.width, src.height); return start(); }
+    if (!mgPuzzle.bolsa || !mgPuzzle.bolsa.length) mgPuzzle.bolsa = shuffle(fotos);   // no repite hasta pasar por todas
+    const im = new Image(); im.onload = () => { const k = Math.max(src.width / im.width, src.height / im.height); s.imageSmoothingEnabled = true;
+      s.clearRect(0, 0, src.width, src.height); s.drawImage(im, (src.width - im.width * k) / 2, (src.height - im.height * k) / 2, im.width * k, im.height * k); start(); };
+    im.onerror = () => { mgPuzzle.bolsa = mgPuzzle.bolsa.filter(f => f !== im.dataset.f); fotos.splice(fotos.indexOf(im.dataset.f), 1); cargar(); };
+    im.dataset.f = mgPuzzle.bolsa.pop(); im.src = im.dataset.f; };
+  cargar();
   board.addEventListener('pointerdown', e => { e.preventDefault(); const r = board.getBoundingClientRect();
     const col = Math.min(COLS - 1, Math.max(0, (e.clientX - r.left) / r.width * COLS | 0)), row = Math.min(ROWS - 1, Math.max(0, (e.clientY - r.top) / r.height * ROWS | 0)), i = row * COLS + col;
     if (sel < 0) { sel = i; Snd.sel(); } else if (sel === i) { sel = -1; } else { [order[sel], order[i]] = [order[i], order[sel]]; sel = -1; Snd.ok(); }
-    paint(); if (order.every((p, k) => p === k)) { mgWin('¡Armaste el rompecabezas! 🧩'); mgLater(start, 3500); } });
+    paint(); if (order.every((p, k) => p === k)) { mgWin('¡Armaste el rompecabezas! 🧩'); mgLater(cargar, 3500); } });
 }
 
 // --- 4. ¿Dónde está Felipe? ---
