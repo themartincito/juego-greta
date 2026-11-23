@@ -279,7 +279,7 @@ const CONFIG = {
     { palabra: "Hund",   correcta: "🐶 Perro",  otras: ["🐱 Gato", "🐟 Pez"] },
     { palabra: "Katze",  correcta: "🐱 Gato",   otras: ["🐶 Perro", "🐦 Pájaro"] },
     { palabra: "rot",    correcta: "🔴 Rojo",   otras: ["🔵 Azul", "🟢 Verde"] },
-    { palabra: "drei",   correcta: "3️⃣ Tres",  otras: ["1️⃣ Uno", "5️⃣ Cinco"] },
+    { palabra: "drei",   correcta: "🍎🍎🍎 Tres",  otras: ["🍎 Uno", "🍎🍎🍎🍎🍎 Cinco"] },
     { palabra: "Kuchen", correcta: "🎂 Torta",  otras: ["🍎 Manzana", "🍞 Pan"] }
   ],
   amiga: { correcta: "Espe", otras: ["Pepa", "Ramona"] },
@@ -304,10 +304,8 @@ const CONFIG = {
   // Karaoke de la abuela: true muestra un botón con una canción de ejemplo (útil para probar)
   cancionEjemplo: true,
 
-  // Juegos de afuera para la consola de la tele (se abren en otra pestaña, no dan estrella)
-  juegos: [
-    { nombre: "Gentle Games", emoji: "🌈", url: "https://games.gentlegames.org" }
-  ],
+  // Juegos de afuera para la consola: vacío a propósito, solo se juega a los juegos de adentro
+  juegos: [],
 
   extras: [],                   // preguntas extra con animalitos (opcional)
   mensajeFinal: "¡Te quiero muchísimo! Que tengas un cumple hermoso."
@@ -392,7 +390,7 @@ const TS = 16, VW = 240, VH = 160;
 const GRASS=0, FLOWER=1, PATH=2, TREE=3, WATER=4, ROOF=5, WALL=6, WIN=7, DOOR=8, FENCE=9, BUSH=10,
       FLOOR=11, WALLI=12, WALLWIN=13, VOID=14, PART=15, RUG=16, MAT=17, FRIDGE=18, COUNTER=19, STOVE=20,
       SHELF=21, TV=22, SOFA=23, TABLEI=24, BEDH=25, BEDF=26, DESK=27, PLANT=28, ROOF2=29, PIANO=30, WARDROBE=31, GRILL=32, SINK=33, WASHER=34, TUB=35, TOILET=36, SHOWER=37,
-      POOL=38, SHED=39, SPIRAL=40, DRESSER=41, ROUNDT=42, DOLLHOUSE=43, TOYBOX=44, GATEIN=45, GATEOUT=46, BIGWIN=47;
+      POOL=38, SHED=39, SPIRAL=40, DRESSER=41, ROUNDT=42, DOLLHOUSE=43, TOYBOX=44, GATEIN=45, GATEOUT=46, BIGWIN=47, HWALL=48;
 const WALKABLE = new Set([GRASS, FLOWER, PATH, FLOOR, RUG, MAT, GATEIN]);
 const DOORS = [{ map: 'pueblo', x: 4, y: 4, to: ['casa', 9, 20] }, { map: 'pueblo', x: 11, y: 4, to: ['abuela', 7, 8] }];
 const EXITS = { casa: ['pueblo', 4, 5], abuela: ['pueblo', 11, 5] };
@@ -409,7 +407,7 @@ const tileAt = (x, y) => (M[y] && M[y][x] !== undefined) ? M[y][x] : VOID;
 // --- El barrio ---
 makeMap('pueblo', 30, 20, GRASS);
 rect(0,0,W,1,TREE); rect(0,H-1,W,1,TREE); rect(0,0,1,H,TREE); rect(W-1,0,1,H,TREE);
-rect(1,1,6,2,ROOF); rect(1,3,3,2,BIGWIN); rect(4,3,3,2,GATEOUT);   // casa de Greta: ventanal del living + portón del garage
+rect(1,1,7,2,ROOF); rect(1,3,3,2,BIGWIN); rect(4,3,3,2,GATEOUT); rect(7,3,1,2,HWALL);   // casa de Greta: ventanal del living + portón del garage
 rect(1,6,28,1,PATH); rect(14,6,1,11,PATH); M[5][4]=PATH; M[5][5]=PATH; M[5][6]=PATH; M[5][18]=PATH;
 rect(2,13,6,5,WATER);
 rect(9,1,5,2,ROOF2); rect(9,3,5,2,WALL); M[3][10]=WIN; M[3][12]=WIN; M[4][11]=DOOR; M[5][11]=PATH;   // casa de la abuela
@@ -498,6 +496,16 @@ function drawTile(t, x, y) {
     case ROOF2: R(0,0,16,16,'#4a7ad8'); for (let j = 3; j < 16; j += 4) R(0,j,16,1,'#2f58a8'); for (let j = 0; j < 16; j += 4) R(((j / 4) % 2) * 8 + 3, j, 1, 3, '#2f58a8'); if (tileAt(x, y + 1) !== ROOF2) R(0,14,16,2,'#1f3a78'); break;
     case ROOF: R(0,0,16,16,'#d84a3a'); for (let j = 3; j < 16; j += 4) R(0,j,16,1,'#a8322a'); for (let j = 0; j < 16; j += 4) R(((j / 4) % 2) * 8 + 3, j, 1, 3, '#a8322a'); if (tileAt(x, y + 1) !== ROOF) R(0,14,16,2,'#7d2219'); break;
     case WALL: case WIN: case DOOR:
+      if (cur.id === 'pueblo' && x >= 9 && x <= 13 && y >= 3 && y <= 4) {   // fachada de la abuela (5x2), dibujada de una
+        const K = '#2a2238', bx = (x - 9) * 16, by = (y - 3) * 16; R(0,0,16,16,'#f6e9c8'); OX -= bx; OY -= by;
+        R(0,12,80,1,'#e6d4aa'); R(0,31,80,1,'#b39b6c'); R(0,0,80,2,'#d8c69c');
+        [15, 65].forEach(c => { const X = c - 11;
+          R(X,3,22,17,K); R(X+1,4,20,15,'#ffffff'); R(X+3,6,16,11,'#8fd3ff'); R(X+3,6,16,4,'#bfe8ff');
+          R(X+5,7,4,1,'#ffffff'); R(X+5,8,1,3,'#e4f6ff'); R(X+10,6,2,11,'#ffffff'); R(X+3,10,16,1,'#ffffff');
+          R(X-2,20,26,3,K); R(X-1,20,24,2,'#c98b4f'); R(X-1,20,24,1,'#e0a868'); });
+        R(30,9,20,2,'#b39b6c'); R(32,11,16,21,K); R(33,12,14,20,'#a0602f'); R(35,14,10,7,'#b97a43'); R(35,23,10,7,'#b97a43');
+        R(35,14,10,1,'#d0904a'); R(35,23,10,1,'#d0904a'); R(43,22,2,2,'#ffd84a');
+        OX += bx; OY += by; break; }
       R(0,0,16,16,'#f6e9c8'); R(0,15,16,1,'#b39b6c'); R(0,7,16,1,'#e6d4aa');
       if (t === WIN) { R(3,2,10,9,'#2a2238'); R(4,3,8,7,'#8fd3ff'); R(4,3,3,2,'#ffffff'); R(7,3,1,7,'#2a2238'); R(4,6,8,1,'#2a2238'); R(2,11,12,2,'#c98b4f'); }
       if (t === DOOR) { R(3,1,10,15,'#2a2238'); R(4,2,8,14,'#a0602f'); R(5,3,6,5,'#b97a43'); R(5,9,6,6,'#b97a43'); R(10,9,1,1,'#ffd84a'); }
@@ -565,10 +573,11 @@ function drawTile(t, x, y) {
       const K = '#2a2238', bx = (x - 4) * 16, by = (y - 3) * 16, Wd = '#b8742e', Wg = '#8e561e', Wl = '#d0904a';
       R(0,0,16,16,'#f6e9c8'); OX -= bx; OY -= by;
       R(1,1,46,31,K);
-      R(2,2,11,30,Wg); for (let j = 4; j < 11; j += 2) R(3,j,9,1,'#7a4618'); R(2,11,11,1,K); R(3,12,9,20,Wd); R(3,12,9,1,Wl); for (let j = 14; j < 29; j += 5) R(5,j,4,3,'#cfe4f0'); R(10,21,1,3,'#ffd84a');
+      R(2,2,11,30,Wd); R(2,2,11,1,Wl); for (let j = 5; j < 11; j += 4) R(2,j,11,1,Wg); R(2,11,11,1,K); R(3,12,9,20,Wd); R(3,12,9,1,Wl); for (let j = 14; j < 29; j += 5) R(5,j,4,3,'#cfe4f0'); R(10,21,1,3,'#ffd84a');
       R(13,2,1,30,K); R(14,2,33,30,Wd); for (let j = 9; j < 32; j += 4) R(14,j,33,1,Wg); R(14,2,33,1,Wl);
       [18, 27, 36].forEach(xx => { R(xx,4,7,3,K); R(xx + 1,5,5,1,'#cfe4f0'); }); R(29,25,3,2,K);
       OX += bx; OY += by; break; }
+    case HWALL: R(0,0,16,16,'#f6e9c8'); if (y === 4) R(0,15,16,1,'#b39b6c'); break;
     case BIGWIN: {       // ventanal doble del living (3x2)
       const K = '#2a2238', bx = (x - 1) * 16, by = (y - 3) * 16;
       R(0,0,16,16,'#f6e9c8'); if (y === 4) R(0,15,16,1,'#b39b6c'); OX -= bx; OY -= by;
@@ -643,7 +652,7 @@ for (const r in DOGROWS) {
   SPR['dog_' + r + '1'] = a;
 }
 SPR.cat = ["................","................","..k......k......","..kk....kk......","..kpkkkkpk......","..koooooook.....","..kosooosok.....","..koeoooeok.....","..kowwpwwok.....","...kowwwok......","..koowwwook.....",".kosowwwosok..k.",".kooowwwoook.kok",".kosowwwosokkok.",".kooowwwoooook..","..kkwkkkkwkkk..."];
-const CAR_ROWS = [".....aaaaaaaaaaaaaaaaaa.....", "....abaaaccccccccccaaaba....", "...ababbbaccccccccabbbaba...", "...aabbbbaccccccccabbbbaa...", "...aabbbbaccccccccabbbbaa...", "...aabbbaccccccccccabbbaa...", "...adaaaccccccccccccaaaea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccccccccccceeea...", "...addccccccaaaaccccceeea...", "...addccaaaaffffaaaaceeea...", "...addaaffggffffffffaaeea...", "...adaffggffffffffffffaea...", "...aafffggfffffffffffffaa...", "..aaaffffffffffffffffffaaa..", "aacafaffffffffffffffffafacaa", "accafaffffffffffffffffafacca", "aaaaffaffffffffffffffaffaaaa", "...affaffffffffffffffaffa...", "...afffaffffffffffffafffa...", "...afffaaaaaaaaaaaaaafffa...", "...afffaddddddddddddafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...afffaccccccccccccafffa...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaccccccccccccaffea...", "...adffaaaaaaaaaaaaaaffea...", "...adffafffffffffffffafea...", "...adfafgggffffffffffafea...", "...adfafffffffffffffffaea...", "...adaffffffffffffffffaea...", "...adafffffffffffffffffaa...", "...aaffffffffffffffffffaa...", "...adaaffffffffffffffaaea...", "...addcaaaafffffffaaaeeea...", "...addcccccaaaaaaaccceeea...", "...addccccccccccccccceeea...", "...acccccccccccccccccccca...", "....acccccccccccccccccca....", "....acccccccccccccccccca....", ".....ahhhcccccccccchhha.....", "......aaccccccccccccaa......", "........aaaaaaaaaaaa........"];
+const CAR_ROWS = [".....aaaaaaaaaaaaaaaa.....", "....abaaaccccccccaaaba....", "...ababbbaccccccabbbaba...", "...aabbbbaccccccabbbbaa...", "...aabbbbaccccccabbbbaa...", "...aabbbaccccccccabbbaa...", "...adaaaccccccccccaaaea...", "...addccccccccccccceeea...", "...addccccccccccccceeea...", "...addccccccccccccceeea...", "...addccccccaaccccceeea...", "...addccaaaaffaaaaceeea...", "...addaaffggffffffaaeea...", "...adaffggffffffffffaea...", "...aafffggfffffffffffaa...", "..aaaffffffffffffffffaaa..", "aacafaffffffffffffffafacaa", "accafaffffffffffffffafacca", "aaaaffaffffffffffffaffaaaa", "...affaffffffffffffaffa...", "...afffaffffffffffafffa...", "...afffaaaaaaaaaaaafffa...", "...afffaddddddddddafffa...", "...afffaccccccccccafffa...", "...afffaccccccccccafffa...", "...afffaccccccccccafffa...", "...afffaccccccccccafffa...", "...adffaccccccccccaffea...", "...adffaccccccccccaffea...", "...adffaccccccccccaffea...", "...adffaccccccccccaffea...", "...adffaaaaaaaaaaaaffea...", "...adffafffffffffffafea...", "...adfafgggffffffffafea...", "...adfafffffffffffffaea...", "...adaffffffffffffffaea...", "...adafffffffffffffffaa...", "...aaffffffffffffffffaa...", "...adaaffffffffffffaaea...", "...addcaaaafffffaaaeeea...", "...addcccccaaaaaccceeea...", "...addccccccccccccceeea...", "...acccccccccccccccccca...", "....acccccccccccccccca....", "....acccccccccccccccca....", ".....ahhhcccccccchhha.....", "......aaccccccccccaa......", "........aaaaaaaaaa........"];
 const CAR_PAL = {a:'#2a2238',b:'#f7e6b4',c:'#ced2da',d:'#eaedf2',e:'#b4b9c4',f:'#a8c6d6',g:'#cde4f0',h:'#e8505b'};
 SPR.auto = CAR_ROWS;
 const cache = new Map();
@@ -1362,7 +1371,7 @@ furn('pelopincho', 1, 6, 3, 2, { talk: say1('¡La Pelopincho! Hoy hace un poquit
 // cocina
 furn('escalera', 6, 4, 1, 1, { back: true, talk: say1('La escalera sube al cuarto de Mateo... ¡pero por ahora está cerrado! 🔒') });
 furn('tv', 6, 5, 1, 2, { side: 'L' });
-furn('mesa', 9, 5, 3, 1);
+furn('mesa', 8, 5, 3, 1, { dx: 4, dy: 3 });
 furn('mueble', 9, 7, 3, 1);
 furn('cocina', 13, 4, 1, 1, { back: true }); furn('bacha', 13, 5); furn('heladera', 13, 6); furn('lavarropas', 13, 7);
 // cuarto de Greta
@@ -1377,7 +1386,7 @@ furn('mueble', 2, 12, 2, 1, { back: true });
 furn('aparador', 1, 13, 1, 3);
 furn('mesa', 4, 14, 2, 3, { chairs: true });
 furn('sillon', 1, 18, 3, 3, { cells: [[1, 18], [1, 19], [1, 20], [2, 20], [3, 20]] });
-furn('mesaRedonda', 4, 18);
+furn('mesaRedonda', 5, 19, 1, 1, { dx: -6, dy: -3 });
 furn('tv', 8, 18, 1, 3, { side: 'R' });
 // baño
 furn('inodoro', 9, 8, 1, 1, { back: true });
@@ -1399,7 +1408,7 @@ function furnInsets(e) {
 }
 function drawFurn(e, sx, sy) {
   const ins = e._ins || (e._ins = furnInsets(e));
-  C = ctx; OX = sx + ins.L; OY = sy + ins.T; const fw = ins.fw, fh = ins.fh;
+  C = ctx; OX = sx + ins.L + (e.dx || 0); OY = sy + ins.T + (e.dy || 0); const fw = ins.fw, fh = ins.fh;
   const K = '#2a2238', Wd = '#a86a3a', Wl = '#c88a52', Wdk = '#7a4a24';
   const box = (x, y, ww, hh, c) => { R(x, y, ww, hh, K); R(x + 1, y + 1, ww - 2, hh - 2, c); };
   const cx = fw >> 1, cy = fh >> 1;
@@ -1418,12 +1427,12 @@ function drawFurn(e, sx, sy) {
       R(3, 3, fw - 6, fh - 6, K); R(4, 4, fw - 8, fh - 8, '#4fb2ec'); R(4, 4, fw - 8, 2, '#3a96d4');
       for (let i = 0; i < 4; i++) { const o = Math.floor(time * 2 + i * 3) % 8; R(8 + i * 9 + o % 4, 9 + (i % 2) * 8, 6, 1, '#a8e2ff'); }
       [[0, 0], [fw - 3, 0], [0, fh - 3], [fw - 3, fh - 3], [cx - 1, 0], [cx - 1, fh - 3]].forEach(([x, y]) => R(x, y, 3, 3, '#4a6a92'));
-      R(fw - 11, cy - 5, 2, 11, '#d8dce4'); R(fw - 6, cy - 5, 2, 11, '#d8dce4'); for (let y = cy - 4; y < cy + 6; y += 3) R(fw - 10, y, 5, 1, '#b8bcc8'); break;
-    case 'escalera': {
-      R(0, 0, fw, fh, K); R(1, 1, fw - 2, 4, '#3a2a40');
-      for (let i = 0; i < 4; i++) { const y = 5 + i * 2, ins2 = 3 - i; R(1 + ins2, y, fw - 2 - ins2 * 2, 1, '#e2bc86'); R(1 + ins2, y + 1, fw - 2 - ins2 * 2, 1, '#8a5a30'); }
-      for (let i = 0; i < 4; i++) { R(1 + (3 - i), 5 + i * 2, 1, 2, '#5a3a20'); R(fw - 2 - (3 - i), 5 + i * 2, 1, 2, '#5a3a20'); }
-      R(cx - 1, 1, 2, 1, '#ffe14d'); R(cx - 2, 2, 4, 1, '#ffe14d'); break; }
+      break;
+    case 'escalera': {   // escalera vista desde arriba: escalones grises entre dos barandas
+      R(0, 0, fw, fh, K);
+      for (let y = 1; y < fh - 1; y += 2) { R(3, y, fw - 6, 1, '#eef0f4'); R(3, y + 1, fw - 6, 1, '#9aa2b4'); }
+      R(1, 1, 2, fh - 2, '#6a7890'); R(1, 1, 1, fh - 2, '#8f9cb4'); R(fw - 3, 1, 2, fh - 2, '#6a7890'); R(fw - 3, 1, 1, fh - 2, '#8f9cb4');
+      [[0, 0], [fw - 4, 0], [0, fh - 3], [fw - 4, fh - 3]].forEach(([x, y]) => { R(x, y, 4, 3, K); R(x + 1, y + 1, 2, 1, '#b8c2d4'); }); break; }
     case 'tv': {
       const L = e.side === 'L', ph = Math.min(fh - 2, e.h > 1 ? 22 : 12), py = cy - (ph >> 1);
       box(L ? 2 : fw - 9, py + 1, 7, ph - 2, Wd); R(L ? 3 : fw - 8, py + 2, 5, 1, Wl);
@@ -1481,7 +1490,7 @@ function drawFurn(e, sx, sy) {
     case 'banera':
       box(0, 0, fw, fh, '#ffffff'); box(2, 3, fw - 4, fh - 6, '#bfe6ff'); R(3, 4, fw - 6, 2, '#e4f6ff');
       R(cx - 2, 0, 4, 2, '#8a8aa0'); R(cx - 1, 5, 1, 1, '#7ab8e8'); R(cx + 1, 7, 1, 1, '#7ab8e8'); circ(cx, fh - 7, 1, '#7a8aa0'); break;
-    case 'auto': { const img = spr('auto', CAR_PAL); ctx.drawImage(img, OX + cx - 14, OY + cy - 30); break; }
+    case 'auto': { const img = spr('auto', CAR_PAL); ctx.drawImage(img, OX + cx - 13, OY + cy - 24); break; }
   }
 }
 
