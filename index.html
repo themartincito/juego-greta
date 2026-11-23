@@ -1912,8 +1912,13 @@ function textDone() {
   dlgText.innerHTML = numHTML(D.chars.join('')); D.shown = D.chars.length;
   if (D.cur.options && !D.opts) showOpts(); else if (!D.cur.options) dlgNext.classList.remove('hidden');
 }
+showOpts.orden = new Map();
 function showOpts() {
-  D.opts = shuffle(D.cur.options); D.sel = 0; optsEl.innerHTML = '';
+  // el orden se mezcla una sola vez por pregunta y después queda fijo (aunque se equivoque y vuelva a preguntar)
+  const key = D.cur.text + '|' + D.cur.options.map(o => o.label).sort().join('|');
+  if (!showOpts.orden.has(key)) showOpts.orden.set(key, shuffle(D.cur.options.map(o => o.label)));
+  const ord = showOpts.orden.get(key);
+  D.opts = D.cur.options.slice().sort((a, b) => ord.indexOf(a.label) - ord.indexOf(b.label)); D.sel = 0; optsEl.innerHTML = '';
   D.opts.forEach((o, i) => {
     const d = document.createElement('div'); d.className = 'opt';
     d.innerHTML = '<span class="cur">▶</span>' + (o.color ? `<span class="sw" style="background:${o.color}"></span>` : '') + '<span></span>';
