@@ -2138,7 +2138,9 @@ function drawPlayer(sx, sy) {
 function bubble(sx, sy, ch, col) {
   C = ctx; OX = sx; OY = sy;
   R(3,-1,11,11,'#2a2238'); R(4,0,9,9,'#ffffff'); R(7,9,3,2,'#2a2238'); R(8,9,1,1,'#ffffff');
-  ctx.fillStyle = col; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ch, sx + 8.5, sy + 5);
+  const G = { '?': ['.###.', '##.##', '...##', '..##.', '..##.', '.....', '..##.'], '!': ['..##.', '..##.', '..##.', '..##.', '..##.', '.....', '..##.'] }[ch];
+  if (col === '#e8a000') col = '#d06a00';   // naranja más oscuro: contrasta mejor con el blanco
+  G.forEach((row, y) => [...row].forEach((p, x) => { if (p === '#') R(6 + x, 1 + y, 1, 1, col); }));   // letra dibujada pixel a pixel, siempre nítida
 }
 function render() {
   let camX, camY;
