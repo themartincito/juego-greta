@@ -592,19 +592,21 @@ function drawTile(t, x, y) {
     case GATEOUT: {      // bloque de garage: puerta chica (col 4) + portón seccional (cols 5-6)
       const K = '#2a2238', bx = (x - 4) * 16, by = (y - 3) * 16, Wd = '#b8742e', Wg = '#8e561e', Wl = '#d0904a';
       R(0,0,16,16,'#f6e9c8'); OX -= bx; OY -= by;
-      R(1,1,46,31,K);
-      R(2,2,11,30,Wd); R(2,2,11,1,Wl); for (let j = 5; j < 11; j += 4) R(2,j,11,1,Wg); R(2,11,11,1,K); R(3,12,9,20,Wd); R(3,12,9,1,Wl); for (let j = 14; j < 29; j += 5) R(5,j,4,3,'#cfe4f0'); R(10,21,1,3,'#ffd84a');
-      R(13,2,1,30,K); R(14,2,32,30,Wd); for (let j = 9; j < 32; j += 4) R(14,j,32,1,Wg); R(14,2,32,1,Wl);
-      [18, 27, 36].forEach(xx => { R(xx,4,7,3,K); R(xx + 1,5,5,1,'#cfe4f0'); }); R(29,25,3,2,K);
+      const D = 5;   // aire de pared entre el techo y el portón
+      R(1,1+D,46,31-D,K);
+      R(2,2+D,11,30-D,Wd); R(2,2+D,11,1,Wl); R(2,6+D,11,1,Wg); R(2,9+D,11,1,K); R(3,10+D,9,22-D,Wd); R(3,10+D,9,1,Wl); for (let j = 12+D; j < 29; j += 5) R(5,j,4,3,'#cfe4f0'); R(10,22,1,3,'#ffd84a');
+      R(13,2+D,1,30-D,K); R(14,2+D,32,30-D,Wd); for (let j = 9+D; j < 32; j += 4) R(14,j,32,1,Wg); R(14,2+D,32,1,Wl);
+      [18, 27, 36].forEach(xx => { R(xx,4+D,7,3,K); R(xx + 1,5+D,5,1,'#cfe4f0'); }); R(29,26,3,2,K);
       OX += bx; OY += by; break; }
     case HWALL: R(0,0,16,16,'#f6e9c8'); if (y === 4) R(0,15,16,1,'#b39b6c'); break;
     case BIGWIN: {       // ventanal doble del living (3x2)
       const K = '#2a2238', bx = (x - 1) * 16, by = (y - 3) * 16;
       R(0,0,16,16,'#f6e9c8'); if (y === 4) R(0,15,16,1,'#b39b6c'); OX -= bx; OY -= by;
-      R(3,2,42,24,K); R(4,3,40,22,'#ffffff'); R(6,5,17,18,'#8fd3ff'); R(25,5,17,18,'#8fd3ff');
-      R(6,5,17,5,'#bfe8ff'); R(25,5,17,5,'#bfe8ff'); R(8,7,5,1,'#ffffff'); R(27,7,5,1,'#ffffff'); R(8,8,2,4,'#e4f6ff'); R(27,8,2,4,'#e4f6ff');
-      R(23,5,2,18,'#ffffff'); R(14,5,1,18,'#d8e4ec'); R(33,5,1,18,'#d8e4ec');
-      R(2,26,44,3,K); R(3,26,42,2,'#c98b4f');
+      const D = 5;   // aire de pared entre el techo y el ventanal
+      R(3,2+D,42,20,K); R(4,3+D,40,18,'#ffffff'); R(6,5+D,17,14,'#8fd3ff'); R(25,5+D,17,14,'#8fd3ff');
+      R(6,5+D,17,4,'#bfe8ff'); R(25,5+D,17,4,'#bfe8ff'); R(8,7+D,5,1,'#ffffff'); R(27,7+D,5,1,'#ffffff'); R(8,8+D,2,3,'#e4f6ff'); R(27,8+D,2,3,'#e4f6ff');
+      R(23,5+D,2,14,'#ffffff'); R(14,5+D,1,14,'#d8e4ec'); R(33,5+D,1,14,'#d8e4ec');
+      R(2,22+D,44,3,K); R(3,22+D,42,2,'#c98b4f');
       OX += bx; OY += by; break; }
     case SHOWER: floorT(x, y); R(0,0,16,16,'#2a2238'); R(1,0,15,16,'#cfe8f4'); for (let i = 3; i < 16; i += 4) { R(1,i,15,1,'#b0d0e0'); R(i,0,1,16,'#b0d0e0'); } R(1,0,1,16,'#ffffff');
       if (tileAt(x, y - 1) !== SHOWER) { R(6,1,5,3,'#8a8aa0'); R(7,4,1,2,'#7ab8e8'); R(9,5,1,2,'#7ab8e8'); R(8,7,1,2,'#7ab8e8'); } else { R(6,12,4,3,'#8a8aa0'); circ(8,13,1,'#5a5a70'); } break;
