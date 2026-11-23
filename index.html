@@ -6,10 +6,10 @@
 <title>La aventura de Greta</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Nunito:wght@800;900&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify Sans',ui-monospace,monospace;color:#2a2238;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Baloo 2',system-ui,sans-serif;font-weight:600;color:#2a2238;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 #app{position:fixed;inset:0;display:grid;place-content:center;place-items:center;gap:14px;grid-template-areas:"shell"}
 #shell{grid-area:shell;background:linear-gradient(#a596f5,#7c6bd8);padding:12px;border-radius:20px;box-shadow:0 8px 0 #5a4bb0,0 16px 40px rgba(0,0,0,.5)}
 #screen{position:relative;overflow:hidden;border-radius:6px;background:#000;box-shadow:0 0 0 3px #2b2350;touch-action:none}
@@ -18,8 +18,11 @@ html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify S
 
 /* HUD */
 /* números claros para que no se confundan (7, 5, 8...) */
-.num,#keys button,#retoBig,#memoPairs,.nrow{font-family:'Nunito',system-ui,sans-serif;font-weight:900}
-#hud .cnt{font-family:'Nunito',system-ui,sans-serif;font-weight:900;margin-left:.25em;color:#2a2238}
+.num,#keys button,#retoBig,#memoPairs,.nrow{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800}
+body.mayus,body.mayus button,body.mayus input,body.mayus textarea{text-transform:uppercase}
+body{line-height:1.15}
+.cg{line-height:1.05}
+#hud .cnt{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;margin-left:.25em;color:#2a2238}
 #hud{position:absolute;top:2.5%;left:2.5%;background:rgba(255,255,255,.92);border:.14em solid #2a2238;border-radius:.35em;padding:.1em .45em;font-size:.95em;font-weight:700;display:flex;gap:.1em;align-items:center}
 #hud .st{color:#cfc8dc}
 #hud .st.on{color:#ffb400;text-shadow:0 0 .2em #ffe27a}
@@ -183,7 +186,7 @@ html,body{height:100%;background:#1d1b2e;overflow:hidden;font-family:'Pixelify S
 
 /* Pantalla de título */
 #title{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4em;background:linear-gradient(rgba(30,20,70,.55),rgba(30,20,70,.75));color:#fff;text-align:center;cursor:pointer}
-#title h1{font-size:2.5em;line-height:1.05;color:#ffd84a;text-shadow:.07em 0 #2a2238,-.07em 0 #2a2238,0 .07em #2a2238,0 -.07em #2a2238,.12em .14em 0 #e8505b}
+#title h1{font-family:'Pixelify Sans',ui-monospace,monospace;font-size:2.5em;line-height:1.05;color:#ffd84a;text-shadow:.07em 0 #2a2238,-.07em 0 #2a2238,0 .07em #2a2238,0 -.07em #2a2238,.12em .14em 0 #e8505b}
 #title .sub{font-size:1.05em;color:#ffe9f3;text-shadow:.06em .06em #2a2238}
 #title .start{margin-top:.6em;font-size:1.05em;font-weight:700;animation:blink 1s steps(2) infinite}
 #title .keys{margin-top:.5em;font-size:.68em;line-height:1.5;opacity:.95;background:rgba(0,0,0,.35);padding:.35em .8em;border-radius:.4em}
@@ -300,7 +303,7 @@ const CONFIG = {
     { palabra: "Kuchen", correcta: "🎂 Torta",  otras: ["🍎 Manzana", "🍞 Pan"] }
   ],
   amiga: { correcta: "Espe", otras: ["Pepa", "Ramona"] },
-  mayusculas: false,            // true = todo el texto en MAYÚSCULAS
+  mayusculas: true,             // true = todo el texto en MAYÚSCULAS (Greta lee en imprenta mayúscula)
   pelo: "#6b3a1f",              // color de pelo de Greta
   vestido: "#f06aa8",           // color del vestido al empezar
 
@@ -334,6 +337,7 @@ const $ = id => document.getElementById(id);
 const numHTML = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/\d+/g, m => `<span class="num">${m}</span>`);
 const N = CONFIG.nombre;
 const T = s => CONFIG.mayusculas ? s.toUpperCase() : s;
+if (CONFIG.mayusculas) document.body.classList.add('mayus');
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
 /* ---------------- Sonido (chiptune con WebAudio) ---------------- */
@@ -1687,7 +1691,7 @@ function mgSimon() {
 function mgHuesos() {
   const W2 = 180, H2 = 112, cv = mgCanvas(W2, H2), c = cv.getContext('2d'); c.imageSmoothingEnabled = false;
   const LV = [{ meta: 10, vidas: Infinity }, { meta: 15, vidas: 3 }, { meta: 20, vidas: 2 }, { meta: 25, vidas: 1 }];
-  let x = W2 / 2, dir = 0, target = null, bones = [], got = 0, lost = 0, lv = 0, t = 0, spawn = 0, pause = 0, face = 1;
+  let x = W2 / 2, dir = 0, target = null, bones = [], got = 0, lost = 0, lv = 0, t = 0, spawn = 0, pause = 0, face = 1, last = null;
   const mkb = (d, tx) => { const b = document.createElement('button'); b.className = 'mgbtn'; b.textContent = tx;
     b.addEventListener('pointerdown', e => { e.preventDefault(); target = null; dir = d; }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => dir = 0)); return b; };
   $('miniBody').append(mkb(-1, '◀'), cv, mkb(1, '▶'));
@@ -1696,12 +1700,19 @@ function mgHuesos() {
     c.fillStyle = '#fff6e0'; c.fillRect(bx - 5, by - 1, 10, 2); c.fillRect(bx - 7, by - 3, 2, 6); c.fillRect(bx + 5, by - 3, 2, 6); };
   const info = () => { const L = LV[lv], v = L.vidas === Infinity ? '' : ' · ' + '❤️'.repeat(Math.max(0, L.vidas - lost));
     mgInfo(`Nivel ${lv + 1} · Huesitos: ${got} de ${L.meta}${v}`); };
-  const startLv = (n, msg, ms) => { lv = n; got = 0; lost = 0; bones = []; pause = ms ? Math.round(ms / 16) : 0; if (msg) mgInfo(msg); else info();
+  const startLv = (n, msg, ms) => { lv = n; got = 0; lost = 0; bones = []; last = null; pause = ms ? Math.round(ms / 16) : 0; if (msg) mgInfo(msg); else info();
     if (ms) mgLater(info, ms); };
   const loop = () => {
     t++; const L = LV[lv];
     if (pause > 0) pause--;
-    else if (--spawn <= 0) { bones.push({ x: 12 + Math.random() * (W2 - 24), y: -6, v: 0.5 + lv * 0.07 + Math.random() * 0.25 + got * 0.008 }); spawn = Math.max(30, 54 - lv * 4 - (got >> 1)); }
+    else if (--spawn <= 0) {
+      // cada hueso nuevo tiene que poder alcanzarse después del anterior: se limita cuánto puede alejarse
+      const caida = H2 - 30, vel = 2.4 + lv * 0.15; let v = 0.5 + lv * 0.07 + Math.random() * 0.25 + got * 0.008, llega = t + caida / v, nx;
+      if (last && last.t > t - 5) { const minT = last.t + 16; if (llega < minT) { llega = minT; v = caida / (llega - t); }
+        const alcance = Math.max(10, vel * (llega - last.t) * 0.65); nx = last.x + (Math.random() * 2 - 1) * alcance; }
+      else { const alcance = Math.max(20, vel * (llega - t) * 0.65); nx = x + (Math.random() * 2 - 1) * alcance; }
+      nx = Math.max(12, Math.min(W2 - 12, nx)); bones.push({ x: nx, y: -6, v }); last = { t: llega, x: nx };
+      spawn = Math.max(30, 54 - lv * 4 - (got >> 1)); }
     if (target !== null) dir = Math.abs(target - x) < 2 ? 0 : Math.sign(target - x);
     if (dir) face = dir; x = Math.max(16, Math.min(W2 - 16, x + dir * (2.4 + lv * 0.15)));
     c.fillStyle = '#9fd8ff'; c.fillRect(0, 0, W2, H2); c.fillStyle = '#5cbf4e'; c.fillRect(0, H2 - 18, W2, 18); c.fillStyle = '#3f9a3c'; c.fillRect(0, H2 - 18, W2, 2);
