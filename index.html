@@ -2166,8 +2166,8 @@ function gretaSprite(d, f) {   // d: 'down' | 'up' | 'side'  ·  f: 0 quieta, 1 
   const front = d === 'down', back = d === 'up', side = d === 'side';
   const long = o.ropa === 0, jean = o.ropa === 4;
   // --- detrás del cuerpo: alas y capa ---
-  if (o.extra === 1) { const wl = side ? [[1, 9]] : [[-3, 9], [13, 9]];
-    wl.forEach(([x, y]) => { rect(x, y, 6, 3, 'u'); rect(x + 1, y + 3, 4, 2, 'U'); put(x + (x < 0 ? 0 : 5), y, '.'); }); }
+  if (o.extra === 1 && front) { rect(1, 8, 3, 2, 'u'); put(2, 10, 'U'); rect(12, 8, 3, 2, 'u'); put(13, 10, 'U'); }   // de frente apenas asoman las puntas
+  if (o.extra === 1 && side) { rect(1, 9, 4, 3, 'u'); rect(2, 12, 3, 2, 'U'); }   // de costado, detrás de la espalda
   // --- pelo de atrás ---
   const P = o.pelo;
   if (P === 0) { if (front) { rect(2, 7, 2, 6, 'h'); rect(12, 7, 2, 6, 'h'); } if (side) rect(3, 7, 3, 6, 'h'); if (back) rect(3, 9, 10, 4, 'h'); }
@@ -2200,6 +2200,7 @@ function gretaSprite(d, f) {   // d: 'down' | 'up' | 'side'  ·  f: 0 quieta, 1 
     if (o.ropa === 5) { rect(4, 12, 8, 1, 'm'); put(7, 12, '.'); put(8, 12, '.'); }
     if (o.ropa === 4) { rect(4, 12, 8, 2, 'j'); put(7, 13, '.'); put(8, 13, '.'); }
   }
+  if (o.extra === 1 && back) { rect(0, 8, 7, 3, 'u'); rect(9, 8, 7, 3, 'u'); put(0, 8, '.'); put(15, 8, '.'); rect(2, 11, 5, 2, 'U'); rect(9, 11, 5, 2, 'U'); put(2, 12, '.'); put(13, 12, '.'); }   // de espaldas, pegadas a la espalda
   // estampado sobre la tela
   for (let y = 10; y <= 15; y++) for (let x = 0; x < 16; x++) {
     const cx = x + OXg, cy = y + OYg, ch = g[cy][cx], dis = ch === 'T' ? o.disRemera : (ch === 'd' || ch === 'j') ? o.diseno : 0; if (!dis) continue;
