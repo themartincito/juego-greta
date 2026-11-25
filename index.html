@@ -1268,11 +1268,12 @@ const WARD = {
   pelo:    ['Suelto', 'Dos colitas', 'Rodete', 'Trenza'],
   cabeza:  ['Nada', 'Moño', 'Corona', 'Flores', 'Gorrito de cumple', 'Orejas de gato'],
   zapatos: ['Zapatillas', 'Botas', 'Chatitas', 'Sandalias'],
-  extra:   ['Nada', 'Alas de mariposa', 'Capa', 'Collar de perlas']
+  extra:   ['Nada', 'Alas de mariposa', 'Collar de perlas']
 };
 const TABS = [['ropa', '👗 Ropa'], ['colores', '🎨 Color'], ['diseno', '✨ Diseño'], ['pelo', '💇 Peinado'], ['cabeza', '👑 Cabeza'], ['zapatos', '👟 Zapatos'], ['extra', '🦋 Extra']];
 const OUT = { ropa: 0, colores: 0, diseno: 0, pelo: 0, cabeza: 1, zapatos: 0, extra: 0 };
 try { Object.assign(OUT, JSON.parse(localStorage.getItem('greta-ropa') || '{}')); } catch (e) {}
+Object.keys(OUT).forEach(k => { if (!(OUT[k] >= 0 && OUT[k] < WARD[k].length)) OUT[k] = 0; });   // por si quedó guardada una opción que ya no existe
 const outColor = () => WARD.colores[OUT.colores];
 function shade(hex, a) {
   const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(a < 0 ? v * (1 + a) : v + (255 - v) * a)));
@@ -1303,7 +1304,6 @@ function drawDoll(c, o, blink) {
   const trap = (y0, y1, w0, w1) => { const r = []; for (let y = y0; y <= y1; y++) { const w = Math.round(w0 + (w1 - w0) * (y - y0) / Math.max(1, y1 - y0)); r.push([y, 32 - w, 32 + w]); } return r; };
   // extra detrás
   if (o.extra === 1) { const wc = '#bfe6ff'; [[15, 40, 11], [49, 40, 11]].forEach(([x, y, r]) => { cO(x, y, r, wc); circ(x, y, r - 4, '#e8f6ff'); }); [[18, 56, 7], [46, 56, 7]].forEach(([x, y, r]) => { cO(x, y, r, '#ffc6ec'); }); R(12, 38, 2, 2, '#ffd84a'); R(50, 38, 2, 2, '#ffd84a'); }
-  if (o.extra === 2) garment(trap(36, 80, 9, 19), '#c83a4a', true);
   // pelo de atrás
   if (o.pelo === 0) { Ro(19, 12, 26, 32, H); R(19, 40, 26, 4, shade(H, -0.15)); }
   if (o.pelo === 1) { cO(16, 26, 6, H); cO(48, 26, 6, H); cO(17, 35, 4, H); cO(47, 35, 4, H); R(19, 22, 3, 3, '#ff6b8b'); R(42, 22, 3, 3, '#ff6b8b'); }
@@ -1325,7 +1325,7 @@ function drawDoll(c, o, blink) {
     garment([[50, 23, 41], [51, 23, 41], [52, 23, 41], [53, 23, 41]], '#4a6aa8', true);
     const L = []; for (let y = 54; y <= legEnd; y++) { L.push([y, 24, 31]); } garment(L, '#4a6aa8', true);
     const L2 = []; for (let y = 54; y <= legEnd; y++) { L2.push([y, 33, 40]); } garment(L2, '#4a6aa8', true); R(26, 60, 1, 4, '#7a9ad8'); R(37, 60, 1, 4, '#7a9ad8'); }
-  if (o.extra === 3) for (let i = 0; i < 7; i++) R(26 + i * 2, 36 + (i === 0 || i === 6 ? 0 : 1), 1, 1, '#ffffff');
+  if (o.extra === 2) for (let i = 0; i < 7; i++) R(26 + i * 2, 36 + (i === 0 || i === 6 ? 0 : 1), 1, 1, '#ffffff');
   // zapatos
   const sh = [[25, 86], [33, 86]];
   sh.forEach(([x, y]) => {
@@ -2166,7 +2166,6 @@ function gretaSprite(d, f) {   // d: 'down' | 'up' | 'side'  ·  f: 0 quieta, 1 
   // --- detrás del cuerpo: alas y capa ---
   if (o.extra === 1) { const wl = side ? [[1, 9]] : [[-3, 9], [13, 9]];
     wl.forEach(([x, y]) => { rect(x, y, 6, 3, 'u'); rect(x + 1, y + 3, 4, 2, 'U'); put(x + (x < 0 ? 0 : 5), y, '.'); }); }
-  if (o.extra === 2) { if (side) rect(1, 10, 4, 5, 'c'); else if (!back) { rect(3, 10, 1, 5, 'c'); rect(12, 10, 1, 5, 'c'); } }
   // --- pelo de atrás ---
   const P = o.pelo;
   if (P === 0) { if (front) { rect(2, 7, 2, 6, 'h'); rect(12, 7, 2, 6, 'h'); } if (side) rect(3, 7, 3, 6, 'h'); if (back) rect(3, 9, 10, 4, 'h'); }
@@ -2196,8 +2195,7 @@ function gretaSprite(d, f) {   // d: 'down' | 'up' | 'side'  ·  f: 0 quieta, 1 
     if (o.ropa === 2) { rect(4, 12, 8, 1, 'd'); rect(3, 13, 10, 1, 'v'); }
     if (o.ropa === 3) { rect(4, 12, 8, 1, 'd'); rect(3, 13, 10, 1, 'd'); if (front) put(7, 11, 'd'); }
     if (o.ropa === 4) { rect(4, 12, 8, 2, 'j'); put(7, 13, '.'); put(8, 13, '.'); }
-    if (o.extra === 3 && front) [5, 7, 8, 10].forEach(x => put(x, 10, 'e'));
-    if (o.extra === 2 && back) { rect(3, 10, 10, 5, 'c'); rect(4, 15, 8, 1, 'c'); }
+    if (o.extra === 2 && front) [5, 7, 8, 10].forEach(x => put(x, 10, 'e'));
   }
   // estampado sobre la tela
   if (o.diseno) for (let y = 10; y <= 15; y++) for (let x = 0; x < 16; x++) {
