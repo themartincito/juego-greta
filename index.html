@@ -381,6 +381,7 @@ const Snd = (() => {
     o.connect(g); g.connect(dest || master); o.start(t0); o.stop(t0 + dur + 0.03);
   }
   const now = () => ac ? ac.currentTime : 0;
+  let bdBus = null;
   const LEAD = [0,4,7,4, 9,7,4,null, 5,9,12,9, 7,null,4,null, 2,5,9,5, 7,5,4,2, 0,4,7,12, 7,null,null,null,
                 4,7,12,7, 14,12,9,null, 5,9,14,12, 11,null,7,null, 9,12,9,5, 7,4,2,4, 0,null,7,null, 0,null,null,null];
   const BASS = [-24,-17,-24,-17, -19,-12,-19,-17, -22,-15,-17,-10, -24,-17,-24,-24,
@@ -411,15 +412,17 @@ const Snd = (() => {
     wrong() { if (!ac) return; const t = now(); tone(520, t, 0.14, 'sine', 0.05); tone(440, t + 0.15, 0.22, 'sine', 0.05); },
     star() { if (!ac) return; const t = now() + 0.45; [12,16,19,24].forEach((n,i) => tone(nf(n), t + i * 0.06, 0.1, 'triangle', 0.06)); },
     bark() { if (!ac) return; const t = now(); tone(700, t, 0.08, 'square', 0.04, null, 350); tone(750, t + 0.14, 0.08, 'square', 0.04, null, 380); },
+    stopBirthday() { if (bdBus) { try { bdBus.disconnect(); } catch (e) {} bdBus = null; } },
     birthday() {
       if (!ac) return 0;
+      this.stopBirthday(); bdBus = ac.createGain(); bdBus.connect(master);
       const G4=-5,A4=-3,B4=-1,C5=0,D5=2,E5=4,F5=5,G5=7, b = 0.42;
       const song = [[G4,.75],[G4,.25],[A4,1],[G4,1],[C5,1],[B4,2],
                     [G4,.75],[G4,.25],[A4,1],[G4,1],[D5,1],[C5,2],
                     [G4,.75],[G4,.25],[G5,1],[E5,1],[C5,1],[B4,1],[A4,2],
                     [F5,.75],[F5,.25],[E5,1],[C5,1],[D5,1],[C5,3]];
       let t = now() + 0.2;
-      song.forEach(([n,d]) => { tone(nf(n), t, d * b * 0.95, 'square', 0.05); tone(nf(n - 12), t, d * b * 0.95, 'triangle', 0.05); t += d * b; });
+      song.forEach(([n,d]) => { tone(nf(n), t, d * b * 0.95, 'square', 0.05, bdBus); tone(nf(n - 12), t, d * b * 0.95, 'triangle', 0.05, bdBus); t += d * b; });
       return t - now();
     }
   };
@@ -2369,7 +2372,7 @@ function showFoto(k) {
 }
 function endFotos() { clearTimeout(PF.t); PF.on = false; PF.zoom = false; partyParts(false); }
 function partyA() { if (!PF.on) return closeParty(); if (PF.zoom || PF.i >= FOTOS_FIN.length - 1) return endFotos(); Snd.item(); showFoto(PF.i + 1); }
-function closeParty() { endFotos(); partyOn = false; $('party').classList.add('hidden'); mode = 'play'; Snd.startMusic(); }
+function closeParty() { endFotos(); Snd.stopBirthday(); partyOn = false; $('party').classList.add('hidden'); mode = 'play'; Snd.startMusic(); }
 $('songBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); Snd.stopMusic(); Snd.birthday(); });
 $('party').addEventListener('pointerdown', e => { if (PF.on) { e.preventDefault(); partyA(); } });
 $('contBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeParty(); });
