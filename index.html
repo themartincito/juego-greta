@@ -262,9 +262,9 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
         <div class="row"><span id="miniInfo"></span><button id="miniClose">Salir</button></div></div></div>
       <div id="memo" class="hidden"><div class="box"><h3>🃏 Memo de la familia</h3><div id="memoGrid"></div>
         <div class="row"><span id="memoPairs"></span><button id="memoClose">Salir</button></div></div></div>
-      <div id="draw" class="hidden"><div class="box"><h3>🖍️ El dibujo de la fiesta</h3>
-        <p>Con Espe, dibujen en un papel la fiesta de cumpleaños. Tiene que tener:<br><span class="need" id="drawNeed"></span></p>
-        <p>Cuando terminen, pedile a un grande que le saque una foto.</p>
+      <div id="draw" class="hidden"><div class="box"><h3>🖍️ Dibujar con Espe</h3>
+        <p>Dibujá con Espe: cada una hace su propio dibujo en un papel. ¡Dibujá lo que vos quieras!</p>
+        <p>Cuando termines, pedile a un grande que le saque una foto a tu dibujo.</p>
         <img id="drawPrev" alt="Tu dibujo">
         <input type="file" id="drawFile" accept="image/*">
         <div class="row"><button id="drawBack">Volver</button><label for="drawFile" id="drawPick">📷 Subir el dibujo</label><button class="pri hidden" id="drawOk">¡Listo! ✔</button></div></div></div>
@@ -908,7 +908,7 @@ ents.push({ id: 'mama', map: 'casa', x: 11, y: 6, kind: 'person', long: true, qu
 } });
 ITEMS.forEach(it => ents.push({ id: 'item-' + it.id, map: 'casa', x: it.x, y: it.y, kind: 'item', item: it.id, talk() {
   if (torta.state === 1 && !torta.got.has(it.id)) return [() => { torta.got.add(it.id); Snd.item(); }, step('', `¡Encontraste ${it.label}! Llevalos a la cocina.`)];
-  if (it.id === 'huevos' && dibujo) return [step('', '¡En la heladera está pegado el dibujo de la fiesta!'), () => setTimeout(viewDibujo, 0)];
+  if (it.id === 'huevos' && dibujo) return [step('', '¡En la heladera está pegado tu dibujo!'), () => setTimeout(viewDibujo, 0)];
   return [step('', it.flavor)];
 } }));
 
@@ -1258,15 +1258,15 @@ function setDibujo(url) { dibujo = url; dibujoImg = new Image(); dibujoImg.src =
 try { const d = localStorage.getItem('greta-dibujo'); if (d) setDibujo(d); } catch (e) {}
 quests.push({ id: 'dibujo', pista: `${CONFIG.amiga.correcta} está en el barrio, cerca del camino, a la izquierda. ¡Quiere dibujar con vos!` });
 ents.push({ id: 'espe', map: 'pueblo', x: 9, y: 7, kind: 'person', long: true, quest: 'dibujo', pal: { h: '#5a3a22', d: '#f4f4f6', q: '#8a4ad0' }, talk() {
-  if (done.has('dibujo')) return [step('espe', '¡Nuestro dibujo quedó hermoso! ¿Lo viste pegado en la heladera de tu casa?')];
+  if (done.has('dibujo')) return [step('espe', '¡Qué lindo fue dibujar juntas! ¿Viste tu dibujo pegado en la heladera de tu casa?')];
   return [step('espe', `¡${N}! ¡Feliz cumple, amiga!`),
-          step('espe', '¿Querés que dibujemos? ¡Hagamos un dibujo de tu fiesta de cumpleaños!'),
-          step('espe', `Tiene que tener ${CONFIG.dibujo}.`),
-          step('espe', '¡Lo dibujamos en un papel y después lo subimos!'),
+          step('espe', '¿Querés dibujar conmigo? ¡Me encanta dibujar con vos!'),
+          step('espe', 'Cada una hace su propio dibujo, en un papel. ¡Dibujá lo que vos quieras!'),
+          step('espe', 'Cuando lo termines, le sacamos una foto y lo subimos. 🖍️'),
           () => setTimeout(openDraw, 0)];
 } });
 function viewDibujo() { mode = 'view'; $('viewTitle').textContent = T('🖼️ ¡Qué lindo dibujo!'); $('viewImg').src = dibujo; $('view').classList.remove('hidden'); }
-function openDraw() { mode = 'draw'; dibujoTmp = null; $('drawNeed').textContent = CONFIG.dibujo; $('drawPrev').style.display = 'none'; $('drawOk').classList.add('hidden'); $('draw').classList.remove('hidden'); }
+function openDraw() { mode = 'draw'; dibujoTmp = null; $('drawPrev').style.display = 'none'; $('drawOk').classList.add('hidden'); $('draw').classList.remove('hidden'); }
 function closeDraw() { $('draw').classList.add('hidden'); mode = 'play'; }
 $('drawFile').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
@@ -1282,7 +1282,7 @@ $('drawFile').addEventListener('change', e => {
 $('drawOk').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!dibujoTmp) return;
   setDibujo(dibujoTmp); try { localStorage.setItem('greta-dibujo', dibujoTmp); } catch (er) {}
   closeDraw(); Snd.correct();
-  say([step('espe', '¡Quedó HERMOSO! ¡Somos unas artistas!'), complete('dibujo'), step('espe', '¡Lo vamos a pegar con un imán en la heladera de tu casa!'), ...starMsg()]); });
+  say([step('espe', '¡Tu dibujo quedó HERMOSO! ¡Sos una artista!'), complete('dibujo'), step('espe', '¡Lo vamos a pegar con un imán en la heladera de tu casa!'), ...starMsg()]); });
 $('drawBack').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeDraw(); });
 $('viewClose').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); $('view').classList.add('hidden'); mode = 'play'; });
 ['draw', 'view'].forEach(id => $(id).addEventListener('pointerdown', e => e.stopPropagation()));
