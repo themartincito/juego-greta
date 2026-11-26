@@ -155,6 +155,7 @@ body{line-height:1.15}
 .pc .num{text-shadow:0 0 2px #fff}.pc.bad{box-shadow:inset 0 0 0 2px #e8505b}
 .pintpal{display:flex;flex-direction:column;gap:.3em}.pintpal button{width:1.8em;height:1.8em;border-radius:50%;border:.14em solid #2a2238;font-size:.85em;color:#2a2238;cursor:pointer}
 .pintpal button.on{outline:.2em solid #ffd84a;transform:scale(1.15)}
+#console .cg.sel,#console button.sel{outline:.2em solid #ffd84a;outline-offset:.12em}
 .cg .em{font-size:1.8em}.cg small{font-size:.75em;opacity:.7}
 #console .row,#memo .row,#mini .row{display:flex;gap:.6em;align-items:center}
 #console .row button,#memo .row button,#mini .row button{font:inherit;font-weight:700;font-size:.85em;padding:.2em .8em;border:.14em solid #2a2238;border-radius:.35em;background:#fff;cursor:pointer}
@@ -1614,7 +1615,21 @@ function openConsole() {
   $('console').classList.remove('hidden');
   $('cgMemo').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); $('console').classList.add('hidden'); openMemo(); });
   $('cgClose').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); closeConsole(); });
+  cgSel = 0; cgPaint();
 }
+let cgSel = 0;
+const cgBtns = () => [...$('console').querySelectorAll('.cg'), $('cgClose')];
+function cgPaint() { cgBtns().forEach((b, i) => b.classList.toggle('sel', i === cgSel)); }
+function consoleMove(d) {
+  const n = cgBtns().length, games = n - 1;
+  if (cgSel === games) { if (d === 'up') cgSel = games - 2; }
+  else if (d === 'left') cgSel = Math.max(0, cgSel - 1);
+  else if (d === 'right') cgSel = Math.min(games - 1, cgSel + 1);
+  else if (d === 'up') cgSel = cgSel >= 3 ? cgSel - 3 : cgSel;
+  else if (d === 'down') cgSel = cgSel + 3 < games ? cgSel + 3 : games;
+  cgPaint();
+}
+function consoleA() { const b = cgBtns()[cgSel]; if (b) b.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true })); }
 function closeConsole() { $('console').classList.add('hidden'); mode = 'play'; }
 $('console').addEventListener('pointerdown', e => e.stopPropagation());
 // --- memo ---
@@ -1986,25 +2001,26 @@ function hud() { $('hud').innerHTML = `<span class="st on">★</span><span class
 const held = { up: 0, down: 0, left: 0, right: 0, B: 0 };
 const order = [];
 function setDir(d, on) {
-  if (on && !held[d]) { held[d] = 1; order.push(d); if (mode === 'dialog' && (d === 'up' || d === 'down')) moveSel(d); }
+  if (on && !held[d]) { held[d] = 1; order.push(d); if (mode === 'dialog' && (d === 'up' || d === 'down')) moveSel(d); if (mode === 'console') consoleMove(d); }
   else if (!on && held[d]) { held[d] = 0; const i = order.indexOf(d); if (i >= 0) order.splice(i, 1); }
 }
 const curDir = () => order[order.length - 1] || null;
 function pressA() {
   Snd.init();
-  if (mode === 'title') startGame();
+  if (mode === 'title') { startGame(); if (/fiesta/.test(location.search + location.hash)) setTimeout(() => { D.queue = []; next(); startParty(); }, 200); }
   else if (mode === 'play') interact();
   else if (mode === 'dialog') dialogA();
   else if (mode === 'party') partyA();
   else if (mode === 'notebook') nbKey('ok');
+  else if (mode === 'console') consoleA();
 }
-function pressB() { if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
+function pressB() { if (mode === 'console') closeConsole(); else if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
 const KEYDIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') return;
   if (mode === 'memo') { e.preventDefault(); const d = KEYDIR[e.key]; if (d) memoKey(d); else if (['Enter',' ','a','A','z','Z'].includes(e.key)) memoKey('A'); else if (['Escape','b','B','x','X'].includes(e.key)) closeMemo(); return; }
   if (mode === 'mini') { e.preventDefault(); const d = KEYDIR[e.key]; if (['Escape','b','B','x','X'].includes(e.key)) closeMini(); else if (d && MG.key) MG.key(d); return; }
-  if (mode === 'console') { if (['Escape','b','B','x','X'].includes(e.key)) { e.preventDefault(); closeConsole(); } return; }
+  if (mode === 'console') { const d = KEYDIR[e.key]; if (['Escape','b','B','x','X'].includes(e.key)) { e.preventDefault(); closeConsole(); } else if (d) { e.preventDefault(); consoleMove(d); } else if (['Enter',' ','a','A','z','Z'].includes(e.key)) { e.preventDefault(); if (!e.repeat) consoleA(); } return; }
   if (mode === 'ward' || mode === 'reto') { if (e.key === 'Escape') { e.preventDefault(); mode === 'ward' ? closeWard() : closeReto(); } return; }
   if (mode === 'draw' || mode === 'view') { if (e.key === 'Escape' || (mode === 'view' && ['Enter','a','A',' '].includes(e.key))) { e.preventDefault(); $(mode).classList.add('hidden'); mode = 'play'; } return; }
   if (mode === 'karaoke') { if (e.key === 'Escape' && KK.step !== 'sing') closeKaraoke(); if (['b','B','x','X'].includes(e.key)) held.B = 1; return; }
