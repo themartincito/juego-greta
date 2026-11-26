@@ -901,7 +901,7 @@ ITEMS.forEach(it => ents.push({ id: 'item-' + it.id, map: 'casa', x: it.x, y: it
 
 // Papá: pregunta sobre la mejor amiga
 quests.push({ id: 'amiga', pista: `${CONFIG.papa} está en el patio, haciendo el asado. ¡Tiene una pregunta para vos!` });
-ents.push({ id: 'papa', map: 'casa', x: 4, y: 2, kind: 'person', sprite: 'papa', quest: 'amiga', pal: { h: '#1e1a1a', H: '#3a3230', d: '#26262c', q: '#c8a070' }, talk() {
+ents.push({ id: 'papa', map: 'casa', x: 4, y: 2, kind: 'person', sprite: 'tio', quest: 'amiga', pal: { h: '#1e1a1a', H: '#3a3230', d: '#26262c', q: '#c8a070', s: '#d99c78' }, talk() {
   if (done.has('amiga')) return [step('papa', `¡Seguro que ${CONFIG.amiga.correcta} viene a la fiesta!`)];
   return [step('papa', `¡Feliz cumple, ${N}! ¡Qué grande estás!`),
           { ...question('papa', '¿Cómo se llama tu mejor amiga?', { label: CONFIG.amiga.correcta }, CONFIG.amiga.otras.map(l => ({ label: l })), '¡Jaja, no! Esa no es. ¡Probá otra vez!'),
@@ -2103,7 +2103,7 @@ function drawEnt(e, sx, sy) {
   if (e.kind === 'f') { drawFurn(e, sx, sy); return; }
   switch (e.kind) {
     case 'person': {
-      const pal = { k: '#2a2238', h: e.pal.h, H: e.pal.H || e.pal.h, g: '#ffd84a', s: SKIN, d: e.pal.d, q: e.pal.q, b: '#3a2a20', m: '#b0404a' };
+      const pal = { k: '#2a2238', h: e.pal.h, H: e.pal.H || e.pal.h, g: '#ffd84a', s: e.pal.s || SKIN, d: e.pal.d, q: e.pal.q, b: '#3a2a20', m: '#b0404a' };
       ctx.drawImage(spr(e.sprite || (e.long ? 'personLong' : 'person'), pal), sx, sy - 2);
       if (e.hat === 'chef') { R(4,-6,8,6,'#2a2238'); R(5,-5,6,5,'#ffffff'); R(3,-2,10,3,'#2a2238'); R(4,-1,8,2,'#ffffff'); R(9,-4,1,2,'#e2e2ee'); }
       if (e.hat === 'beret') { R(4,-1,9,3,'#2a2238'); R(5,0,7,2,'#e8505b'); R(8,-2,1,1,'#2a2238'); }
