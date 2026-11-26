@@ -408,7 +408,7 @@ const Snd = (() => {
     item() { if (!ac) return; const t = now(); [7,12,16].forEach((n,i) => tone(nf(n), t + i * 0.07, 0.12, 'square', 0.045)); },
     bump() { if (!ac || now() - lastBump < 0.3) return; lastBump = now(); tone(110, now(), 0.08, 'square', 0.05); },
     correct() { if (!ac) return; const t = now(); [0,4,7,12].forEach((n,i) => tone(nf(n), t + i * 0.08, 0.14, 'square', 0.05)); tone(nf(16), t + 0.32, 0.35, 'square', 0.05); },
-    wrong() { if (!ac) return; const t = now(); tone(300, t, 0.15, 'square', 0.04, null, 200); tone(200, t + 0.16, 0.25, 'square', 0.04, null, 140); },
+    wrong() { if (!ac) return; const t = now(); tone(520, t, 0.14, 'sine', 0.05); tone(440, t + 0.15, 0.22, 'sine', 0.05); },
     star() { if (!ac) return; const t = now() + 0.45; [12,16,19,24].forEach((n,i) => tone(nf(n), t + i * 0.06, 0.1, 'triangle', 0.06)); },
     bark() { if (!ac) return; const t = now(); tone(700, t, 0.08, 'square', 0.04, null, 350); tone(750, t + 0.14, 0.08, 'square', 0.04, null, 380); },
     birthday() {
@@ -914,7 +914,7 @@ quests.push({ id: 'amiga', pista: `${CONFIG.papa} está en el patio, haciendo el
 ents.push({ id: 'papa', map: 'casa', x: 4, y: 2, kind: 'person', sprite: 'tio', quest: 'amiga', pal: { h: '#1e1a1a', H: '#3a3230', d: '#26262c', q: '#c8a070', s: '#d99c78' }, talk() {
   if (done.has('amiga')) return [step('papa', `¡Seguro que ${CONFIG.amiga.correcta} viene a la fiesta!`)];
   return [step('papa', `¡Feliz cumple, ${N}! ¡Qué grande estás!`),
-          { ...question('papa', '¿Cómo se llama tu mejor amiga?', { label: CONFIG.amiga.correcta }, CONFIG.amiga.otras.map(l => ({ label: l })), '¡Jaja, no! Esa no es. ¡Probá otra vez!'),
+          { ...question('papa', '¿Cómo se llama tu mejor amiga?', { label: CONFIG.amiga.correcta }, CONFIG.amiga.otras.map(l => ({ label: l })), 'Mmm, esa no era... ¡pero estuviste cerca! ¿Probamos otra vez? 😊'),
             after: [complete('amiga'), step('papa', `¡Claro! ¡${CONFIG.amiga.correcta}! Son súper amigas.`), ...starMsg()] }];
 } });
 
@@ -973,7 +973,7 @@ ents.push({ id: 'tio', map: 'pueblo', x: 3, y: 5, kind: 'person', sprite: 'tio',
     step('tio', 'Pedile a mamá que te grabe un video con su celu mientras lo hacés.'),
     step('tio', 'Después me lo manda por WhatsApp y yo te contesto con una palabra secreta. ¿Lista?'), () => setTimeout(openReto, 0)]);
   if (!done.has('tio') && tioState === 1) return s.concat([step('tio', '¿Ya te contesté el video con la palabra secreta?'), () => setTimeout(() => openSecret({
-    text: `Escribí la palabra que el ${CONFIG.tio.toLowerCase()} contestó por WhatsApp.`, word: CONFIG.palabraTio, wrong: '¡Esa no es! ¿Seguro que el tío ya contestó?',
+    text: `Escribí la palabra que el ${CONFIG.tio.toLowerCase()} contestó por WhatsApp.`, word: CONFIG.palabraTio, wrong: 'Mmm, esa palabra no es... ¿Ya te contestó el tío? ¡Probemos otra vez! 😊',
     ok: () => say([step('tio', `¡${CONFIG.palabraTio.toUpperCase()}! ¡Vi tu video, sos una campeona! 🏆`), complete('tio'), ...starMsg()]) }), 0)]);
   if (!left()) return s.concat([step('tio', '¡Ya tenés todas las estrellas! La fiesta es en el parque, abajo de todo. ¡Seguí el caminito!')]);
   const q = quests.find(q => !done.has(q.id));
@@ -986,7 +986,7 @@ function talkChef() {
   if (done.has('comida')) return [step('chef', `¡Ya estoy cocinando ${CONFIG.comida.correcta.toLowerCase()} para tu fiesta! ¡Mmm!`)];
   return [step('chef', `¡Hola, ${N}! ¡Feliz cumple! Soy el cocinero del barrio.`),
           step('chef', 'Quiero cocinarte algo riquísimo para la fiesta...'),
-          { ...question('chef', '¿Cuál es tu comida preferida?', { label: CONFIG.comida.correcta }, CONFIG.comida.otras.map(l => ({ label: l })), '¿Eso? ¡Mmm... no creo! Probá otra vez.'),
+          { ...question('chef', '¿Cuál es tu comida preferida?', { label: CONFIG.comida.correcta }, CONFIG.comida.otras.map(l => ({ label: l })), '¡Mmm, también es rico! Pero no es tu favorita... ¿Probamos con otra? 😊'),
             after: [complete('comida'), step('chef', '¡Sííí! ¡Qué rico! Ya mismo la empiezo a cocinar.'), ...starMsg()] }];
 }
 ents.push({ id: 'chef', map: 'pueblo', x: 18, y: 3, kind: 'person', hat: 'chef', quest: 'comida', pal: { h: '#5a341a', d: '#ffffff', q: '#454560' }, talk: talkChef });
@@ -997,7 +997,7 @@ function talkPainter() {
   if (done.has('color')) return [step('pintora', `¡Qué lindo te queda el ${CONFIG.color.correcta.nombre.toLowerCase()}!`)];
   const c = CONFIG.color;
   return [step('pintora', `¡Hola, ${N}! Estoy pintando un cuadro para tu cumple.`),
-          { ...question('pintora', '¿Cuál es tu color preferido?', { label: c.correcta.nombre, color: c.correcta.hex }, c.otras.map(o => ({ label: o.nombre, color: o.hex })), '¡Ese no es! Mirá bien y probá otra vez.'),
+          { ...question('pintora', '¿Cuál es tu color preferido?', { label: c.correcta.nombre, color: c.correcta.hex }, c.otras.map(o => ({ label: o.nombre, color: o.hex })), '¡Ese color también es lindo! Pero no es tu preferido... ¿Probamos otra vez? 🎨'),
             after: [complete('color'), () => { P.dress = c.correcta.hex; easelColor = c.correcta.hex; const ci = WARD.colores.indexOf(c.correcta.hex); if (ci >= 0) OUT.colores = ci; }, step('pintora', '¡Qué lindo color! Te lo regalo para tu vestido. ✨'), ...starMsg()] }];
 }
 ents.push({ id: 'pintora', map: 'pueblo', x: 5, y: 9, kind: 'person', long: true, hat: 'beret', quest: 'color', pal: { h: '#e0a830', d: '#e86a5a', q: '#5a4a8a' }, talk: talkPainter });
@@ -1008,13 +1008,13 @@ ents.push({ id: 'buho', map: 'pueblo', x: 22, y: 11, kind: 'cat', stump: true, p
   const e = CONFIG.edad;
   if (done.has('edad')) return [step('buho', `¡Miau! ¡${e} años! ¡Qué grande estás!`)];
   return [step('buho', 'Miau... Soy el gatito sabio. Sé muchas cosas...'),
-          { ...question('buho', '¿Cuántos años cumplís hoy?', { label: e + ' años' }, [{ label: (e - 1) + ' años' }, { label: (e + 1) + ' años' }], '¡Miau! Mmm... no. ¡Pensá bien!'),
+          { ...question('buho', '¿Cuántos años cumplís hoy?', { label: e + ' años' }, [{ label: (e - 1) + ' años' }, { label: (e + 1) + ' años' }], '¡Miau! Casi, casi... ¡No pasa nada! Probemos otra vez, vos podés. 😺'),
             after: [step('buho', `¡Miau! ¡Sí! ¡${e} años! Pero todavía tengo más preguntas...`),
-              { ...question('buho', `¿Cuál es el segundo nombre de tu mamá?`, { label: 'Cinthia' }, [{ label: 'Carolina' }, { label: 'Valeria' }], '¡Miau! Mmm... no. ¡Pensá bien!'),
+              { ...question('buho', `¿Cuál es el segundo nombre de tu mamá?`, { label: 'Cinthia' }, [{ label: 'Carolina' }, { label: 'Valeria' }], '¡Miau! Casi, casi... ¡No pasa nada! Probemos otra vez, vos podés. 😺'),
                 after: [step('buho', '¡Miau! ¡Sí, Cinthia! Ahora una difícil...'),
-                  { ...question('buho', `¿Cuántos años tiene la abuela?`, { label: '62 años' }, [{ label: '58 años' }, { label: '66 años' }], '¡Miau! Mmm... no. ¡Pensá bien!'),
+                  { ...question('buho', `¿Cuántos años tiene la abuela?`, { label: '62 años' }, [{ label: '58 años' }, { label: '66 años' }], '¡Miau! Casi, casi... ¡No pasa nada! Probemos otra vez, vos podés. 😺'),
                     after: [step('buho', '¡Miau! ¡Sí, 62! La última...'),
-                      { ...question('buho', `¿De qué equipo de fútbol es hincha tu papá?`, { label: 'River Plate' }, [{ label: 'Boca Juniors' }, { label: 'Racing' }], '¡Miau! Mmm... no. ¡Pensá bien!'),
+                      { ...question('buho', `¿De qué equipo de fútbol es hincha tu papá?`, { label: 'River Plate' }, [{ label: 'Boca Juniors' }, { label: 'Racing' }], '¡Miau! Casi, casi... ¡No pasa nada! Probemos otra vez, vos podés. 😺'),
                         after: [complete('edad'), step('buho', '¡Miau miau! ¡Sí, de River! ¡Sabés un montón de tu familia!'), ...starMsg()] }] }] }] }];
 } });
 
@@ -1038,7 +1038,7 @@ CONFIG.perros.slice(0, 4).forEach((p, i) => {
       if (dog.following) return [step(id, '¡Guau guau! (mueve la cola feliz)')];
       Snd.bark();
       return [step(id, '¡Guau! ¡Guau!', '¿?'), step('', '¡Encontraste a un perrito!'),
-              { ...question(id, '¿Cómo se llama?', { label: p.nombre }, p.otros.map(l => ({ label: l })), '¡Guau! (te mira raro... ¡ese no es su nombre!)', '¿?'),
+              { ...question(id, '¿Cómo se llama?', { label: p.nombre }, p.otros.map(l => ({ label: l })), '¡Guau! (te mueve la colita... parece que ese no es su nombre. ¡Probemos otra vez!)', '¿?'),
                 after: [complete(id), () => { dog.following = true; followers.push(dog); Snd.bark(); },
                         step(id, `¡Guau guau! (¡Sí! ¡Es ${p.nombre}! Ahora te va a seguir a todos lados.)`), ...starMsg()] }];
     } };
@@ -1125,9 +1125,9 @@ function renderKK() {
     startSinging();
   } else if (KK.step === 'result') {
     const r = KK.res, ok = r.sung >= 6;
-    kkEl.innerHTML = `<h2>${ok ? '🎉 ¡Qué hermoso!' : '😮 ¡Casi!'}</h2>
-      <div class="kkbig">${ok ? `¡La ${esc(CONFIG.abuela.toLowerCase())} está feliz! ❤️` : `La ${esc(CONFIG.abuela.toLowerCase())} casi no las escuchó...`}</div>
-      <div class="kksub" style="text-align:center;font-size:.9em;margin-top:.4em">Cantaron <span class="num">${r.sung}</span> de <span class="num">9</span> líneas.${ok ? '' : ' ¡Canten más fuerte! Tienen que cantar por lo menos <span class="num">6</span>.'}</div>
+    kkEl.innerHTML = `<h2>${ok ? '🎉 ¡Qué hermoso!' : '🎶 ¡Muy bien!'}</h2>
+      <div class="kkbig">${ok ? `¡La ${esc(CONFIG.abuela.toLowerCase())} está feliz! ❤️` : `¡Qué lindo! La ${esc(CONFIG.abuela.toLowerCase())} quiere escucharla otra vez 😊`}</div>
+      <div class="kksub" style="text-align:center;font-size:.9em;margin-top:.4em">Cantaron <span class="num">${r.sung}</span> de <span class="num">9</span> líneas.${ok ? '' : ' ¿La cantamos de nuevo, un poquito más fuerte? Con <span class="num">6</span> líneas la abuela queda feliz.'}</div>
       <div class="kkdots" style="margin-top:.5em">${r.lines.map(v => `<span class="${v ? 'ok' : 'no'}"></span>`).join('')}</div>
       <div style="flex:1"></div><div class="kkbtns">${ok ? '<button class="pri" data-a="win">Seguir ▶</button>' : '<button data-a="toMusic">Otra música</button><button class="pri" data-a="toSing">Probar de nuevo 🎤</button>'}</div>`;
   }
@@ -1233,7 +1233,7 @@ ents.push({ id: 'tia', map: 'pueblo', x: 25, y: 13, kind: 'person', long: true, 
     step('tia', 'La abuela te va a contestar con una palabra secreta. Cuando la tengas, vení y decímela.'),
     () => { tiaState = 1; }];
   return [step('tia', '¿Ya tenés la palabra secreta de la abuela?'), () => setTimeout(() => openSecret({
-    text: 'Escribí la palabra que le contestó la abuela a mamá por WhatsApp.', word: CONFIG.palabraSecreta, wrong: 'Mmm... esa no es. ¿Le preguntaste bien a la abuela?',
+    text: 'Escribí la palabra que le contestó la abuela a mamá por WhatsApp.', word: CONFIG.palabraSecreta, wrong: 'Mmm, esa palabra no es... ¿Ya le preguntaste a la abuela? ¡Probemos otra vez! 😊',
     ok: () => say([step('tia', `¡${CONFIG.palabraSecreta.toUpperCase()}! ¡Esa es! ¡Misión secreta cumplida!`), complete('whatsapp'), step('tia', '¡Sos la mejor agente secreta de la familia! 🕵️'), ...starMsg()]) }), 0)];
 } });
 let SEC = null;
@@ -1567,7 +1567,7 @@ ents.push({ id: 'profe', map: 'pueblo', x: 21, y: 8, kind: 'person', long: true,
   let chain = [complete('aleman'), step('profe', `Alles Gute zum Geburtstag, ${N}! ¡Eso quiere decir «feliz cumpleaños» en alemán!`), ...starMsg()];
   for (let i = CONFIG.aleman.length - 1; i >= 0; i--) {
     const a = CONFIG.aleman[i];
-    const q = { ...question('profe', `¿Qué significa «${a.palabra}»?`, { label: a.correcta }, a.otras.map(l => ({ label: l })), 'Nein, nein... ¡Probá otra vez!'),
+    const q = { ...question('profe', `¿Qué significa «${a.palabra}»?`, { label: a.correcta }, a.otras.map(l => ({ label: l })), '¡Casi! Equivocarse es parte de aprender. ¿Probamos otra vez? 😊'),
       after: [step('profe', `Richtig! ¡Correcto! «${a.palabra}» es ${a.correcta.replace(/^\S+\s/, '').toLowerCase()}.`), ...chain] };
     chain = [q];
   }
@@ -1725,8 +1725,8 @@ function mgSimon() {
     if (!turn) return; flash(i, 250);
     if (i !== seq[pos]) { turn = false; Snd.wrong();
       if (meta() === Infinity) { const hechas = seq.length - 1; if (hechas > record) { record = hechas; try { localStorage.setItem('simonRecord', record); } catch (e) {} }
-        mgInfo(`¡Fin! Llegaste a ${hechas} notas 🎵 Récord: ${record}`); mgLater(() => nueva(0), 4000); }
-      else { mgInfo('¡Uy! Te lo muestro otra vez 😊'); mgLater(play, 1200); }
+        mgInfo(`¡Muy bien! Llegaste a ${hechas} notas 🎵 Récord: ${record}`); mgLater(() => nueva(0), 4000); }
+      else { mgInfo('¡Casi! Te lo muestro otra vez 😊'); mgLater(play, 1200); }
       return; }
     if (++pos === seq.length) { turn = false;
       if (seq.length === meta()) { Snd.correct();
@@ -1775,7 +1775,7 @@ function mgHuesos() {
       if (b.y >= H2 - 12) { if (pause <= 0) { lost++; Snd.bump(); info(); } return false; }
       return true; });
     c.drawImage(spr('dog_' + raza + (dir && (t >> 3) % 2 ? 1 : 0), DOGPAL[raza], face < 0), Math.round(x - 16), H2 - 42, 32, 32);   // parada sobre el pasto
-    if (pause <= 0 && lost >= L.vidas) { Snd.wrong(); startLv(lv, `¡Uy! Se acabaron los corazones. ¡Otra vez el nivel ${lv + 1}!`, 2500); }
+    if (pause <= 0 && lost >= L.vidas) { Snd.wrong(); startLv(lv, `¡Casi lo lográs! Probemos otra vez el nivel ${lv + 1}. ¡Vos podés! 💪`, 2500); }
     else if (pause <= 0 && got >= L.meta) {
       Snd.bark();
       if (lv === LV.length - 1) { Snd.correct(); startLv(0, `🏆 ¡GANASTE LOS 4 NIVELES! ¡${perro.nombre} está llenísima! 🦴`, 5000); }
@@ -1905,7 +1905,7 @@ CONFIG.extras.slice(0, 3).forEach((q, i) => {
     talk() {
       if (done.has(id)) return [step(id, '¡Gracias por responder! ¡Feliz cumple!')];
       return [step(id, `¡Hola, ${N}! Te quiero hacer una pregunta...`),
-              { ...question(id, q.pregunta, { label: q.correcta }, q.otras.map(l => ({ label: l })), '¡Nooo! Probá otra vez.'),
+              { ...question(id, q.pregunta, { label: q.correcta }, q.otras.map(l => ({ label: l })), '¡Casi! No pasa nada... ¿Probamos otra vez? 😊'),
                 after: [complete(id), step(id, '¡Muy bien! ¡Sabía que lo sabías!'), ...starMsg()] }];
     } });
 });
@@ -1985,7 +1985,7 @@ function moveSel(d) { if (!D.opts) return; D.sel = (D.sel + (d === 'up' ? -1 : 1
 function choose() {
   const o = D.opts[D.sel], s = D.cur;
   if (o.ok) { Snd.correct(); D.queue = [...(s.after || []), ...D.queue]; }
-  else { Snd.wrong(); D.queue = [step(s.who, s.wrong || '¡Casi! Probá otra vez.', s.name), s, ...D.queue]; }
+  else { Snd.wrong(); D.queue = [step(s.who, s.wrong || '¡Casi! ¿Probamos otra vez? 😊', s.name), s, ...D.queue]; }
   next();
 }
 function dialogA() {
