@@ -325,9 +325,9 @@ const CONFIG = {
   pelo: "#6b3a1f",              // color de pelo de Greta
   vestido: "#f06aa8",           // color del vestido al empezar
 
-  comida: { correcta: "Milanesa con papas fritas", otras: ["Sopa de brócoli", "Pescado hervido"] },
+  comida: { correcta: "Asado de papá", otras: ["Sopa de brócoli", "Pescado hervido"] },
   color:  { correcta: { nombre: "Violeta", hex: "#9b59d0" },
-            otras: [ { nombre: "Gris", hex: "#8f8f8f" }, { nombre: "Marrón", hex: "#7a4a26" } ] },
+            otras: [ { nombre: "Celeste", hex: "#7cc8f0" }, { nombre: "Rojo", hex: "#e03a3a" } ] },
 
   // donde: "casa" (detrás del sillón), "bosque", "lago" o "plaza"
   perros: [
@@ -986,11 +986,11 @@ ents.push({ id: 'cartel', map: 'pueblo', x: 7, y: 5, kind: 'sign', talk: () => [
 
 quests.push({ id: 'comida', pista: 'El cocinero está arriba, en su puesto de comida del barrio.' });
 function talkChef() {
-  if (done.has('comida')) return [step('chef', `¡Ya estoy cocinando ${CONFIG.comida.correcta.toLowerCase()} para tu fiesta! ¡Mmm!`)];
+  if (done.has('comida')) return [step('chef', '¡El asado de papá es lo más rico del mundo! ¡Mmm!')];
   return [step('chef', `¡Hola, ${N}! ¡Feliz cumple! Soy el cocinero del barrio.`),
           step('chef', 'Quiero cocinarte algo riquísimo para la fiesta...'),
           { ...question('chef', '¿Cuál es tu comida preferida?', { label: CONFIG.comida.correcta }, CONFIG.comida.otras.map(l => ({ label: l })), '¡Mmm, también es rico! Pero no es tu favorita... ¿Probamos con otra? 😊'),
-            after: [complete('comida'), step('chef', '¡Sííí! ¡Qué rico! Ya mismo la empiezo a cocinar.'), ...starMsg()] }];
+            after: [complete('comida'), step('chef', '¡Sííí! ¡El asado de papá! ¡Qué rico! Le voy a pedir que me enseñe la receta.'), ...starMsg()] }];
 }
 ents.push({ id: 'chef', map: 'pueblo', x: 18, y: 3, kind: 'person', hat: 'chef', quest: 'comida', pal: { h: '#5a341a', d: '#ffffff', q: '#454560' }, talk: talkChef });
 ents.push({ id: 'puesto', map: 'pueblo', x: 17, y: 4, w: 3, kind: 'stall', talk: talkChef });
