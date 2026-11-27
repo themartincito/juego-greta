@@ -1987,9 +1987,10 @@ function pressA() {
   else if (mode === 'party') partyA();
   else if (mode === 'notebook') nbKey('ok');
   else if (mode === 'console') consoleA();
+  else if (mode === 'karaoke' && KK.step !== 'sing') { const p = kkEl.querySelector('button.pri'); if (p) p.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true })); }
   else if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].a);
 }
-function pressB() { if (mode === 'karaoke') closeKaraoke(); else if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].b); else if (mode === 'console') closeConsole(); else if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
+function pressB() { if (mode === 'karaoke') { const w = KK.step === 'result' && kkEl.querySelector('[data-a=win]'); if (w) w.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true })); else closeKaraoke(); } else if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].b); else if (mode === 'console') closeConsole(); else if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
 const KEYDIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') return;
@@ -2078,8 +2079,10 @@ function continueGame(d) {
 }
 function goFullscreen() {
   if (!isTouch) return;
-  try { const r = document.documentElement, f = r.requestFullscreen || r.webkitRequestFullscreen; if (f && !document.fullscreenElement) Promise.resolve(f.call(r)).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (e) {}
+  try { const r = document.documentElement, f = r.requestFullscreen || r.webkitRequestFullscreen; if (f && !(document.fullscreenElement || document.webkitFullscreenElement)) Promise.resolve(f.call(r, { navigationUI: 'hide' })).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (e) {}
 }
+document.addEventListener('pointerup', () => { if (isTouch && !(document.fullscreenElement || document.webkitFullscreenElement)) goFullscreen(); }, true);
+document.addEventListener('touchend', () => { if (isTouch && !(document.fullscreenElement || document.webkitFullscreenElement)) goFullscreen(); }, true);
 function startGame() {
   started = true;
   $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); $('snd').classList.remove('hidden');
@@ -2289,6 +2292,29 @@ function bubble(sx, sy, ch, col) {
   G.forEach((row, y) => [...row].forEach((p, x) => { if (p === '#') R(6 + x, 1 + y, 1, 1, col); }));   // letra dibujada pixel a pixel, siempre nítida
 }
 const DOOR_ARROWS = { casa: [[9, 20, 'down', 2]], pueblo: [[4, 5, 'up'], [11, 5, 'up']], abuela: [[7, 8, 'down']] };
+// Muebles corridos unos pixeles (dx/dy): Greta se arrima esa misma distancia, así queda pegada como con los demás
+function nudge(cx, cy) {
+  let nx = 0, ny = 0;
+  for (const e of FURN) {
+    if (!here(e) || e.solid === false || !(e.dx || e.dy)) continue;
+    const dx = e.dx || 0, dy = e.dy || 0;
+    if (dy > 0 && covers(e, cx, cy + 1)) ny = Math.max(ny, dy + 2);
+    if (dy < 0 && covers(e, cx, cy - 1)) ny = Math.min(ny, dy);
+    if (dx > 0 && covers(e, cx + 1, cy)) nx = Math.max(nx, dx);
+    if (dx < 0 && covers(e, cx - 1, cy)) nx = Math.min(nx, dx);
+  }
+  return [nx, ny];
+}
+// Si Greta está justo arriba de una pared, la pared (que está más cerca) se dibuja encima de ella
+function wallOverPlayer(px, py, camX, camY) {
+  const m = cur; if (!m.hW) return;
+  const cx = Math.round(px / TS), wy = Math.round(py / TS) + 1, row = m.hW[wy]; if (!row) return;
+  for (let c = cx - 1; c <= cx + 1; c++) {
+    if (!row[c]) continue;
+    const x0 = c * TS - (row[c - 1] ? 4 : 1), x1 = (c + 1) * TS + (row[c + 1] ? 4 : 1), y0 = wy * TS - 4;
+    ctx.drawImage(m.cv, x0, y0, x1 - x0, 8, x0 - camX, y0 - camY, x1 - x0, 8);
+  }
+}
 function render() {
   let camX, camY;
   if (mode === 'title') { camX = (W * TS - VW) / 2 + Math.sin(time * 0.25) * ((W * TS - VW) / 2); camY = (H * TS - VH) / 2 + Math.sin(time * 0.17) * 50; }
@@ -2306,7 +2332,8 @@ function render() {
   });
   if (mode !== 'title') {
     const px = lerp(P.fx, P.x, P.moving ? P.t : 1) * TS, py = lerp(P.fy, P.y, P.moving ? P.t : 1) * TS;
-    list.push({ y: py + 0.5, draw: () => drawPlayer(Math.round(px - camX), Math.round(py - camY)) });
+    const t = P.moving ? P.t : 1, n0 = nudge(P.fx, P.fy), n1 = nudge(P.x, P.y), ox = lerp(n0[0], n1[0], t), oy = lerp(n0[1], n1[1], t);
+    list.push({ y: py + 0.5, draw: () => { drawPlayer(Math.round(px + ox - camX), Math.round(py + oy - camY)); wallOverPlayer(px, py, camX, camY); } });
   }
   list.sort((a, b) => a.y - b.y).forEach(o => o.draw());
   // flechas que titilan en las puertas, para que Greta sepa que puede entrar y salir
