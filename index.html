@@ -2069,6 +2069,9 @@ function saveProgress() {
 }
 function loadProgress() { try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); return d && d.pos ? d : null; } catch (e) { return null; } }
 setInterval(saveProgress, 2000); addEventListener('pagehide', saveProgress); document.addEventListener('visibilitychange', saveProgress);
+// Si se cambia de pestaña o se minimiza el navegador, se pausa todo el sonido; al volver, sigue
+document.addEventListener('visibilitychange', () => { const ac = Snd.raw().ac; if (!ac) return; if (document.hidden) ac.suspend().catch(() => {}); else ac.resume().catch(() => {}); });
+addEventListener('pagehide', () => { const ac = Snd.raw().ac; if (ac) ac.suspend().catch(() => {}); });
 const SAVED = loadProgress();
 if (SAVED) { $('ttlStart').textContent = `▶ Apretá A para seguir jugando (⭐ ${SAVED.done.length}/${quests.length})`; $('ttlReset').classList.remove('hidden'); }
 $('ttlReset').addEventListener('pointerdown', e => {
