@@ -388,17 +388,26 @@ const Snd = (() => {
   }
   const now = () => ac ? ac.currentTime : 0;
   let bdBus = null;
-  const LEAD = [0,4,7,4, 9,7,4,null, 5,9,12,9, 7,null,4,null, 2,5,9,5, 7,5,4,2, 0,4,7,12, 7,null,null,null,
-                4,7,12,7, 14,12,9,null, 5,9,14,12, 11,null,7,null, 9,12,9,5, 7,4,2,4, 0,null,7,null, 0,null,null,null];
-  const BASS = [-24,-17,-24,-17, -19,-12,-19,-17, -22,-15,-17,-10, -24,-17,-24,-24,
-                -24,-17,-24,-17, -19,-12,-19,-17, -15,-19,-17,-17, -24,-17,-24,-24];
-  const SD = 0.2;
+  // Música de fondo "Plataformas" (tema original 8-bit, libre de derechos), loop de 32 pasos
+  const MEL = [72,0,76,79,0,76,72,0, 74,0,77,81,0,77,74,0, 76,79,84,0,83,79,76,0, 74,0,71,74,79,-1,0,0]; // 0 = silencio, -1 = sostener
+  const BASS = [48, 41, 48, 43];   // Do, Fa, Do, Sol (un compás cada 8 pasos)
+  const SD = 0.14;                 // segundos por paso
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  const hold = i => { let n = 1; while (MEL[(i + n) % 32] === -1) n++; return n; };
+  function nota(m, t, dur, type, vol, cut) {
+    const o = ac.createOscillator(), g = ac.createGain(), lp = ac.createBiquadFilter();
+    o.type = type; o.frequency.value = hz(m); lp.type = 'lowpass'; lp.frequency.value = cut;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(dur, 0.06));
+    o.connect(lp); lp.connect(g); g.connect(music); o.start(t); o.stop(t + dur + 0.08);
+  }
   function sched() {
-    while (nextT < ac.currentTime + 0.25) {
-      const i = step % LEAD.length;
-      if (LEAD[i] !== null) tone(nf(LEAD[i]), nextT, SD * 0.9, 'square', 0.03, music);
-      if (i % 2 === 0) tone(nf(BASS[(i / 2) % BASS.length]), nextT, SD * 1.8, 'triangle', 0.07, music);
-      nextT += SD; step++;
+    while (nextT < ac.currentTime + 0.2) {
+      const i = step % 32, c = Math.floor(i / 8), t = nextT;
+      if (i % 4 === 0) nota(BASS[c] - 12 + (i % 8 === 4 ? 7 : 0), t, SD * 1.5, 'triangle', 0.15, 700);
+      if (i % 4 === 2) nota(BASS[c] + 16, t, SD * 0.6, 'square', 0.02, 1500);
+      const m = MEL[i]; if (m > 0) nota(m, t, SD * hold(i) * 0.85, 'square', 0.04, 2600);
+      step++; nextT += SD;
     }
   }
   return {
