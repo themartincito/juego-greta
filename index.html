@@ -2014,6 +2014,8 @@ function setDir(d, on) {
   else if (!on && held[d]) { held[d] = 0; const i = order.indexOf(d); if (i >= 0) order.splice(i, 1); }
 }
 const curDir = () => order[order.length - 1] || null;
+const MODAL_BTN = { reto: { a: 'retoGo', b: 'retoBack' }, ward: { a: null, b: 'wClose' }, draw: { a: 'drawOk', b: 'drawBack' }, view: { a: 'viewClose', b: 'viewClose' } };
+function tapBtn(id) { const el = id && $(id); if (el && el.offsetParent !== null && !el.classList.contains('hidden')) el.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true })); }
 function pressA() {
   Snd.init();
   if (mode === 'title') { startGame(); if (/fiesta/.test(location.search + location.hash)) setTimeout(() => { D.queue = []; next(); startParty(); }, 200); }
@@ -2022,16 +2024,16 @@ function pressA() {
   else if (mode === 'party') partyA();
   else if (mode === 'notebook') nbKey('ok');
   else if (mode === 'console') consoleA();
+  else if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].a);
 }
-function pressB() { if (mode === 'console') closeConsole(); else if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
+function pressB() { if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].b); else if (mode === 'console') closeConsole(); else if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
 const KEYDIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') return;
   if (mode === 'memo') { e.preventDefault(); const d = KEYDIR[e.key]; if (d) memoKey(d); else if (['Enter',' ','a','A','z','Z'].includes(e.key)) memoKey('A'); else if (['Escape','b','B','x','X'].includes(e.key)) closeMemo(); return; }
   if (mode === 'mini') { e.preventDefault(); const d = KEYDIR[e.key]; if (['Escape','b','B','x','X'].includes(e.key)) closeMini(); else if (d && MG.key) MG.key(d); return; }
   if (mode === 'console') { const d = KEYDIR[e.key]; if (['Escape','b','B','x','X'].includes(e.key)) { e.preventDefault(); closeConsole(); } else if (d) { e.preventDefault(); consoleMove(d); } else if (['Enter',' ','a','A','z','Z'].includes(e.key)) { e.preventDefault(); if (!e.repeat) consoleA(); } return; }
-  if (mode === 'ward' || mode === 'reto') { if (e.key === 'Escape') { e.preventDefault(); mode === 'ward' ? closeWard() : closeReto(); } return; }
-  if (mode === 'draw' || mode === 'view') { if (e.key === 'Escape' || (mode === 'view' && ['Enter','a','A',' '].includes(e.key))) { e.preventDefault(); $(mode).classList.add('hidden'); mode = 'play'; } return; }
+  if (MODAL_BTN[mode]) { const k = e.key; if (['Escape','b','B','x','X'].includes(k)) { e.preventDefault(); tapBtn(MODAL_BTN[mode].b); } else if (['Enter',' ','a','A','z','Z'].includes(k)) { e.preventDefault(); if (!e.repeat) tapBtn(MODAL_BTN[mode].a); } return; }
   if (mode === 'karaoke') { if (e.key === 'Escape' && KK.step !== 'sing') closeKaraoke(); if (['b','B','x','X'].includes(e.key)) held.B = 1; return; }
   if (mode === 'notebook') {
     e.preventDefault(); if (e.repeat) return;
