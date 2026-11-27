@@ -2301,6 +2301,16 @@ function bubble(sx, sy, ch, col) {
   G.forEach((row, y) => [...row].forEach((p, x) => { if (p === '#') R(6 + x, 1 + y, 1, 1, col); }));   // letra dibujada pixel a pixel, siempre nítida
 }
 const DOOR_ARROWS = { casa: [[9, 20, 'down', 2]], pueblo: [[4, 5, 'up'], [11, 5, 'up']], abuela: [[7, 8, 'down']] };
+function wallOverFeet(px, py, camX, camY) {
+  const m = cur; if (!m.hW) return;
+  const cx = Math.round(px / TS), wy = Math.round(py / TS) + 1, row = m.hW[wy];
+  if (!row || !row[cx]) return;              // solo con pared entera debajo (nunca en puertas)
+  for (let c = cx - 1; c <= cx + 1; c++) {
+    if (!row[c]) continue;
+    const x0 = c * TS - (row[c - 1] ? 4 : 1), x1 = (c + 1) * TS + (row[c + 1] ? 4 : 1), y0 = wy * TS - 4;
+    ctx.drawImage(m.cv, x0, y0, x1 - x0, 8, x0 - camX, y0 - camY, x1 - x0, 8);
+  }
+}
 function render() {
   let camX, camY;
   if (mode === 'title') { camX = (W * TS - VW) / 2 + Math.sin(time * 0.25) * ((W * TS - VW) / 2); camY = (H * TS - VH) / 2 + Math.sin(time * 0.17) * 50; }
@@ -2318,7 +2328,7 @@ function render() {
   });
   if (mode !== 'title') {
     const px = lerp(P.fx, P.x, P.moving ? P.t : 1) * TS, py = lerp(P.fy, P.y, P.moving ? P.t : 1) * TS;
-    list.push({ y: py + 0.5, draw: () => drawPlayer(Math.round(px - camX), Math.round(py - camY)) });
+    list.push({ y: py + 0.5, draw: () => { drawPlayer(Math.round(px - camX), Math.round(py - camY)); wallOverFeet(px, py, camX, camY); } });
   }
   list.sort((a, b) => a.y - b.y).forEach(o => o.draw());
   // flechas que titilan en las puertas, para que Greta sepa que puede entrar y salir
