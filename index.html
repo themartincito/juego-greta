@@ -1003,7 +1003,7 @@ function talkPainter() {
           { ...question('pintora', '¿Cuál es tu color preferido?', { label: c.correcta.nombre, color: c.correcta.hex }, c.otras.map(o => ({ label: o.nombre, color: o.hex })), '¡Ese color también es lindo! Pero no es tu preferido... ¿Probamos otra vez? 🎨'),
             after: [complete('color'), () => { P.dress = c.correcta.hex; easelColor = c.correcta.hex; const ci = WARD.colores.indexOf(c.correcta.hex); if (ci >= 0) OUT.colores = ci; }, step('pintora', '¡Qué lindo color! Te lo regalo para tu vestido. ✨'), ...starMsg()] }];
 }
-ents.push({ id: 'pintora', map: 'pueblo', x: 5, y: 9, kind: 'person', long: true, hat: 'beret', quest: 'color', pal: { h: '#e0a830', d: '#e86a5a', q: '#5a4a8a' }, talk: talkPainter });
+ents.push({ id: 'pintora', map: 'pueblo', x: 5, y: 9, kind: 'person', long: true, hat: 'beret', quest: 'color', pal: { h: '#241a16', H: '#3a2c24', d: '#26262c', q: '#5a4a8a' }, talk: talkPainter });
 ents.push({ id: 'atril', map: 'pueblo', x: 6, y: 9, kind: 'easel', talk: talkPainter });
 
 quests.push({ id: 'edad', pista: 'El gatito sabio está en el barrio, a la derecha, arriba de un tronco.' });
