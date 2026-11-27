@@ -2041,7 +2041,7 @@ $('snd').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropag
 
 /* ---------------- Lógica ---------------- */
 function placeAt(mapId, x, y, dir) {
-  useMap(mapId); P.x = P.fx = x; P.y = P.fy = y; P.dir = dir; P.moving = false; P.t = 0; LEAN.x = LEAN.y = 0;
+  useMap(mapId); P.x = P.fx = x; P.y = P.fy = y; P.dir = dir; P.moving = false; P.t = 0;
   followers.forEach(f => { f.map = mapId; f.x = f.fx = x; f.y = f.fy = y; });
 }
 let fade = 0, fadeDir = 0, warpTo = null;
@@ -2292,16 +2292,6 @@ function bubble(sx, sy, ch, col) {
   G.forEach((row, y) => [...row].forEach((p, x) => { if (p === '#') R(6 + x, 1 + y, 1, 1, col); }));   // letra dibujada pixel a pixel, siempre nítida
 }
 const DOOR_ARROWS = { casa: [[9, 20, 'down', 2]], pueblo: [[4, 5, 'up'], [11, 5, 'up']], abuela: [[7, 8, 'down']] };
-// Muebles corridos unos pixeles (dx/dy): cuando Greta está quieta MIRANDO al mueble, se arrima esa distancia
-// (solo en la dirección en la que mira, así nunca camina en diagonal)
-const LEAN = { x: 0, y: 0 };
-function leanTarget() {
-  if (P.moving) return [0, 0];
-  const [ddx, ddy] = DIRS[P.dir], e = FURN.find(f => here(f) && f.solid !== false && (f.dx || f.dy) && covers(f, P.x + ddx, P.y + ddy));
-  if (!e) return [0, 0];
-  const dx = e.dx || 0, dy = e.dy || 0;
-  return [ddx > 0 && dx > 0 ? dx : ddx < 0 && dx < 0 ? dx : 0, ddy > 0 && dy > 0 ? dy + 2 : ddy < 0 && dy < 0 ? dy : 0];
-}
 function render() {
   let camX, camY;
   if (mode === 'title') { camX = (W * TS - VW) / 2 + Math.sin(time * 0.25) * ((W * TS - VW) / 2); camY = (H * TS - VH) / 2 + Math.sin(time * 0.17) * 50; }
@@ -2319,8 +2309,7 @@ function render() {
   });
   if (mode !== 'title') {
     const px = lerp(P.fx, P.x, P.moving ? P.t : 1) * TS, py = lerp(P.fy, P.y, P.moving ? P.t : 1) * TS;
-    const [tx, ty] = leanTarget(), k = 0.3; LEAN.x += (tx - LEAN.x) * k; LEAN.y += (ty - LEAN.y) * k;
-    list.push({ y: py + 0.5, draw: () => drawPlayer(Math.round(px + LEAN.x - camX), Math.round(py + LEAN.y - camY)) });
+    list.push({ y: py + 0.5, draw: () => drawPlayer(Math.round(px - camX), Math.round(py - camY)) });
   }
   list.sort((a, b) => a.y - b.y).forEach(o => o.draw());
   // flechas que titilan en las puertas, para que Greta sepa que puede entrar y salir
