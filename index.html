@@ -220,9 +220,12 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
 #party button{font:inherit;font-size:.85em;font-weight:700;background:#fff;color:#2a2238;border:.14em solid #2a2238;border-radius:.4em;padding:.15em .6em;cursor:pointer}
 
 /* Girar el dispositivo */
-#rotate{display:none;position:fixed;inset:0;z-index:50;background:#2a2238;color:#ffd84a;font-weight:800;font-size:22px;text-align:center;line-height:1.35;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-#rotate .ph{font-size:64px;animation:girar 1.6s ease-in-out infinite}
-@keyframes girar{0%,25%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+#rotate{display:none;position:fixed;inset:0;z-index:50;background:#1d1b2e;align-items:center;justify-content:center;padding:20px}
+#rotate .box{background:#fff;border:4px solid #2a2238;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 6px #8fc7ff,6px 6px 0 #000;border-radius:6px;padding:22px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:300px}
+#rotate svg{width:72px;height:72px;shape-rendering:crispEdges;animation:girar 2s steps(1) infinite}
+#rotate .txt{font-weight:800;font-size:20px;line-height:1.25;color:#2a2238;text-align:center;text-transform:uppercase}
+#rotate .txt b{color:#ff4f9e}
+@keyframes girar{0%{transform:rotate(0)}40%{transform:rotate(-45deg)}55%,100%{transform:rotate(-90deg)}}
 .touch.portrait #rotate{display:flex}
 /* Controles táctiles */
 #dpad,#ab{display:none;touch-action:none}
@@ -244,7 +247,7 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
 </style>
 </head>
 <body>
-<div id="rotate"><div class="ph">📱</div><div>Girá el celular o la tablet<br>para jugar 🔄</div></div>
+<div id="rotate"><div class="box"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1" width="8" height="14" fill="#2a2238"/><rect x="5" y="2" width="6" height="12" fill="#5a4a8a"/><rect x="6" y="3" width="4" height="8" fill="#8fc7ff"/><rect x="6" y="3" width="2" height="1" fill="#ffffff"/><rect x="7" y="12" width="2" height="1" fill="#ffd84a"/></svg><div class="txt">Girá el celular<br>o la tablet<br><b>para jugar</b></div></div></div>
 <div id="app">
   <div id="dpad"><div class="h"></div><div class="v"></div><div class="c"></div>
     <span style="left:66px;top:12px">▲</span><span style="left:66px;bottom:12px">▼</span><span style="left:12px;top:64px">◀</span><span style="right:12px;top:64px">▶</span></div>
@@ -1851,7 +1854,7 @@ function mgBuscar() {
 
 // --- 5. Pintar por números ---
 function mgPintar() {
-  const PAL = { 1: ['#ff8fb8', 'Rosa'], 2: ['#ffd84a', 'Amarillo'], 3: ['#a8683a', 'Marrón'], 4: ['#b48cff', 'Violeta'], 5: ['#8fd3ff', 'Celeste'] };
+  const PAL = { 1: ['#ff4d5e', 'Rojo'], 2: ['#ffe81a', 'Amarillo'], 3: ['#ff9a2e', 'Naranja'], 4: ['#5fd35f', 'Verde'], 5: ['#8fd3ff', 'Celeste'] };
   const PIC = ['5552555255', '5551555155', '5551555155', '5444444445', '5444444445', '5333333335', '5313313135', '5333333335', '4444444444', '5555555555'];
   const grid = document.createElement('div'); grid.className = 'pint'; grid.style.gridTemplateColumns = `repeat(${PIC[0].length},1fr)`;
   const pal = document.createElement('div'); pal.className = 'pintpal';
@@ -1982,8 +1985,8 @@ function hud() { $('hud').innerHTML = `<span class="st on">★</span><span class
 const held = { up: 0, down: 0, left: 0, right: 0, B: 0 };
 const order = [];
 function setDir(d, on) {
-  if (on && !held[d]) { held[d] = 1; order.push(d); if (mode === 'dialog' && (d === 'up' || d === 'down')) moveSel(d); if (mode === 'console') consoleMove(d); }
-  else if (!on && held[d]) { held[d] = 0; const i = order.indexOf(d); if (i >= 0) order.splice(i, 1); }
+  if (on && !held[d]) { held[d] = 1; order.push(d); if (mode === 'dialog' && (d === 'up' || d === 'down')) moveSel(d); if (mode === 'console') consoleMove(d); if (mode === 'mini' && MG.key) MG.key(d); if (mode === 'memo') memoKey(d); }
+  else if (!on && held[d]) { if (mode === 'mini' && MG.key) MG.key(d, true); held[d] = 0; const i = order.indexOf(d); if (i >= 0) order.splice(i, 1); }
 }
 const curDir = () => order[order.length - 1] || null;
 const MODAL_BTN = { reto: { a: 'retoGo', b: 'retoBack' }, ward: { a: null, b: 'wClose' }, draw: { a: 'drawOk', b: 'drawBack' }, view: { a: 'viewClose', b: 'viewClose' } };
@@ -1996,14 +1999,15 @@ function pressA() {
   else if (mode === 'party') partyA();
   else if (mode === 'notebook') nbKey('ok');
   else if (mode === 'console') consoleA();
+  else if (mode === 'memo') memoKey('A');
   else if (mode === 'karaoke' && KK.step !== 'sing') { const p = kkEl.querySelector('button.pri'); if (p) p.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true })); }
   else if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].a);
 }
-function pressB() { if (mode === 'karaoke') { const w = KK.step === 'result' && kkEl.querySelector('[data-a=win]'); if (w) w.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true })); else closeKaraoke(); } else if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].b); else if (mode === 'console') closeConsole(); else if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
+function pressB() { if (mode === 'memo') { closeMemo(); openConsole(); } else if (mode === 'mini') closeMini(); else if (mode === 'karaoke') { const w = KK.step === 'result' && kkEl.querySelector('[data-a=win]'); if (w) w.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true })); else closeKaraoke(); } else if (MODAL_BTN[mode]) tapBtn(MODAL_BTN[mode].b); else if (mode === 'console') closeConsole(); else if (mode === 'party' && PF.on) endFotos(); else if (mode === 'dialog') dialogB(); else if (mode === 'notebook') closeNotebook(); }
 const KEYDIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') return;
-  if (mode === 'memo') { e.preventDefault(); const d = KEYDIR[e.key]; if (d) memoKey(d); else if (['Enter',' ','a','A','z','Z'].includes(e.key)) memoKey('A'); else if (['Escape','b','B','x','X'].includes(e.key)) closeMemo(); return; }
+  if (mode === 'memo') { e.preventDefault(); const d = KEYDIR[e.key]; if (d) memoKey(d); else if (['Enter',' ','a','A','z','Z'].includes(e.key)) memoKey('A'); else if (['Escape','b','B','x','X'].includes(e.key)) { closeMemo(); openConsole(); } return; }
   if (mode === 'mini') { e.preventDefault(); const d = KEYDIR[e.key]; if (['Escape','b','B','x','X'].includes(e.key)) closeMini(); else if (d && MG.key) MG.key(d); return; }
   if (mode === 'console') { const d = KEYDIR[e.key]; if (['Escape','b','B','x','X'].includes(e.key)) { e.preventDefault(); closeConsole(); } else if (d) { e.preventDefault(); consoleMove(d); } else if (['Enter',' ','a','A','z','Z'].includes(e.key)) { e.preventDefault(); if (!e.repeat) consoleA(); } return; }
   if (MODAL_BTN[mode]) { const k = e.key; if (['Escape','b','B','x','X'].includes(k)) { e.preventDefault(); tapBtn(MODAL_BTN[mode].b); } else if (['Enter',' ','a','A','z','Z'].includes(k)) { e.preventDefault(); if (!e.repeat) tapBtn(MODAL_BTN[mode].a); } return; }
