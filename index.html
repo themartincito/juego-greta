@@ -220,11 +220,9 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
 #party button{font:inherit;font-size:.85em;font-weight:700;background:#fff;color:#2a2238;border:.14em solid #2a2238;border-radius:.4em;padding:.15em .6em;cursor:pointer}
 
 /* Girar el dispositivo */
-#rotate{display:none;position:fixed;inset:0;z-index:50;background:#1d1b2e;align-items:center;justify-content:center;padding:20px}
-#rotate .box{background:#fff;border:4px solid #2a2238;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 6px #8fc7ff,6px 6px 0 #000;border-radius:6px;padding:22px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:300px}
-#rotate svg{width:72px;height:72px;shape-rendering:crispEdges;animation:girar 2s steps(1) infinite}
-#rotate .txt{font-weight:800;font-size:20px;line-height:1.25;color:#2a2238;text-align:center;text-transform:uppercase}
-#rotate .txt b{color:#ff4f9e}
+#rotate{display:none;position:fixed;inset:0;z-index:50;background:#1d1b2e;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px}
+#rotate .txt{font-weight:800;font-size:22px;line-height:1.3;color:#fff;text-align:center;text-transform:uppercase;letter-spacing:.02em}
+#rotate svg{width:64px;height:64px;shape-rendering:crispEdges;animation:girar 2s steps(1) infinite}
 @keyframes girar{0%{transform:rotate(0)}40%{transform:rotate(-45deg)}55%,100%{transform:rotate(-90deg)}}
 .touch.portrait #rotate{display:flex}
 /* Controles táctiles */
@@ -247,7 +245,7 @@ kbd{font-family:inherit;background:#fff;color:#2a2238;border-radius:.2em;padding
 </style>
 </head>
 <body>
-<div id="rotate"><div class="box"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1" width="8" height="14" fill="#2a2238"/><rect x="5" y="2" width="6" height="12" fill="#5a4a8a"/><rect x="6" y="3" width="4" height="8" fill="#8fc7ff"/><rect x="6" y="3" width="2" height="1" fill="#ffffff"/><rect x="7" y="12" width="2" height="1" fill="#ffd84a"/></svg><div class="txt">Girá el celular<br>o la tablet<br><b>para jugar</b></div></div></div>
+<div id="rotate"><div class="txt">Girá el celular<br>o la tablet para jugar</div><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1" width="8" height="14" fill="#ffffff"/><rect x="5" y="2" width="6" height="12" fill="#5a4a8a"/><rect x="6" y="3" width="4" height="8" fill="#8fc7ff"/><rect x="6" y="3" width="2" height="1" fill="#ffffff"/><rect x="7" y="12" width="2" height="1" fill="#ffd84a"/></svg></div>
 <div id="app">
   <div id="dpad"><div class="h"></div><div class="v"></div><div class="c"></div>
     <span style="left:66px;top:12px">▲</span><span style="left:66px;bottom:12px">▼</span><span style="left:12px;top:64px">◀</span><span style="right:12px;top:64px">▶</span></div>
